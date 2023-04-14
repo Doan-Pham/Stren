@@ -2,10 +2,18 @@ package com.example.stren.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+val Red40 = Color(0xFFD31027)
+val Red50 = Color(0xFFEA384D)
+val Red80 = Color(0xFFFFACB6)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val Orange60 = Color(0xFFF37335)
+val Orange80 = Color(0xFFFFB800)
+
+val Gray50 = Color(0xFF7B6F72)
+val Gray60 = Color(0xFFADA4A5)
+val Gray90 = Color(0xFFDDDADA)
+val Gray95 = Color(0xFFEEEEEE)
+
+val Green50 = Color(0xFF3BB44B)
+val Green70 = Color(0xFF4BC85B)
+val Green95 = Color(0xFFBBFFC4)
