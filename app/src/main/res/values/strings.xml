@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Stren</string>
+    <string name="login_welcome_subtitle">Welcome back!</string>
+    <string name="login_welcome_title">Ready to train?</string>
 </resources>
