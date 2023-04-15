@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -61,6 +62,10 @@ dependencies {
     // MATERIAL
     implementation("androidx.compose.material3:material3:$material_design_version")
     implementation("androidx.compose.material3:material3-window-size-class:$material_design_version")
+
+    // FIREBASE
+    implementation platform('com.google.firebase:firebase-bom:31.3.0')
+    implementation 'com.google.firebase:firebase-auth-ktx'
 
     // TEST
     testImplementation 'junit:junit:4.13.2'
