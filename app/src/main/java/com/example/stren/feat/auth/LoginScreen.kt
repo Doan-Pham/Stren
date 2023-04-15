@@ -9,7 +9,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.stren.R
 import com.example.stren.ui.theme.Gray90
 import com.example.stren.ui.theme.Red40
@@ -33,9 +35,10 @@ import com.example.stren.ui.theme.Red50
 private const val TAG = "LoginScreen"
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier) {
+fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
+    val uiState by viewModel.uiState
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(24.dp)
     ) {
@@ -53,20 +56,13 @@ fun LoginScreen(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.headlineMedium,
             textAlign = TextAlign.Center
         )
-        var currentUserEmail by remember {
-            mutableStateOf("")
-        }
-
-        var currentPassword by remember {
-            mutableStateOf("")
-        }
 
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp, bottom = 8.dp),
-            value = currentUserEmail,
-            onValueChange = { currentUserEmail = it },
+            value = uiState.email,
+            onValueChange = { viewModel.onEmailChange(it) },
             singleLine = true,
             label = {
                 Text(text = "Email")
@@ -78,7 +74,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                 )
             },
             trailingIcon = {
-                IconButton(onClick = { currentUserEmail = "" }) {
+                IconButton(onClick = { viewModel.onEmailChange("") }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_cancel_circle),
                         contentDescription = "User icon"
@@ -92,8 +88,8 @@ fun LoginScreen(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 8.dp, bottom = 16.dp),
-            value = currentPassword,
-            onValueChange = { currentPassword = it },
+            value = uiState.password,
+            onValueChange = { viewModel.onPasswordChange(it) },
             singleLine = true,
             label = {
                 Text(text = "Password")
@@ -105,7 +101,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                 )
             },
             trailingIcon = {
-                IconButton(onClick = { currentPassword = "" }) {
+                IconButton(onClick = { viewModel.onPasswordChange("") }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_cancel_circle),
                         contentDescription = "User icon"
@@ -127,7 +123,13 @@ fun LoginScreen(modifier: Modifier = Modifier) {
         ) {
             Box(
                 modifier = Modifier
-                    .background(Brush.horizontalGradient(colors = listOf(Red40, Red50)))
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(
+                                Red40, Red50
+                            )
+                        )
+                    )
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 contentAlignment = Alignment.Center
@@ -214,8 +216,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
             onClick = { offset ->
                 signUpAnnotatedString.getStringAnnotations(
                     tag = "SignUp",// tag which you used in the buildAnnotatedString
-                    start = offset,
-                    end = offset
+                    start = offset, end = offset
                 ).firstOrNull()?.let {
                     //TODO: Signup click
                     Log.d(TAG, "Sign up clicked")
