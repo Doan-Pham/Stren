@@ -10,7 +10,9 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -27,16 +29,34 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.stren.LocalSnackbarHostState
 import com.example.stren.R
 import com.example.stren.ui.theme.Gray90
 import com.example.stren.ui.theme.Red40
 import com.example.stren.ui.theme.Red50
+import kotlinx.coroutines.launch
 
 private const val TAG = "LoginScreen"
 
 @Composable
 fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState
+    val snackbarHostState = LocalSnackbarHostState.current
+    val coroutineScope = rememberCoroutineScope()
+
+    if (uiState.isAuthFailed) {
+        LaunchedEffect(key1 = true) {
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(
+                    message = uiState.errorMessage,
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Short
+                )
+                viewModel.resetAuthState()
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -117,7 +137,9 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
                 .fillMaxWidth()
                 .padding(vertical = dimensionResource(id = R.dimen.padding_large)),
             shape = RoundedCornerShape(15),
-            onClick = { /*TODO*/ },
+            onClick = { /*TODO: Sign in click*/
+                viewModel.onSignInClick()
+            },
             contentPadding = PaddingValues(),
             colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
         ) {
