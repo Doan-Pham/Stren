@@ -1,8 +1,5 @@
 package com.example.stren.feat.auth
 
-import android.util.Log
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.stren.LocalSnackbarHostState
 import com.example.stren.R
-import com.example.stren.ui.theme.Gray90
 import com.example.stren.ui.theme.Red40
 import com.example.stren.ui.theme.Red50
 import kotlinx.coroutines.launch
@@ -39,7 +35,7 @@ import kotlinx.coroutines.launch
 private const val TAG = "LoginScreen"
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
+fun LoginScreen(onSignupClick: () -> Unit, viewModel: LoginViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState
     val snackbarHostState = LocalSnackbarHostState.current
     val coroutineScope = rememberCoroutineScope()
@@ -164,62 +160,11 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
             }
         }
 
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = dimensionResource(id = R.dimen.padding_small)),
-            text = "or continue with",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(dimensionResource(id = R.dimen.padding_medium)),
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            OutlinedIconButton(
-                onClick = { /*TODO*/ },
-                modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_extra_large)),
-                shape = RoundedCornerShape(10),
-                border = BorderStroke(1.dp, Gray90)
-            ) {
-                Image(
-                    modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large)),
-                    painter = painterResource(id = R.drawable.ic_facebook),
-                    contentDescription = "Sign up with Facebook button"
-                )
-            }
-            OutlinedIconButton(
-                onClick = { /*TODO*/ },
-                modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_extra_large)),
-                shape = RoundedCornerShape(10),
-                border = BorderStroke(1.dp, Gray90)
-            ) {
-                Image(
-                    modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large)),
-                    painter = painterResource(id = R.drawable.ic_google),
-                    contentDescription = "Sign up with Google button"
-                )
-            }
-            OutlinedIconButton(
-                onClick = { /*TODO*/ },
-                modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_extra_large)),
-                shape = RoundedCornerShape(10),
-                border = BorderStroke(1.dp, Gray90)
-            ) {
-                Image(
-                    modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large)),
-                    painter = painterResource(id = R.drawable.ic_phone),
-                    contentDescription = "Sign up with phone number button"
-                )
-            }
-        }
+        // TODO: Add other ways of authentication
 
         val signUpAnnotatedString = buildAnnotatedString {
             withStyle(style = SpanStyle(color = Color.Black)) {
-                append("Already have an account?")
+                append("Don't have an account?")
             }
             //Start of the pushing annotation which you want to color and make them clickable later
             pushStringAnnotation(
@@ -240,8 +185,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
                     tag = "SignUp",// tag which you used in the buildAnnotatedString
                     start = offset, end = offset
                 ).firstOrNull()?.let {
-                    //TODO: Signup click
-                    Log.d(TAG, "Sign up clicked")
+                    onSignupClick()
                 }
             },
             modifier = Modifier
@@ -251,3 +195,56 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
         )
     }
 }
+
+//Text(
+//modifier = Modifier
+//.fillMaxWidth()
+//.padding(vertical = dimensionResource(id = R.dimen.padding_small)),
+//text = "or continue with",
+//style = MaterialTheme.typography.bodyMedium,
+//textAlign = TextAlign.Center
+//)
+//
+//Row(
+//modifier = Modifier
+//.fillMaxWidth()
+//.padding(dimensionResource(id = R.dimen.padding_medium)),
+//horizontalArrangement = Arrangement.SpaceAround
+//) {
+//    OutlinedIconButton(
+//        onClick = { /*TODO*/ },
+//        modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_extra_large)),
+//        shape = RoundedCornerShape(10),
+//        border = BorderStroke(1.dp, Gray90)
+//    ) {
+//        Image(
+//            modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large)),
+//            painter = painterResource(id = R.drawable.ic_facebook),
+//            contentDescription = "Sign up with Facebook button"
+//        )
+//    }
+//    OutlinedIconButton(
+//        onClick = { /*TODO*/ },
+//        modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_extra_large)),
+//        shape = RoundedCornerShape(10),
+//        border = BorderStroke(1.dp, Gray90)
+//    ) {
+//        Image(
+//            modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large)),
+//            painter = painterResource(id = R.drawable.ic_google),
+//            contentDescription = "Sign up with Google button"
+//        )
+//    }
+//    OutlinedIconButton(
+//        onClick = { /*TODO*/ },
+//        modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_extra_large)),
+//        shape = RoundedCornerShape(10),
+//        border = BorderStroke(1.dp, Gray90)
+//    ) {
+//        Image(
+//            modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large)),
+//            painter = painterResource(id = R.drawable.ic_phone),
+//            contentDescription = "Sign up with phone number button"
+//        )
+//    }
+//}
