@@ -3,11 +3,9 @@ package com.example.stren
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -20,10 +18,10 @@ val LocalSnackbarHostState =
     compositionLocalOf<SnackbarHostState> { error("No SnackbarHostState provided") }
 
 @Composable
-fun StrenApp(modifier: Modifier) {
+fun StrenApp(modifier: Modifier, viewModel: StrenAppViewModel = hiltViewModel()) {
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
-
+    val isUserSignedIn by viewModel.isUserSignedIn
 
     // This allows any screen in the composition to access snackbar
     CompositionLocalProvider(
@@ -36,7 +34,13 @@ fun StrenApp(modifier: Modifier) {
                 modifier = modifier
             ) {
                 composable(route = Screen.Splash.route) {
-                    SplashScreen(onNavigateToNextScreen = { navController.navigate(NAV_ROUTE_AUTH) })
+                    SplashScreen(onNavigateToNextScreen = {
+                        if (!isUserSignedIn) navController.navigate(NAV_ROUTE_AUTH) {
+                            popUpTo(Screen.Splash.route) { inclusive = true }
+                        } else navController.navigate("//TODO: Add a destination") {
+                            popUpTo(Screen.Splash.route) { inclusive = true }
+                        }
+                    })
                 }
 
                 authenticationGraph()
