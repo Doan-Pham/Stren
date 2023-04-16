@@ -23,4 +23,8 @@ class AuthenticationServiceImpl @Inject constructor() : AuthenticationService {
     override suspend fun authenticate(email: String, password: String) {
         Firebase.auth.signInWithEmailAndPassword(email, password).await()
     }
+
+    override suspend fun signUp(email: String, password: String) {
+        Firebase.auth.createUserWithEmailAndPassword(email, password).await()
+    }
 }
