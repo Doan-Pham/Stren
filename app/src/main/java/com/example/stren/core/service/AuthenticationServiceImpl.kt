@@ -7,6 +7,19 @@ import javax.inject.Inject
 
 class AuthenticationServiceImpl @Inject constructor() : AuthenticationService {
 
+    override fun addAuthStateListeners(
+        onUserAuthenticated: () -> Unit,
+        onUserNotAuthenticated: () -> Unit
+    ) {
+        Firebase.auth.addAuthStateListener {
+            if (it.currentUser != null) {
+                onUserAuthenticated()
+            } else {
+                onUserNotAuthenticated()
+            }
+        }
+    }
+
     override suspend fun authenticate(email: String, password: String) {
         Firebase.auth.signInWithEmailAndPassword(email, password).await()
     }
