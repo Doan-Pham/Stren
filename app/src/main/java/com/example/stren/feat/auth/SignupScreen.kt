@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -96,6 +97,11 @@ fun SignupScreen(
             value = uiState.email,
             onValueChange = { viewModel.onEmailChange(it) },
             singleLine = true,
+            isError = !uiState.isEmailValid,
+            supportingText = {
+                if (!uiState.isEmailValid)
+                    Text("Invalid email")
+            },
             label = {
                 Text(text = "Email")
             },
@@ -123,6 +129,11 @@ fun SignupScreen(
             value = uiState.password,
             onValueChange = { viewModel.onPasswordChange(it) },
             singleLine = true,
+            isError = !uiState.isPasswordValid,
+            supportingText = {
+                if (!uiState.isPasswordValid)
+                    Text("Password must contain at least 8 characters")
+            },
             label = {
                 Text(text = "Password")
             },
@@ -150,6 +161,12 @@ fun SignupScreen(
             value = uiState.repeatPassword,
             onValueChange = { viewModel.onRepeatPasswordChange(it) },
             singleLine = true,
+            isError = !uiState.isRepeatPasswordValid,
+            supportingText = {
+                if (!uiState.isRepeatPasswordValid) {
+                    Text("Passwords don't match")
+                }
+            },
             label = {
                 Text(text = "Confirm password")
             },
@@ -185,6 +202,7 @@ fun SignupScreen(
                     .fillMaxWidth()
                     .padding(vertical = dimensionResource(id = R.dimen.padding_large)),
                 shape = RoundedCornerShape(15),
+                enabled = uiState.isInputValid,
                 onClick = {
                     viewModel.onSignUpClick()
                 },
@@ -198,7 +216,7 @@ fun SignupScreen(
                                 colors = listOf(
                                     Red40, Red50
                                 )
-                            )
+                            ), alpha = if (uiState.isInputValid) 1f else ContentAlpha.disabled
                         )
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 12.dp),

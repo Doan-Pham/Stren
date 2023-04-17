@@ -65,6 +65,7 @@ dependencies {
     // MATERIAL
     implementation("androidx.compose.material3:material3:$material_design_version")
     implementation("androidx.compose.material3:material3-window-size-class:$material_design_version")
+    implementation "androidx.compose.material:material:1.4.1"
 
     // FIREBASE
     implementation platform('com.google.firebase:firebase-bom:31.3.0')
@@ -77,6 +78,9 @@ dependencies {
 
     // ACCOMPANIST
     implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
+
+    // VALIDATORS
+    implementation "commons-validator:commons-validator:$common_validator_version"
 
     // TEST
     testImplementation 'junit:junit:4.13.2'
