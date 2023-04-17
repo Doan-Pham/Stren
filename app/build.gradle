@@ -70,6 +70,7 @@ dependencies {
     // FIREBASE
     implementation platform('com.google.firebase:firebase-bom:31.3.0')
     implementation 'com.google.firebase:firebase-auth-ktx'
+    implementation 'com.facebook.android:facebook-login:16.0.0'
 
     // HILT
     implementation "com.google.dagger:hilt-android:$hilt_version"
