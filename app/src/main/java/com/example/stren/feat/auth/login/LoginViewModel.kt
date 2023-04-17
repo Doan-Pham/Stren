@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stren.core.service.AuthenticationService
+import com.facebook.AccessToken
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
@@ -45,6 +46,25 @@ class LoginViewModel @Inject constructor(private val authService: Authentication
             )
         }, block = {
             authService.authenticate(uiState.value.email, uiState.value.password)
+            uiState.value = uiState.value.copy(
+                isAuthSuccess = true,
+                isLoading = false,
+                isAuthFailed = false
+            )
+        })
+    }
+
+    fun onSignInWithFacebookClick(token: AccessToken) {
+        Log.d(TAG, "onSignInWithFacebookClick() - :$token")
+        viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
+            Log.e(TAG, "onSignInWithFacebookClick() - exception: ${throwable.message}")
+            uiState.value = uiState.value.copy(
+                isAuthFailed = true,
+                isLoading = false,
+                errorMessage = "Invalid input. Please try again!"
+            )
+        }, block = {
+            authService.authenticateWithFacebook(token)
             uiState.value = uiState.value.copy(
                 isAuthSuccess = true,
                 isLoading = false,

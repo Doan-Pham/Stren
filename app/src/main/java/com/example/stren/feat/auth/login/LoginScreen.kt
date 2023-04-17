@@ -1,15 +1,16 @@
 package com.example.stren.feat.auth.login
 
+import android.util.Log
+import androidx.activity.compose.LocalActivityResultRegistryOwner
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -27,9 +28,18 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.stren.R
+import com.example.stren.app.LocalFacebookCallbackManager
 import com.example.stren.app.LocalSnackbarHostState
+import com.example.stren.ui.theme.Gray90
 import com.example.stren.ui.theme.Red40
 import com.example.stren.ui.theme.Red50
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val TAG = "LoginScreen"
@@ -37,6 +47,7 @@ private const val TAG = "LoginScreen"
 @Composable
 fun LoginScreen(
     onSignupClick: () -> Unit,
+    onAuthSuccess: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState
@@ -64,6 +75,32 @@ fun LoginScreen(
                 )
                 viewModel.resetAuthState()
             }
+            delay(300)
+            onAuthSuccess()
+        }
+    }
+
+    val callbackManager = LocalFacebookCallbackManager.current
+    DisposableEffect(Unit) {
+        LoginManager.getInstance().registerCallback(
+            callbackManager,
+            object : FacebookCallback<LoginResult> {
+                override fun onSuccess(result: LoginResult) {
+                    viewModel.onSignInWithFacebookClick(result.accessToken)
+                    Log.d(TAG, "facebook:onSuccess:$result")
+                }
+
+                override fun onCancel() {
+                    Log.d(TAG, "facebook:onCancel")
+                }
+
+                override fun onError(error: FacebookException) {
+                    Log.d(TAG, "facebook:onError", error)
+                }
+            }
+        )
+        onDispose {
+            LoginManager.getInstance().unregisterCallback(callbackManager)
         }
     }
 
@@ -186,6 +223,70 @@ fun LoginScreen(
         }
 
         // TODO: Add other ways of authentication
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = dimensionResource(id = R.dimen.padding_small)),
+            text = "or continue with",
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(dimensionResource(id = R.dimen.padding_medium)),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            val activityResultRegistryOwner = LocalActivityResultRegistryOwner.current
+            OutlinedIconButton(
+                onClick = { /*TODO*/
+                    if (activityResultRegistryOwner != null) {
+                        LoginManager.getInstance()
+                            .logInWithReadPermissions(
+                                activityResultRegistryOwner,
+                                callbackManager,
+                                listOf("email", "public_profile")
+                            )
+                    }
+                },
+                modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_extra_large)),
+                shape = RoundedCornerShape(10),
+                border = BorderStroke(1.dp, Gray90)
+            ) {
+                Image(
+                    modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large)),
+                    painter = painterResource(id = R.drawable.ic_facebook),
+                    contentDescription = "Sign up with Facebook button"
+                )
+            }
+
+            OutlinedIconButton(
+                onClick = { /*TODO*/ Firebase.auth.signOut() },
+                modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_extra_large)),
+                shape = RoundedCornerShape(10),
+                border = BorderStroke(1.dp, Gray90)
+            ) {
+                Image(
+                    modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large)),
+                    painter = painterResource(id = R.drawable.ic_google),
+                    contentDescription = "Sign up with Google button"
+                )
+            }
+
+            OutlinedIconButton(
+                onClick = { /*TODO*/ },
+                modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_extra_large)),
+                shape = RoundedCornerShape(10),
+                border = BorderStroke(1.dp, Gray90)
+            ) {
+                Image(
+                    modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large)),
+                    painter = painterResource(id = R.drawable.ic_phone),
+                    contentDescription = "Sign up with phone number button"
+                )
+            }
+        }
 
         val signUpAnnotatedString = buildAnnotatedString {
             withStyle(style = SpanStyle(color = Color.Black)) {
@@ -220,7 +321,6 @@ fun LoginScreen(
         )
     }
 }
-
 
 //Text(
 //modifier = Modifier

@@ -11,6 +11,7 @@ import com.google.accompanist.navigation.animation.composable
 import kotlinx.coroutines.delay
 
 const val NAV_ROUTE_AUTH = "auth_graph"
+private const val TAG = "authenticationGraph"
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.authenticationGraph(
@@ -24,11 +25,13 @@ fun NavGraphBuilder.authenticationGraph(
                         Screen.Login.route
                     ) { inclusive = true }
                 }
-            })
+            }, onAuthSuccess = onUserAlreadySignedIn)
+
             LaunchedEffect(key1 = true, block = {
                 delay(300)
                 onUserAlreadySignedIn()
             })
+
         }
         composable(route = Screen.Signup.route) {
             SignupScreen(onSignInClick = {
