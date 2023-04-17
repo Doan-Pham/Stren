@@ -45,13 +45,24 @@ fun StrenApp(modifier: Modifier, viewModel: StrenAppViewModel = hiltViewModel())
                     )
                 }
             ) {
-                authenticationGraph(navController)
+                authenticationGraph(navController, onAuthSuccess = {
+                    navController.navigate("Test") {
+                        launchSingleTop = true
+                        popUpToRoute
+                    }
+                })
                 composable(route = "Test") {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(color = Color.Black)
                     )
+                    if (!isUserSignedIn) {
+                        navController.navigate(NAV_ROUTE_AUTH) {
+                            launchSingleTop = true
+                            popUpTo("Test") { inclusive = true }
+                        }
+                    }
                 }
             }
         }

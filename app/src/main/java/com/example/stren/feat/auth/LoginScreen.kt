@@ -30,12 +30,17 @@ import com.example.stren.LocalSnackbarHostState
 import com.example.stren.R
 import com.example.stren.ui.theme.Red40
 import com.example.stren.ui.theme.Red50
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val TAG = "LoginScreen"
 
 @Composable
-fun LoginScreen(onSignupClick: () -> Unit, viewModel: LoginViewModel = hiltViewModel()) {
+fun LoginScreen(
+    onAuthSuccess: () -> Unit,
+    onSignupClick: () -> Unit,
+    viewModel: LoginViewModel = hiltViewModel()
+) {
     val uiState by viewModel.uiState
     val snackbarHostState = LocalSnackbarHostState.current
     val coroutineScope = rememberCoroutineScope()
@@ -50,6 +55,19 @@ fun LoginScreen(onSignupClick: () -> Unit, viewModel: LoginViewModel = hiltViewM
                 )
                 viewModel.resetAuthState()
             }
+        }
+    } else if (uiState.isAuthSuccess) {
+        LaunchedEffect(key1 = true) {
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(
+                    message = "Login success!",
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Short
+                )
+                viewModel.resetAuthState()
+            }
+            delay(1000)
+            onAuthSuccess()
         }
     }
 
@@ -128,35 +146,46 @@ fun LoginScreen(onSignupClick: () -> Unit, viewModel: LoginViewModel = hiltViewM
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )
 
-        Button(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = dimensionResource(id = R.dimen.padding_large)),
-            shape = RoundedCornerShape(15),
-            onClick = { /*TODO: Sign in click*/
-                viewModel.onSignInClick()
-            },
-            contentPadding = PaddingValues(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
-        ) {
-            Box(
+        if (uiState.isLoading) {
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.primary,
+                strokeWidth = 1.dp,
                 modifier = Modifier
-                    .background(
-                        Brush.horizontalGradient(
-                            colors = listOf(
-                                Red40, Red50
+                    .size(24.dp)
+                    .padding(vertical = dimensionResource(id = R.dimen.padding_large))
+                    .align(Alignment.CenterHorizontally)
+            )
+        } else {
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = dimensionResource(id = R.dimen.padding_large)),
+                shape = RoundedCornerShape(15),
+                onClick = { /*TODO: Sign in click*/
+                    viewModel.onSignInClick()
+                },
+                contentPadding = PaddingValues(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    Red40, Red50
+                                )
                             )
                         )
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Login",
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleMedium
                     )
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Login",
-                    color = Color.White,
-                    style = MaterialTheme.typography.titleMedium
-                )
+                }
             }
         }
 
@@ -195,6 +224,7 @@ fun LoginScreen(onSignupClick: () -> Unit, viewModel: LoginViewModel = hiltViewM
         )
     }
 }
+
 
 //Text(
 //modifier = Modifier

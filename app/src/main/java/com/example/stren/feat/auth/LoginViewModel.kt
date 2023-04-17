@@ -27,7 +27,12 @@ class LoginViewModel @Inject constructor(private val authService: Authentication
     }
 
     fun resetAuthState() {
-        uiState.value = uiState.value.copy(isAuthFailed = false, errorMessage = "")
+        uiState.value = uiState.value.copy(
+            isAuthFailed = false,
+            isAuthSuccess = false,
+            isLoading = false,
+            errorMessage = ""
+        )
     }
 
     fun onSignInClick() {
@@ -35,10 +40,16 @@ class LoginViewModel @Inject constructor(private val authService: Authentication
             Log.e(TAG, "onSignInClick - exception: ${throwable.message}")
             uiState.value = uiState.value.copy(
                 isAuthFailed = true,
+                isLoading = false,
                 errorMessage = "Invalid input. Please try again!"
             )
         }, block = {
             authService.authenticate(uiState.value.email, uiState.value.password)
+            uiState.value = uiState.value.copy(
+                isAuthSuccess = true,
+                isLoading = false,
+                isAuthFailed = false
+            )
         })
     }
 }

@@ -11,7 +11,9 @@ import com.google.accompanist.navigation.animation.composable
 const val NAV_ROUTE_AUTH = "auth_graph"
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.authenticationGraph(navController: NavHostController) {
+fun NavGraphBuilder.authenticationGraph(
+    navController: NavHostController, onAuthSuccess: () -> Unit
+) {
     navigation(startDestination = Screen.Login.route, route = NAV_ROUTE_AUTH) {
         composable(route = Screen.Login.route) {
             LoginScreen(onSignupClick = {
@@ -20,7 +22,7 @@ fun NavGraphBuilder.authenticationGraph(navController: NavHostController) {
                         Screen.Login.route
                     ) { inclusive = true }
                 }
-            })
+            }, onAuthSuccess = onAuthSuccess)
         }
         composable(route = Screen.Signup.route) {
             SignupScreen(onSignInClick = {
