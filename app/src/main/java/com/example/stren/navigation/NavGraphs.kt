@@ -5,8 +5,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.navigation
-import com.example.stren.feat.auth.LoginScreen
-import com.example.stren.feat.auth.SignupScreen
+import com.example.stren.feat.auth.login.LoginScreen
+import com.example.stren.feat.auth.signup.SignupScreen
 import com.google.accompanist.navigation.animation.composable
 import kotlinx.coroutines.delay
 

@@ -1,4 +1,4 @@
-package com.example.stren.feat.auth
+package com.example.stren.feat.auth.signup
 
 import com.example.stren.feat.auth.utils.ValidationUtils
 

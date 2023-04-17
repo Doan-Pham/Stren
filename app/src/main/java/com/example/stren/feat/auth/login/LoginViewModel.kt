@@ -1,4 +1,4 @@
-package com.example.stren.feat.auth
+package com.example.stren.feat.auth.login
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf

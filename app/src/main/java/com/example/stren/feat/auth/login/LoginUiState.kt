@@ -1,4 +1,4 @@
-package com.example.stren.feat.auth
+package com.example.stren.feat.auth.login
 
 data class LoginUiState(
     val email: String = "",

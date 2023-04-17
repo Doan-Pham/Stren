@@ -1,4 +1,4 @@
-package com.example.stren
+package com.example.stren.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

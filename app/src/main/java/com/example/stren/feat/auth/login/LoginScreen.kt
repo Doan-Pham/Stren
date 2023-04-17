@@ -1,4 +1,4 @@
-package com.example.stren.feat.auth
+package com.example.stren.feat.auth.login
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -26,8 +26,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.stren.LocalSnackbarHostState
 import com.example.stren.R
+import com.example.stren.app.LocalSnackbarHostState
 import com.example.stren.ui.theme.Red40
 import com.example.stren.ui.theme.Red50
 import kotlinx.coroutines.launch

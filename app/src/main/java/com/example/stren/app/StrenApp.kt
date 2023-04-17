@@ -1,4 +1,4 @@
-package com.example.stren
+package com.example.stren.app
 
 import android.util.Log
 import androidx.compose.animation.AnimatedContentScope
