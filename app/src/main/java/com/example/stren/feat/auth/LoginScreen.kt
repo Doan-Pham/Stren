@@ -30,14 +30,12 @@ import com.example.stren.LocalSnackbarHostState
 import com.example.stren.R
 import com.example.stren.ui.theme.Red40
 import com.example.stren.ui.theme.Red50
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val TAG = "LoginScreen"
 
 @Composable
 fun LoginScreen(
-    onAuthSuccess: () -> Unit,
     onSignupClick: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
@@ -66,8 +64,6 @@ fun LoginScreen(
                 )
                 viewModel.resetAuthState()
             }
-            delay(1000)
-            onAuthSuccess()
         }
     }
 
