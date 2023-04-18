@@ -31,14 +31,14 @@ import com.facebook.FacebookCallback
 import com.facebook.FacebookException
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.LocalFacebookCallbackManager
 import com.haidoan.android.stren.app.LocalSnackbarHostState
 import com.haidoan.android.stren.designsystem.theme.Gray90
 import com.haidoan.android.stren.designsystem.theme.Red40
 import com.haidoan.android.stren.designsystem.theme.Red50
+import com.stevdzasan.onetap.OneTapSignInWithGoogle
+import com.stevdzasan.onetap.rememberOneTapSignInState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -261,8 +261,21 @@ fun LoginScreen(
                 )
             }
 
+            val oneTapSignInState = rememberOneTapSignInState()
+            OneTapSignInWithGoogle(
+                state = oneTapSignInState,
+                clientId = stringResource(id = R.string.your_web_client_id),
+                onTokenIdReceived = { tokenId ->
+                    viewModel.onSignInWithGoogleClick(tokenId)
+                },
+                onDialogDismissed = { message ->
+                    Log.d(TAG, "One tap dialog dismissed - message: $message")
+                }
+            )
             OutlinedIconButton(
-                onClick = { /*TODO*/ Firebase.auth.signOut() },
+                onClick = { /*TODO*/
+                    oneTapSignInState.open()
+                },
                 modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_extra_large)),
                 shape = RoundedCornerShape(10),
                 border = BorderStroke(1.dp, Gray90)

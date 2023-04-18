@@ -10,6 +10,10 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.facebook.CallbackManager
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.auth.api.identity.SignInClient
+import com.haidoan.android.stren.R
 import com.haidoan.android.stren.designsystem.theme.StrenTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -20,10 +24,33 @@ val LocalFacebookCallbackManager =
 class MainActivity : ComponentActivity() {
     private var facebookCallbackManager = CallbackManager.Factory.create()
 
+    private lateinit var oneTapClient: SignInClient
+    private lateinit var signInRequest: BeginSignInRequest
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        oneTapClient = Identity.getSignInClient(this)
+        signInRequest = BeginSignInRequest.builder()
+            .setPasswordRequestOptions(
+                BeginSignInRequest.PasswordRequestOptions.builder()
+                    .setSupported(true)
+                    .build()
+            )
+            .setGoogleIdTokenRequestOptions(
+                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+                    .setSupported(true)
+                    // Your server's client ID, not your Android client ID.
+                    .setServerClientId(getString(R.string.your_web_client_id))
+                    // Only show accounts previously used to sign in.
+                    .setFilterByAuthorizedAccounts(true)
+                    .build()
+            )
+            // Automatically sign in when exactly one credential is retrieved.
+            .setAutoSelectEnabled(true)
+            .build()
+
         setContent {
             StrenTheme {
                 CompositionLocalProvider(

@@ -3,12 +3,14 @@ package com.haidoan.android.stren.core.service
 import android.util.Log
 import com.facebook.AccessToken
 import com.google.firebase.auth.FacebookAuthProvider
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 private const val TAG = "AuthenticationServiceImpl"
+
 class AuthenticationServiceImpl @Inject constructor() : AuthenticationService {
 
     override fun addAuthStateListeners(
@@ -38,5 +40,10 @@ class AuthenticationServiceImpl @Inject constructor() : AuthenticationService {
     override suspend fun authenticateWithFacebook(token: AccessToken) {
         val credential = FacebookAuthProvider.getCredential(token.token)
         Firebase.auth.signInWithCredential(credential).await()
+    }
+
+    override suspend fun authenticateWithGoogle(tokenId: String) {
+        val firebaseCredential = GoogleAuthProvider.getCredential(tokenId, null)
+        Firebase.auth.signInWithCredential(firebaseCredential).await()
     }
 }
