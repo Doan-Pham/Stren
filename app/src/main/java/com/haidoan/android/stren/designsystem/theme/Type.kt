@@ -1,4 +1,4 @@
-package com.example.stren.ui.theme
+package com.haidoan.android.stren.designsystem.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
@@ -6,7 +6,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.example.stren.R
+import com.haidoan.android.stren.R
 
 private val poppins = FontFamily(
     Font(R.font.poppins_regular, FontWeight.Normal),
@@ -15,6 +15,27 @@ private val poppins = FontFamily(
 )
 
 val Typography = Typography(
+    headlineLarge  = TextStyle(
+        fontFamily = poppins,
+        fontWeight = FontWeight.Bold,
+        fontSize = 40.sp,
+        lineHeight = 32.sp,
+        letterSpacing = 0.sp,
+    ),
+    headlineMedium = TextStyle(
+        fontFamily = poppins,
+        fontWeight = FontWeight.Bold,
+        fontSize = 32.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.1.sp,
+    ),
+    headlineSmall = TextStyle(
+        fontFamily = poppins,
+        fontWeight = FontWeight.Normal,
+        fontSize = 24.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.1.sp,
+    ),
     titleLarge = TextStyle(
         fontFamily = poppins,
         fontWeight = FontWeight.Bold,
