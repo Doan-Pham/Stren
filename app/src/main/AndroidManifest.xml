@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:name=".app.StrenApplication"
+        android:name="com.haidoan.android.stren.app.StrenApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -20,7 +20,7 @@
             android:value="@string/facebook_client_token" />
 
         <activity
-            android:name=".app.MainActivity"
+            android:name="com.haidoan.android.stren.app.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.App.Starting">
             <intent-filter>

@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.stren'
+    namespace 'com.haidoan.android.stren'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.stren"
+        applicationId "com.haidoan.android.stren"
         minSdk 24
         //noinspection OldTargetApi SplashScreen API requires this
         targetSdk 33
@@ -71,6 +71,7 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:31.3.0')
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.facebook.android:facebook-login:16.0.0'
+    implementation 'com.google.android.gms:play-services-auth:20.5.0'
 
     // HILT
     implementation "com.google.dagger:hilt-android:$hilt_version"
