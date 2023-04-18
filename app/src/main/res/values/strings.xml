@@ -5,9 +5,9 @@
     <string name="signup_welcome_subtitle">Don\'t have an account?</string>
     <string name="signup_welcom_title">Sign up!</string>
 
-    <string name="facebook_app_id">1113734300017369</string>
-    <string name="fb_login_protocol_scheme">fb1113734300017369</string>
-    <string name="facebook_client_token">bd10b9bbf2bb5d7bf9ef89eae61d3d9a</string>
+    <string name="facebook_app_id">***REMOVED***</string>
+    <string name="fb_login_protocol_scheme">fb***REMOVED***</string>
+    <string name="facebook_client_token">***REMOVED***</string>
 
 
 </resources>
