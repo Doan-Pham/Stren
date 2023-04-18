@@ -72,4 +72,23 @@ class LoginViewModel @Inject constructor(private val authService: Authentication
             )
         })
     }
+
+    fun onSignInWithGoogleClick(tokenId: String) {
+        Log.d(TAG, "onSignInWithGoogleClick() - :$tokenId")
+        viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
+            Log.e(TAG, "onSignInWithGoogleClick() - exception: ${throwable.message}")
+            uiState.value = uiState.value.copy(
+                isAuthFailed = true,
+                isLoading = false,
+                errorMessage = "Invalid input. Please try again!"
+            )
+        }, block = {
+            authService.authenticateWithGoogle(tokenId)
+            uiState.value = uiState.value.copy(
+                isAuthSuccess = true,
+                isLoading = false,
+                isAuthFailed = false
+            )
+        })
+    }
 }

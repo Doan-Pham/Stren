@@ -8,6 +8,7 @@
     <string name="facebook_app_id">***REMOVED***</string>
     <string name="fb_login_protocol_scheme">fb***REMOVED***</string>
     <string name="facebook_client_token">***REMOVED***</string>
+    <string name="your_web_client_id">***REMOVED***</string>
 
 
 </resources>
