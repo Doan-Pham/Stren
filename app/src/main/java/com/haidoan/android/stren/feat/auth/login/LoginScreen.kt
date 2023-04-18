@@ -2,8 +2,6 @@ package com.haidoan.android.stren.feat.auth.login
 
 import android.util.Log
 import androidx.activity.compose.LocalActivityResultRegistryOwner
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,7 +32,7 @@ import com.facebook.login.LoginResult
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.LocalFacebookCallbackManager
 import com.haidoan.android.stren.app.LocalSnackbarHostState
-import com.haidoan.android.stren.designsystem.theme.Gray90
+import com.haidoan.android.stren.designsystem.component.OutlinedTextAndIconButton
 import com.haidoan.android.stren.designsystem.theme.Red40
 import com.haidoan.android.stren.designsystem.theme.Red50
 import com.stevdzasan.onetap.OneTapSignInWithGoogle
@@ -80,29 +78,6 @@ fun LoginScreen(
         }
     }
 
-    val callbackManager = LocalFacebookCallbackManager.current
-    DisposableEffect(Unit) {
-        LoginManager.getInstance().registerCallback(
-            callbackManager,
-            object : FacebookCallback<LoginResult> {
-                override fun onSuccess(result: LoginResult) {
-                    viewModel.onSignInWithFacebookClick(result.accessToken)
-                    Log.d(TAG, "facebook:onSuccess:$result")
-                }
-
-                override fun onCancel() {
-                    Log.d(TAG, "facebook:onCancel")
-                }
-
-                override fun onError(error: FacebookException) {
-                    Log.d(TAG, "facebook:onError", error)
-                }
-            }
-        )
-        onDispose {
-            LoginManager.getInstance().unregisterCallback(callbackManager)
-        }
-    }
 
     Column(
         modifier = Modifier
@@ -227,163 +202,126 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = dimensionResource(id = R.dimen.padding_small)),
-            text = "or continue with",
+            text = "Or",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center
         )
 
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(dimensionResource(id = R.dimen.padding_medium)),
-            horizontalArrangement = Arrangement.SpaceAround
         ) {
-            val activityResultRegistryOwner = LocalActivityResultRegistryOwner.current
-            OutlinedIconButton(
-                onClick = { /*TODO*/
-                    if (activityResultRegistryOwner != null) {
-                        LoginManager.getInstance()
-                            .logInWithReadPermissions(
-                                activityResultRegistryOwner,
-                                callbackManager,
-                                listOf("email", "public_profile")
-                            )
-                    }
-                },
-                modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_extra_large)),
-                shape = RoundedCornerShape(10),
-                border = BorderStroke(1.dp, Gray90)
-            ) {
-                Image(
-                    modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large)),
-                    painter = painterResource(id = R.drawable.ic_facebook),
-                    contentDescription = "Sign up with Facebook button"
-                )
-            }
+            FacebookSignInButton(
+                onAuthSuccess = { result ->
+                    viewModel.onSignInWithFacebookClick(result.accessToken)
+                    Log.d(TAG, "facebook:onSuccess:$result")
+                }, modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+            )
 
-            val oneTapSignInState = rememberOneTapSignInState()
-            OneTapSignInWithGoogle(
-                state = oneTapSignInState,
-                clientId = stringResource(id = R.string.your_web_client_id),
+            GoogleSignInButton(
                 onTokenIdReceived = { tokenId ->
                     viewModel.onSignInWithGoogleClick(tokenId)
-                },
-                onDialogDismissed = { message ->
-                    Log.d(TAG, "One tap dialog dismissed - message: $message")
-                }
-            )
-            OutlinedIconButton(
-                onClick = { /*TODO*/
-                    oneTapSignInState.open()
-                },
-                modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_extra_large)),
-                shape = RoundedCornerShape(10),
-                border = BorderStroke(1.dp, Gray90)
-            ) {
-                Image(
-                    modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large)),
-                    painter = painterResource(id = R.drawable.ic_google),
-                    contentDescription = "Sign up with Google button"
-                )
-            }
-
-            OutlinedIconButton(
-                onClick = { /*TODO*/ },
-                modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_extra_large)),
-                shape = RoundedCornerShape(10),
-                border = BorderStroke(1.dp, Gray90)
-            ) {
-                Image(
-                    modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large)),
-                    painter = painterResource(id = R.drawable.ic_phone),
-                    contentDescription = "Sign up with phone number button"
-                )
-            }
-        }
-
-        val signUpAnnotatedString = buildAnnotatedString {
-            withStyle(style = SpanStyle(color = Color.Black)) {
-                append("Don't have an account?")
-            }
-            //Start of the pushing annotation which you want to color and make them clickable later
-            pushStringAnnotation(
-                tag = "SignUp",// provide tag which will then be provided when you click the text
-                annotation = "SignUp"
+                }, modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
             )
 
-            withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary)) {
-                append(" Sign up")
-            }
-            // when pop is called it means the end of annotation with current tag
-            pop()
-        }
-        ClickableText(
-            text = signUpAnnotatedString,
-            onClick = { offset ->
-                signUpAnnotatedString.getStringAnnotations(
-                    tag = "SignUp",// tag which you used in the buildAnnotatedString
-                    start = offset, end = offset
-                ).firstOrNull()?.let {
-                    onSignupClick()
+            val signUpAnnotatedString = buildAnnotatedString {
+                withStyle(style = SpanStyle(color = Color.Black)) {
+                    append("Don't have an account?")
                 }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = dimensionResource(id = R.dimen.padding_extra_large)),
-            style = MaterialTheme.typography.bodyMedium + TextStyle(textAlign = TextAlign.Center),
-        )
+                //Start of the pushing annotation which you want to color and make them clickable later
+                pushStringAnnotation(
+                    tag = "SignUp",// provide tag which will then be provided when you click the text
+                    annotation = "SignUp"
+                )
+
+                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.secondary)) {
+                    append(" Sign up")
+                }
+                // when pop is called it means the end of annotation with current tag
+                pop()
+            }
+            ClickableText(
+                text = signUpAnnotatedString,
+                onClick = { offset ->
+                    signUpAnnotatedString.getStringAnnotations(
+                        tag = "SignUp",// tag which you used in the buildAnnotatedString
+                        start = offset, end = offset
+                    ).firstOrNull()?.let {
+                        onSignupClick()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = dimensionResource(id = R.dimen.padding_extra_large)),
+                style = MaterialTheme.typography.bodyMedium + TextStyle(textAlign = TextAlign.Center),
+            )
+        }
     }
 }
 
-//Text(
-//modifier = Modifier
-//.fillMaxWidth()
-//.padding(vertical = dimensionResource(id = R.dimen.padding_small)),
-//text = "or continue with",
-//style = MaterialTheme.typography.bodyMedium,
-//textAlign = TextAlign.Center
-//)
-//
-//Row(
-//modifier = Modifier
-//.fillMaxWidth()
-//.padding(dimensionResource(id = R.dimen.padding_medium)),
-//horizontalArrangement = Arrangement.SpaceAround
-//) {
-//    OutlinedIconButton(
-//        onClick = { /*TODO*/ },
-//        modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_extra_large)),
-//        shape = RoundedCornerShape(10),
-//        border = BorderStroke(1.dp, Gray90)
-//    ) {
-//        Image(
-//            modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large)),
-//            painter = painterResource(id = R.drawable.ic_facebook),
-//            contentDescription = "Sign up with Facebook button"
-//        )
-//    }
-//    OutlinedIconButton(
-//        onClick = { /*TODO*/ },
-//        modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_extra_large)),
-//        shape = RoundedCornerShape(10),
-//        border = BorderStroke(1.dp, Gray90)
-//    ) {
-//        Image(
-//            modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large)),
-//            painter = painterResource(id = R.drawable.ic_google),
-//            contentDescription = "Sign up with Google button"
-//        )
-//    }
-//    OutlinedIconButton(
-//        onClick = { /*TODO*/ },
-//        modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_extra_large)),
-//        shape = RoundedCornerShape(10),
-//        border = BorderStroke(1.dp, Gray90)
-//    ) {
-//        Image(
-//            modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large)),
-//            painter = painterResource(id = R.drawable.ic_phone),
-//            contentDescription = "Sign up with phone number button"
-//        )
-//    }
-//}
+@Composable
+fun GoogleSignInButton(onTokenIdReceived: (String) -> Unit, modifier: Modifier = Modifier) {
+    val oneTapSignInState = rememberOneTapSignInState()
+    OneTapSignInWithGoogle(state = oneTapSignInState,
+        clientId = stringResource(id = R.string.your_web_client_id),
+        onTokenIdReceived = onTokenIdReceived,
+        onDialogDismissed = { message ->
+            Log.d(TAG, "One tap dialog dismissed - message: $message")
+        })
+
+    OutlinedTextAndIconButton(
+        modifier = modifier,
+        imageResourceId = R.drawable.ic_google,
+        onClick = {
+            oneTapSignInState.open()
+        },
+        text = "Sign in with Google",
+        imageDescription = "Sign in with Google button"
+    )
+}
+
+@Composable
+fun FacebookSignInButton(onAuthSuccess: (LoginResult) -> Unit, modifier: Modifier = Modifier) {
+    val callbackManager = LocalFacebookCallbackManager.current
+    DisposableEffect(Unit) {
+        LoginManager.getInstance()
+            .registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+                override fun onSuccess(result: LoginResult) {
+                    onAuthSuccess(result)
+                }
+
+                override fun onCancel() {
+                    Log.d(TAG, "facebook:onCancel")
+                }
+
+                override fun onError(error: FacebookException) {
+                    Log.d(TAG, "facebook:onError", error)
+                }
+            })
+        onDispose {
+            LoginManager.getInstance().unregisterCallback(callbackManager)
+        }
+    }
+
+    val activityResultRegistryOwner = LocalActivityResultRegistryOwner.current
+    OutlinedTextAndIconButton(
+        modifier = modifier,
+        imageResourceId = R.drawable.ic_facebook,
+        onClick = {
+            if (activityResultRegistryOwner != null) {
+                LoginManager.getInstance().logInWithReadPermissions(
+                    activityResultRegistryOwner,
+                    callbackManager,
+                    listOf("email", "public_profile")
+                )
+            }
+        },
+        text = "Sign in with Facebook",
+        imageDescription = "Sign up with Facebook button"
+    )
+}
