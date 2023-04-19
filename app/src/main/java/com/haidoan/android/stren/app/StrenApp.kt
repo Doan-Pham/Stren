@@ -1,6 +1,5 @@
 package com.haidoan.android.stren.app
 
-import android.util.Log
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
@@ -17,7 +16,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.haidoan.android.stren.designsystem.component.BottomNavigationBar
 import com.haidoan.android.stren.navigation.NAV_ROUTE_AUTH
 import com.haidoan.android.stren.navigation.TopLevelDestination
@@ -29,11 +27,14 @@ val LocalSnackbarHostState =
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun StrenApp(modifier: Modifier, viewModel: StrenAppViewModel = hiltViewModel()) {
-    val navController = rememberAnimatedNavController()
+fun StrenApp(
+    modifier: Modifier,
+    viewModel: StrenAppViewModel = hiltViewModel(),
+    appState: StrenAppState = rememberStrenAppState()
+) {
     val snackbarHostState = remember { SnackbarHostState() }
     val isUserSignedIn by rememberSaveable { viewModel.isUserSignedIn }
-    Log.d(TAG, "isUserSignedIn: $isUserSignedIn")
+
     // This allows any screen in the composition to access snackbar
     CompositionLocalProvider(
         LocalSnackbarHostState provides snackbarHostState
@@ -41,11 +42,13 @@ fun StrenApp(modifier: Modifier, viewModel: StrenAppViewModel = hiltViewModel())
         Scaffold(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             bottomBar = {
-                BottomNavigationBar(navController)
+                if (appState.shouldShowBottomBar) {
+                    BottomNavigationBar(appState.navController)
+                }
             }
         ) {
             AnimatedNavHost(
-                navController = navController,
+                navController = appState.navController,
                 startDestination = NAV_ROUTE_AUTH,
                 modifier = modifier.fillMaxSize(),
                 enterTransition = {
@@ -74,10 +77,10 @@ fun StrenApp(modifier: Modifier, viewModel: StrenAppViewModel = hiltViewModel())
                 }
             ) {
                 authenticationGraph(
-                    navController,
+                    appState.navController,
                     onUserAlreadySignedIn = {
                         if (isUserSignedIn) {
-                            navController.navigate(TopLevelDestination.DASHBOARD.route) {
+                            appState.navController.navigate(TopLevelDestination.DASHBOARD.route) {
                                 launchSingleTop = true
                                 popUpTo(NAV_ROUTE_AUTH) { inclusive = true }
                             }
@@ -91,7 +94,7 @@ fun StrenApp(modifier: Modifier, viewModel: StrenAppViewModel = hiltViewModel())
                             .background(color = Color.Black)
                     )
                     if (!isUserSignedIn) {
-                        navController.navigate(NAV_ROUTE_AUTH) {
+                        appState.navController.navigate(NAV_ROUTE_AUTH) {
                             launchSingleTop = true
                             popUpTo("Test") { inclusive = true }
                         }
@@ -104,7 +107,7 @@ fun StrenApp(modifier: Modifier, viewModel: StrenAppViewModel = hiltViewModel())
                             .background(color = Color.Red)
                     )
                     if (!isUserSignedIn) {
-                        navController.navigate(NAV_ROUTE_AUTH) {
+                        appState.navController.navigate(NAV_ROUTE_AUTH) {
                             launchSingleTop = true
                             popUpTo("Test") { inclusive = true }
                         }
@@ -117,7 +120,7 @@ fun StrenApp(modifier: Modifier, viewModel: StrenAppViewModel = hiltViewModel())
                             .background(color = Color.Yellow)
                     )
                     if (!isUserSignedIn) {
-                        navController.navigate(NAV_ROUTE_AUTH) {
+                        appState.navController.navigate(NAV_ROUTE_AUTH) {
                             launchSingleTop = true
                             popUpTo("Test") { inclusive = true }
                         }
@@ -130,7 +133,7 @@ fun StrenApp(modifier: Modifier, viewModel: StrenAppViewModel = hiltViewModel())
                             .background(color = Color.Green)
                     )
                     if (!isUserSignedIn) {
-                        navController.navigate(NAV_ROUTE_AUTH) {
+                        appState.navController.navigate(NAV_ROUTE_AUTH) {
                             launchSingleTop = true
                             popUpTo("Test") { inclusive = true }
                         }
