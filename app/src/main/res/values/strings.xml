@@ -10,5 +10,10 @@
     <string name="facebook_client_token">***REMOVED***</string>
     <string name="your_web_client_id">***REMOVED***</string>
 
+    <string name="bottom_nav_title_dashboard">Dashboard</string>
+    <string name="bottom_nav_title_training">Training</string>
+    <string name="bottom_nav_title_nutrition">Nutrition</string>
+    <string name="bottom_nav_title_profile">Profile</string>
+
 
 </resources>
