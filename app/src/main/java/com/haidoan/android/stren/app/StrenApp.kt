@@ -18,7 +18,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.haidoan.android.stren.designsystem.component.BottomNavigationBar
 import com.haidoan.android.stren.navigation.NAV_ROUTE_AUTH
+import com.haidoan.android.stren.navigation.TopLevelDestination
 import com.haidoan.android.stren.navigation.authenticationGraph
 
 private const val TAG = "StrenApp"
@@ -36,7 +38,12 @@ fun StrenApp(modifier: Modifier, viewModel: StrenAppViewModel = hiltViewModel())
     CompositionLocalProvider(
         LocalSnackbarHostState provides snackbarHostState
     ) {
-        Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) {
+        Scaffold(
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+            bottomBar = {
+                BottomNavigationBar(navController)
+            }
+        ) {
             AnimatedNavHost(
                 navController = navController,
                 startDestination = NAV_ROUTE_AUTH,
@@ -70,18 +77,57 @@ fun StrenApp(modifier: Modifier, viewModel: StrenAppViewModel = hiltViewModel())
                     navController,
                     onUserAlreadySignedIn = {
                         if (isUserSignedIn) {
-                            navController.navigate("Test") {
+                            navController.navigate(TopLevelDestination.DASHBOARD.route) {
                                 launchSingleTop = true
                                 popUpTo(NAV_ROUTE_AUTH) { inclusive = true }
                             }
                         }
                     },
                 )
-                composable(route = "Test") {
+                composable(route = TopLevelDestination.DASHBOARD.route) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(color = Color.Black)
+                    )
+                    if (!isUserSignedIn) {
+                        navController.navigate(NAV_ROUTE_AUTH) {
+                            launchSingleTop = true
+                            popUpTo("Test") { inclusive = true }
+                        }
+                    }
+                }
+                composable(route = TopLevelDestination.TRAINING.route) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color = Color.Red)
+                    )
+                    if (!isUserSignedIn) {
+                        navController.navigate(NAV_ROUTE_AUTH) {
+                            launchSingleTop = true
+                            popUpTo("Test") { inclusive = true }
+                        }
+                    }
+                }
+                composable(route = TopLevelDestination.NUTRITION.route) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color = Color.Yellow)
+                    )
+                    if (!isUserSignedIn) {
+                        navController.navigate(NAV_ROUTE_AUTH) {
+                            launchSingleTop = true
+                            popUpTo("Test") { inclusive = true }
+                        }
+                    }
+                }
+                composable(route = TopLevelDestination.PROFILE.route) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color = Color.Green)
                     )
                     if (!isUserSignedIn) {
                         navController.navigate(NAV_ROUTE_AUTH) {
