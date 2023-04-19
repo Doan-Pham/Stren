@@ -4,7 +4,9 @@ package com.haidoan.android.stren.designsystem.component
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -15,6 +17,8 @@ import com.haidoan.android.stren.designsystem.theme.Gray60
 import com.haidoan.android.stren.designsystem.theme.poppins
 import com.haidoan.android.stren.navigation.TopLevelDestination
 
+const val TEST_TAG_BOTTOM_NAV = "Bottom Navigation Bar"
+
 @Composable
 fun BottomNavigationBar(
     navController: NavController
@@ -23,7 +27,7 @@ fun BottomNavigationBar(
     val currentRoute = navBackStackEntry?.destination?.route
     val destinations = TopLevelDestination.values().asList()
 
-    NavigationBar(containerColor = Color.White) {
+    NavigationBar(modifier = Modifier.testTag(TEST_TAG_BOTTOM_NAV), containerColor = Color.White) {
         destinations.forEach { destination ->
             NavigationBarItem(
                 icon = {
