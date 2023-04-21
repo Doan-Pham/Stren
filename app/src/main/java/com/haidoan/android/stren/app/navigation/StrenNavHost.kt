@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -14,9 +15,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
-import com.haidoan.android.stren.navigation.NAV_ROUTE_AUTH
-import com.haidoan.android.stren.navigation.TopLevelDestination
-import com.haidoan.android.stren.navigation.authenticationGraph
+import com.google.firebase.auth.FirebaseAuth
+import com.haidoan.android.stren.app.navigation.TopLevelDestination
+import com.haidoan.android.stren.feat.auth.NAV_ROUTE_AUTH
+import com.haidoan.android.stren.feat.auth.authenticationGraph
+import com.haidoan.android.stren.feat.auth.navigateToAuthentication
 
 private const val TAG = "StrenNavHost"
 
@@ -56,17 +59,7 @@ fun StrenNavHost(
             )
         }
     ) {
-        authenticationGraph(
-            navController,
-            onUserAlreadySignedIn = {
-                if (isUserSignedIn) {
-                    navController.navigate(TopLevelDestination.DASHBOARD.route) {
-                        launchSingleTop = true
-                        popUpTo(NAV_ROUTE_AUTH) { inclusive = true }
-                    }
-                }
-            },
-        )
+        authenticationGraph(navController)
         composable(route = TopLevelDestination.DASHBOARD.route) {
             Box(
                 modifier = Modifier
@@ -74,12 +67,6 @@ fun StrenNavHost(
                     .background(color = Color.Black)
                     .testTag("Screen-Dashboard")
             )
-            if (!isUserSignedIn) {
-                navController.navigate(NAV_ROUTE_AUTH) {
-                    launchSingleTop = true
-                    popUpTo("Test") { inclusive = true }
-                }
-            }
         }
         composable(route = TopLevelDestination.TRAINING.route) {
             Box(
@@ -87,12 +74,6 @@ fun StrenNavHost(
                     .fillMaxSize()
                     .background(color = Color.Red)
             )
-            if (!isUserSignedIn) {
-                navController.navigate(NAV_ROUTE_AUTH) {
-                    launchSingleTop = true
-                    popUpTo("Test") { inclusive = true }
-                }
-            }
         }
         composable(route = TopLevelDestination.NUTRITION.route) {
             Box(
@@ -100,29 +81,29 @@ fun StrenNavHost(
                     .fillMaxSize()
                     .background(color = Color.Yellow)
             )
-            if (!isUserSignedIn) {
-                navController.navigate(NAV_ROUTE_AUTH) {
-                    launchSingleTop = true
-                    popUpTo("Test") { inclusive = true }
-                }
-            }
         }
         composable(route = TopLevelDestination.PROFILE.route) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(color = Color.Green)
+                    .clickable {
+                        FirebaseAuth
+                            .getInstance()
+                            .signOut()
+                    }
             )
-            if (!isUserSignedIn) {
-                navController.navigate(NAV_ROUTE_AUTH) {
-                    launchSingleTop = true
-                    popUpTo("Test") { inclusive = true }
-                }
-            }
         }
     }
 
     if (isUserSignedIn) {
-        navController.navigate(TopLevelDestination.DASHBOARD.route)
+        navController.navigate(TopLevelDestination.DASHBOARD.route) {
+            popUpTo(0)
+        }
+    } else {
+        navController.navigateToAuthentication {
+            // This removes all screens on back stack
+            popUpTo(0)
+        }
     }
 }
