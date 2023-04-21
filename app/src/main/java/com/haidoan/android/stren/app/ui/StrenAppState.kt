@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.app
+package com.haidoan.android.stren.app.ui
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
@@ -7,7 +7,7 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.haidoan.android.stren.navigation.TopLevelDestination
+import com.haidoan.android.stren.app.navigation.TopLevelDestination
 
 
 @OptIn(ExperimentalAnimationApi::class)

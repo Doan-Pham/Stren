@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.designsystem.theme
+package com.haidoan.android.stren.core.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 
