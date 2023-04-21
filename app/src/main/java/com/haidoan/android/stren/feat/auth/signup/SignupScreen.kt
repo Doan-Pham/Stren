@@ -29,13 +29,15 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.LocalSnackbarHostState
-import com.haidoan.android.stren.designsystem.theme.Red40
-import com.haidoan.android.stren.designsystem.theme.Red50
+import com.haidoan.android.stren.core.designsystem.theme.Red40
+import com.haidoan.android.stren.core.designsystem.theme.Red50
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+internal const val SIGNUP_SCREEN_ROUTE = "signup_screen_route"
+
 @Composable
-fun SignupScreen(
+internal fun SignupScreen(
     onCreateAccountSuccess: () -> Unit,
     onSignInClick: () -> Unit,
     viewModel: SignupViewModel = hiltViewModel()
