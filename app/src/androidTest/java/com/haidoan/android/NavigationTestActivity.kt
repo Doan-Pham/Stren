@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,7 +31,11 @@ class NavigationTestActivity : ComponentActivity() {
         installSplashScreen()
 
         super.onCreate(savedInstanceState)
-
+        val viewModel: StrenAppViewModel by viewModels {
+            StrenAppViewModel.Factory(
+                fakeAuthenticationServiceImpl
+            )
+        }
         setContent {
             StrenTheme {
                 CompositionLocalProvider(
@@ -40,7 +45,7 @@ class NavigationTestActivity : ComponentActivity() {
                     Log.d(TAG, "isUserSignedIn: $isUserSignedIn")
                     fakeAuthenticationServiceImpl.isUserSignedIn = isUserSignedIn
 
-                    StrenApp(viewModel = StrenAppViewModel(fakeAuthenticationServiceImpl))
+                    StrenApp(viewModel = viewModel)
                 }
             }
         }
