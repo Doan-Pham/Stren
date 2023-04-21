@@ -32,7 +32,11 @@ fun StrenApp(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             bottomBar = {
                 if (appState.shouldShowBottomBar) {
-                    BottomNavigationBar(appState.navController)
+                    BottomNavigationBar(
+                        destinations = appState.topLevelDestinations,
+                        currentDestination = appState.currentDestination,
+                        onNavigateToDestination = appState::navigateToTopLevelDestination
+                    )
                 }
             }
         ) {
