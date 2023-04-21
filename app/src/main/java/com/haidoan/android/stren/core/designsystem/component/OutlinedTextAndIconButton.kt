@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.designsystem.component
+package com.haidoan.android.stren.core.designsystem.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -15,7 +15,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.haidoan.android.stren.R
-import com.haidoan.android.stren.designsystem.theme.Gray90
+import com.haidoan.android.stren.core.designsystem.theme.Gray90
 
 @Composable
 fun OutlinedTextAndIconButton(

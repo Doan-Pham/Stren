@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.navigation
+package com.haidoan.android.stren.app.navigation
 
 import com.haidoan.android.stren.R
 

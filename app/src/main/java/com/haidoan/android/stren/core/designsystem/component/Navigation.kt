@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.designsystem.component
+package com.haidoan.android.stren.core.designsystem.component
 
 
 import androidx.compose.material3.*
@@ -13,9 +13,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.haidoan.android.stren.designsystem.theme.Gray60
-import com.haidoan.android.stren.designsystem.theme.poppins
-import com.haidoan.android.stren.navigation.TopLevelDestination
+import com.haidoan.android.stren.app.navigation.TopLevelDestination
+import com.haidoan.android.stren.core.designsystem.theme.Gray60
+import com.haidoan.android.stren.core.designsystem.theme.poppins
 
 const val TEST_TAG_BOTTOM_NAV = "Bottom Navigation Bar"
 
