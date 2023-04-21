@@ -20,11 +20,13 @@ fun rememberStrenAppState(
 
 class StrenAppState(val navController: NavHostController) {
 
+    val topLevelDestinations = TopLevelDestination.values().asList()
+
     val currentDestination: NavDestination?
         @Composable get() = navController
             .currentBackStackEntryAsState().value?.destination
 
-    val currentTopLevelDestination: TopLevelDestination?
+    private val currentTopLevelDestination: TopLevelDestination?
         @Composable get() = when (currentDestination?.route) {
             TopLevelDestination.DASHBOARD.route -> TopLevelDestination.DASHBOARD
             TopLevelDestination.TRAINING.route -> TopLevelDestination.TRAINING
@@ -32,6 +34,19 @@ class StrenAppState(val navController: NavHostController) {
             TopLevelDestination.PROFILE.route -> TopLevelDestination.PROFILE
             else -> null
         }
+
+    private val startingTopLevelDestination = TopLevelDestination.DASHBOARD
+
+    fun navigateToTopLevelDestination(topLevelDestination: TopLevelDestination) {
+        navController.navigate(topLevelDestination.route) {
+            popUpTo(startingTopLevelDestination.route) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+
+    }
 
     val shouldShowBottomBar: Boolean
         @Composable get() = currentTopLevelDestination != null
