@@ -4,17 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.facebook.CallbackManager
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.haidoan.android.stren.R
-import com.haidoan.android.stren.designsystem.theme.StrenTheme
+import com.haidoan.android.stren.core.designsystem.theme.StrenTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 val LocalFacebookCallbackManager =
@@ -57,7 +55,7 @@ class MainActivity : ComponentActivity() {
                     LocalFacebookCallbackManager provides facebookCallbackManager,
                     LocalActivityResultRegistryOwner provides this
                 ) {
-                    StrenApp(modifier = Modifier.fillMaxSize())
+                    StrenApp()
                 }
             }
         }
