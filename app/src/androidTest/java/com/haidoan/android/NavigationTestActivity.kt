@@ -15,8 +15,8 @@ import com.facebook.CallbackManager
 import com.haidoan.android.stren.app.LocalFacebookCallbackManager
 import com.haidoan.android.stren.app.StrenApp
 import com.haidoan.android.stren.app.StrenAppViewModel
+import com.haidoan.android.stren.core.designsystem.theme.StrenTheme
 import com.haidoan.android.stren.core.service.FakeAuthenticationServiceImpl
-import com.haidoan.android.stren.designsystem.theme.StrenTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 private const val TAG = "NavigationTestActivity"

@@ -1,17 +1,14 @@
 package com.haidoan.android.app.navigation
 
 import android.content.Context
-import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.navigation.testing.TestNavHostController
+import androidx.test.espresso.Espresso
 import androidx.test.platform.app.InstrumentationRegistry
 import com.haidoan.android.NavigationTestActivity
-import com.haidoan.android.stren.R
-import com.haidoan.android.stren.designsystem.component.TEST_TAG_BOTTOM_NAV
+import com.haidoan.android.stren.app.navigation.TopLevelDestination
+import com.haidoan.android.stren.core.designsystem.component.TEST_TAG_BOTTOM_NAV
 import com.haidoan.android.stren.feat.auth.login.TEST_TAG_SCREEN_LOGIN
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -31,13 +28,16 @@ class NavigationTest {
 
 
     val composeTestRule = createAndroidComposeRule<NavigationTestActivity>()
-    lateinit var navController: TestNavHostController
 
     private val context: Context = InstrumentationRegistry.getInstrumentation().targetContext
-    val dashboardLabel = context.resources.getString(R.string.bottom_nav_title_dashboard)
-    val trainingLabel = context.resources.getString(R.string.bottom_nav_title_training)
-    val nutritionLabel = context.resources.getString(R.string.bottom_nav_title_nutrition)
-    val profileLabel = context.resources.getString(R.string.bottom_nav_title_profile)
+    private val dashboardBottomNavItem =
+        context.resources.getString(TopLevelDestination.DASHBOARD.titleTextId)
+    private val trainingBottomNavItem =
+        context.resources.getString(TopLevelDestination.TRAINING.titleTextId)
+    private val nutritionBottomNavItem =
+        context.resources.getString(TopLevelDestination.NUTRITION.titleTextId)
+    private val profileBottomNavItem =
+        context.resources.getString(TopLevelDestination.PROFILE.titleTextId)
 
 
     @Before
@@ -73,6 +73,26 @@ class NavigationTest {
             waitUntil { onAllNodesWithTag(TEST_TAG_BOTTOM_NAV).fetchSemanticsNodes().size == 1 }
             activity.isUserSignedIn = false
             onNodeWithTag(TEST_TAG_SCREEN_LOGIN).assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun bottomNavBar_backFromAnyDestination_returnsToDashboard() {
+        composeTestRule.apply {
+            activity.isUserSignedIn = true
+            waitUntil { onAllNodesWithTag(TEST_TAG_BOTTOM_NAV).fetchSemanticsNodes().size == 1 }
+
+            // GIVEN the user navigated to some destinations
+            onNodeWithText(trainingBottomNavItem).performClick()
+            onNodeWithText(nutritionBottomNavItem).performClick()
+            onNodeWithText(profileBottomNavItem).performClick()
+            onNodeWithText(nutritionBottomNavItem).performClick()
+
+            // WHEN the user uses the system button/gesture to go back,
+            Espresso.pressBack()
+
+            // THEN the app shows the Dashboard destination
+            onNodeWithText(dashboardBottomNavItem).assertIsSelected()
         }
     }
 
