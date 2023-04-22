@@ -3,6 +3,7 @@ package com.haidoan.android.stren.app
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.haidoan.android.stren.core.service.AuthenticationService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -27,6 +28,18 @@ class StrenAppViewModel @Inject constructor(
                 Log.d(TAG, "stateListen - isUserSignedIn: ${isUserSignedIn.value}")
 
             })
-        Log.d(TAG, "init() - isUserSignedIn: ${isUserSignedIn.value}")
+    }
+
+    class Factory(
+        private val authenticationService: AuthenticationService
+    ) :
+        ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(StrenAppViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return StrenAppViewModel(authenticationService) as T
+            }
+            throw IllegalArgumentException("Unable to construct viewmodel")
+        }
     }
 }

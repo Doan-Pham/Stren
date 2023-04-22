@@ -10,5 +10,10 @@
     <string name="facebook_client_token">9421f2b1e585a290d358fcd9babd6cae</string>
     <string name="your_web_client_id">943688591214-glcdmni8r07h3n3osa74jq32galm1k00.apps.googleusercontent.com</string>
 
+    <string name="bottom_nav_title_dashboard">Dashboard</string>
+    <string name="bottom_nav_title_training">Training</string>
+    <string name="bottom_nav_title_nutrition">Nutrition</string>
+    <string name="bottom_nav_title_profile">Profile</string>
+
 
 </resources>
