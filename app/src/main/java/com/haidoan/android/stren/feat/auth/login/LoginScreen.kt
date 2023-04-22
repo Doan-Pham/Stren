@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -32,20 +33,20 @@ import com.facebook.login.LoginResult
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.LocalFacebookCallbackManager
 import com.haidoan.android.stren.app.LocalSnackbarHostState
-import com.haidoan.android.stren.designsystem.component.OutlinedTextAndIconButton
-import com.haidoan.android.stren.designsystem.theme.Red40
-import com.haidoan.android.stren.designsystem.theme.Red50
+import com.haidoan.android.stren.core.designsystem.component.OutlinedTextAndIconButton
+import com.haidoan.android.stren.core.designsystem.theme.Red40
+import com.haidoan.android.stren.core.designsystem.theme.Red50
 import com.stevdzasan.onetap.OneTapSignInWithGoogle
 import com.stevdzasan.onetap.rememberOneTapSignInState
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val TAG = "LoginScreen"
+internal const val LOGIN_SCREEN_ROUTE = "login_screen_route"
+const val TEST_TAG_SCREEN_LOGIN = "Screen-Login"
 
 @Composable
-fun LoginScreen(
+internal fun LoginScreen(
     onSignupClick: () -> Unit,
-    onAuthSuccess: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState
@@ -73,8 +74,6 @@ fun LoginScreen(
                 )
                 viewModel.resetAuthState()
             }
-            delay(300)
-            onAuthSuccess()
         }
     }
 
@@ -83,6 +82,7 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp)
+            .testTag(TEST_TAG_SCREEN_LOGIN)
     ) {
         Text(
             modifier = Modifier
@@ -265,7 +265,7 @@ fun LoginScreen(
 }
 
 @Composable
-fun GoogleSignInButton(onTokenIdReceived: (String) -> Unit, modifier: Modifier = Modifier) {
+private fun GoogleSignInButton(onTokenIdReceived: (String) -> Unit, modifier: Modifier = Modifier) {
     val oneTapSignInState = rememberOneTapSignInState()
     OneTapSignInWithGoogle(state = oneTapSignInState,
         clientId = stringResource(id = R.string.your_web_client_id),
@@ -286,7 +286,10 @@ fun GoogleSignInButton(onTokenIdReceived: (String) -> Unit, modifier: Modifier =
 }
 
 @Composable
-fun FacebookSignInButton(onAuthSuccess: (LoginResult) -> Unit, modifier: Modifier = Modifier) {
+private fun FacebookSignInButton(
+    onAuthSuccess: (LoginResult) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val callbackManager = LocalFacebookCallbackManager.current
     DisposableEffect(Unit) {
         LoginManager.getInstance()
