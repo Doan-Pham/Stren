@@ -1,6 +1,7 @@
 package com.haidoan.android.stren.app.navigation
 
 import com.haidoan.android.stren.R
+import com.haidoan.android.stren.feat.trainining.TRAINING_GRAPH_ROUTE
 
 enum class TopLevelDestination(
     val route: String,
@@ -15,7 +16,7 @@ enum class TopLevelDestination(
         descriptionTextId = R.string.bottom_nav_title_dashboard
     ),
     TRAINING(
-        route = "training_screen",
+        route = TRAINING_GRAPH_ROUTE,
         iconDrawableId = R.drawable.ic_training,
         titleTextId = R.string.bottom_nav_title_training,
         descriptionTextId = R.string.bottom_nav_title_training

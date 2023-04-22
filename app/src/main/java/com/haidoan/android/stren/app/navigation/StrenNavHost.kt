@@ -20,6 +20,7 @@ import com.haidoan.android.stren.app.navigation.TopLevelDestination
 import com.haidoan.android.stren.feat.auth.NAV_ROUTE_AUTH
 import com.haidoan.android.stren.feat.auth.authenticationGraph
 import com.haidoan.android.stren.feat.auth.navigateToAuthentication
+import com.haidoan.android.stren.feat.trainining.trainingGraph
 
 private const val TAG = "StrenNavHost"
 
@@ -68,13 +69,7 @@ fun StrenNavHost(
                     .testTag("Screen-Dashboard")
             )
         }
-        composable(route = TopLevelDestination.TRAINING.route) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color = Color.Red)
-            )
-        }
+        trainingGraph()
         composable(route = TopLevelDestination.NUTRITION.route) {
             Box(
                 modifier = Modifier
