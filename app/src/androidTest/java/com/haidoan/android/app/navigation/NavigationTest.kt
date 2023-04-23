@@ -9,6 +9,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.haidoan.android.NavigationTestActivity
 import com.haidoan.android.stren.app.navigation.TopLevelDestination
 import com.haidoan.android.stren.core.designsystem.component.TEST_TAG_BOTTOM_NAV
+import com.haidoan.android.stren.core.designsystem.component.TEST_TAG_TOP_BAR
 import com.haidoan.android.stren.feat.auth.login.TEST_TAG_SCREEN_LOGIN
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -96,6 +97,28 @@ class NavigationTest {
         }
     }
 
+    @Test
+    fun topAppBar_navigateToNonAuthDestination_isShown() {
+        composeTestRule.apply {
+            // Top app bar should not be shown in authentication destinations
+            activity.isUserSignedIn = false
+            onNodeWithTag(TEST_TAG_TOP_BAR).assertDoesNotExist()
+
+            // Otherwise, Top app bar should be shown
+            activity.isUserSignedIn = true
+            waitUntil { onAllNodesWithTag(TEST_TAG_BOTTOM_NAV).fetchSemanticsNodes().size == 1 }
+            onNodeWithTag(TEST_TAG_TOP_BAR).assertIsDisplayed()
+
+            onNodeWithText(trainingBottomNavItem).performClick()
+            onNodeWithText(nutritionBottomNavItem).performClick()
+            onNodeWithTag(TEST_TAG_TOP_BAR).assertIsDisplayed()
+
+            // TODO: Add test cases where use navigates to destinations in nested graph
+        }
+
+        //TODO: Test app bar's icon in top-level/non-top-level destinations
+        //TODO: Test app bar's icon in ProfileScreen
+    }
 }
 
 fun ComposeContentTestRule.waitUntilTimeout(
