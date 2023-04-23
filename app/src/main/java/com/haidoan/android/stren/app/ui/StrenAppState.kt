@@ -50,4 +50,7 @@ class StrenAppState(val navController: NavHostController) {
 
     val shouldShowBottomBar: Boolean
         @Composable get() = currentDestination.isTopLevelOrTopLevelImmediateChild()
+
+    val shouldShowTopBar: Boolean
+        @Composable get() = currentTopLevelDestination != null
 }

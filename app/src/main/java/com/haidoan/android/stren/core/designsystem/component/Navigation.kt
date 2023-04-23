@@ -1,20 +1,47 @@
 package com.haidoan.android.stren.core.designsystem.component
 
 
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.TopLevelDestination
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.designsystem.theme.poppins
 
 const val TEST_TAG_BOTTOM_NAV = "Navigation-Bottom-Bar"
+const val TEST_TAG_TOP_BAR = "Navigation-Top-Bar"
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StrenTopAppBar(modifier: Modifier = Modifier, title: String) {
+    TopAppBar(
+        modifier = modifier, title = {
+            Row {
+                Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
+                Text(title)
+            }
+        },
+        navigationIcon = {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_app_logo_no_padding),
+                contentDescription = "App logo",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large))
+            )
+        }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+    )
+}
 
 @Composable
 fun BottomNavigationBar(
