@@ -32,7 +32,7 @@ import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.LocalFacebookCallbackManager
-import com.haidoan.android.stren.app.LocalSnackbarHostState
+import com.haidoan.android.stren.app.ui.LocalSnackbarHostState
 import com.haidoan.android.stren.core.designsystem.component.OutlinedTextAndIconButton
 import com.haidoan.android.stren.core.designsystem.theme.Red40
 import com.haidoan.android.stren.core.designsystem.theme.Red50

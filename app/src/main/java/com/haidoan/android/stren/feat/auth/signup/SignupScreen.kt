@@ -28,7 +28,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.haidoan.android.stren.R
-import com.haidoan.android.stren.app.LocalSnackbarHostState
+import com.haidoan.android.stren.app.ui.LocalSnackbarHostState
 import com.haidoan.android.stren.core.designsystem.theme.Red40
 import com.haidoan.android.stren.core.designsystem.theme.Red50
 import kotlinx.coroutines.delay

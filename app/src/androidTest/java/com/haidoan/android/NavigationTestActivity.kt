@@ -13,8 +13,8 @@ import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.facebook.CallbackManager
 import com.haidoan.android.stren.app.LocalFacebookCallbackManager
-import com.haidoan.android.stren.app.StrenApp
 import com.haidoan.android.stren.app.StrenAppViewModel
+import com.haidoan.android.stren.app.ui.StrenApp
 import com.haidoan.android.stren.core.designsystem.theme.StrenTheme
 import com.haidoan.android.stren.core.service.FakeAuthenticationServiceImpl
 import dagger.hilt.android.AndroidEntryPoint
