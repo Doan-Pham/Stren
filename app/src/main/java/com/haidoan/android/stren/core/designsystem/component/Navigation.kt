@@ -10,7 +10,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavDestination
 import com.haidoan.android.stren.app.navigation.TopLevelDestination
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.designsystem.theme.poppins
@@ -21,7 +20,7 @@ const val TEST_TAG_BOTTOM_NAV = "Navigation-Bottom-Bar"
 fun BottomNavigationBar(
     modifier: Modifier = Modifier,
     destinations: List<TopLevelDestination>,
-    currentDestination: NavDestination?,
+    currentTopLevelDestination: TopLevelDestination?,
     onNavigateToDestination: (TopLevelDestination) -> Unit,
 ) {
 
@@ -51,7 +50,7 @@ fun BottomNavigationBar(
                     indicatorColor = Color.White,
                 ),
                 alwaysShowLabel = true,
-                selected = currentDestination?.route == destination.route,
+                selected = destination.route == currentTopLevelDestination?.route,
                 onClick = { onNavigateToDestination(destination) }
             )
         }

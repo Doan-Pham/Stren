@@ -7,6 +7,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.haidoan.android.stren.app.navigation.StrenNavHost
 import com.haidoan.android.stren.app.ui.StrenAppState
 import com.haidoan.android.stren.app.ui.rememberStrenAppState
 import com.haidoan.android.stren.core.designsystem.component.BottomNavigationBar
@@ -34,7 +35,7 @@ fun StrenApp(
                 if (appState.shouldShowBottomBar) {
                     BottomNavigationBar(
                         destinations = appState.topLevelDestinations,
-                        currentDestination = appState.currentDestination,
+                        currentTopLevelDestination = appState.currentTopLevelDestination,
                         onNavigateToDestination = appState::navigateToTopLevelDestination
                     )
                 }
