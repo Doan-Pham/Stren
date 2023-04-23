@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -90,14 +91,16 @@ fun StrenNavHost(
         }
     }
 
-    if (isUserSignedIn) {
-        navController.navigate(TopLevelDestination.DASHBOARD.route) {
-            popUpTo(0)
+    LaunchedEffect(key1 = isUserSignedIn, block = {
+        if (isUserSignedIn) {
+            navController.navigate(TopLevelDestination.DASHBOARD.route) {
+                popUpTo(0)
+            }
+        } else {
+            navController.navigateToAuthentication {
+                // This removes all screens on back stack
+                popUpTo(0)
+            }
         }
-    } else {
-        navController.navigateToAuthentication {
-            // This removes all screens on back stack
-            popUpTo(0)
-        }
-    }
+    })
 }
