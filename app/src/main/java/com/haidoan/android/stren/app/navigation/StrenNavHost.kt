@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.app
+package com.haidoan.android.stren.app.navigation
 
 import android.util.Log
 import androidx.compose.animation.AnimatedContentScope
@@ -16,7 +16,6 @@ import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.firebase.auth.FirebaseAuth
-import com.haidoan.android.stren.app.navigation.TopLevelDestination
 import com.haidoan.android.stren.feat.auth.NAV_ROUTE_AUTH
 import com.haidoan.android.stren.feat.auth.authenticationGraph
 import com.haidoan.android.stren.feat.auth.navigateToAuthentication

@@ -8,13 +8,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.*
 import com.google.accompanist.navigation.animation.composable
+import com.haidoan.android.stren.feat.trainining.exercises.EXERCISES_SCREEN_ROUTE
 
 const val TRAINING_GRAPH_ROUTE = "training_graph_route"
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.trainingGraph() {
-    navigation(startDestination = "Exercises_Screen", route = TRAINING_GRAPH_ROUTE) {
-        composable(route = "Exercises_Screen") {
+    navigation(startDestination = EXERCISES_SCREEN_ROUTE, route = TRAINING_GRAPH_ROUTE) {
+        composable(route = EXERCISES_SCREEN_ROUTE) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()

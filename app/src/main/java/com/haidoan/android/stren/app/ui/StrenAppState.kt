@@ -26,14 +26,10 @@ class StrenAppState(val navController: NavHostController) {
         @Composable get() = navController
             .currentBackStackEntryAsState().value?.destination
 
-    private val currentTopLevelDestination: TopLevelDestination?
-        @Composable get() = when (currentDestination?.route) {
-            TopLevelDestination.DASHBOARD.route -> TopLevelDestination.DASHBOARD
-            TopLevelDestination.TRAINING.route -> TopLevelDestination.TRAINING
-            TopLevelDestination.NUTRITION.route -> TopLevelDestination.NUTRITION
-            TopLevelDestination.PROFILE.route -> TopLevelDestination.PROFILE
-            else -> null
-        }
+    private fun NavDestination?.isTopLevelOrTopLevelImmediateChild() =
+        topLevelDestinations.map { it.route }.contains(this?.route) ||
+                topLevelDestinations.flatMap { it.immediateChildDestinationRoutes }
+                    .contains(this?.route)
 
     private val startingTopLevelDestination = TopLevelDestination.DASHBOARD
 
@@ -49,5 +45,5 @@ class StrenAppState(val navController: NavHostController) {
     }
 
     val shouldShowBottomBar: Boolean
-        @Composable get() = currentTopLevelDestination != null
+        @Composable get() = currentDestination.isTopLevelOrTopLevelImmediateChild()
 }
