@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.TopLevelDestination
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
+import com.haidoan.android.stren.core.designsystem.theme.Red80
 import com.haidoan.android.stren.core.designsystem.theme.poppins
 
 const val TEST_TAG_BOTTOM_NAV = "Navigation-Bottom-Bar"
@@ -51,7 +52,7 @@ fun BottomNavigationBar(
     onNavigateToDestination: (TopLevelDestination) -> Unit,
 ) {
 
-    NavigationBar(modifier = modifier.testTag(TEST_TAG_BOTTOM_NAV), containerColor = Color.White) {
+    NavigationBar(modifier = modifier.testTag(TEST_TAG_BOTTOM_NAV), containerColor = Color.Transparent) {
         destinations.forEach { destination ->
             NavigationBarItem(
                 icon = {
