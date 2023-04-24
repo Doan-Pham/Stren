@@ -7,11 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import com.haidoan.android.stren.feat.trainining.TrainingTabsScreen
 import org.junit.Rule
 import org.junit.Test
@@ -40,15 +37,22 @@ class TrainingTabsScreenTest {
         composeTestRule.setContent {
             BoxWithConstraints {
                 TrainingTabsScreen(tabsNameAndScreensTestTag.map {
-                    Pair(
-                        it.first,
-                        FakeScreen(testTag = it.second)
-                    )
+                    Pair(it.first) { FakeScreen(testTag = it.second) }
                 })
             }
         }
         tabsNameAndScreensTestTag.forEach { pair ->
             composeTestRule.onNodeWithText(pair.first).performClick()
+            // All other screens shouldn't be displayed
+            tabsNameAndScreensTestTag.filter { it.first != pair.first }.forEach { otherPair ->
+                if (composeTestRule.onAllNodesWithTag(otherPair.second).fetchSemanticsNodes()
+                        .isNotEmpty()
+                ) {
+                    composeTestRule.onAllNodesWithTag(otherPair.second).onFirst()
+                        .assertIsNotDisplayed()
+                }
+            }
+            // Only the correct screen is displayed
             composeTestRule.onNodeWithTag(pair.second).assertIsDisplayed()
         }
     }
