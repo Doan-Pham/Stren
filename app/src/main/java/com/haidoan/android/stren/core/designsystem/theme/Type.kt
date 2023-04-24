@@ -48,27 +48,25 @@ val Typography = Typography(
         fontWeight = FontWeight.Bold,
         fontSize = 18.sp,
         lineHeight = 24.sp,
-        letterSpacing = 0.1.sp,
     ),
     titleSmall = TextStyle(
         fontFamily = poppins,
         fontWeight = FontWeight.Bold,
         fontSize = 14.sp,
         lineHeight = 20.sp,
-        letterSpacing = 0.1.sp,
     ),
     bodyLarge = TextStyle(
         fontFamily = poppins,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
-        lineHeight = 24.sp,
+        lineHeight = 16.sp,
         letterSpacing = 0.5.sp,
     ),
     bodyMedium = TextStyle(
         fontFamily = poppins,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
-        lineHeight = 20.sp,
+        lineHeight = 16.sp,
         letterSpacing = 0.25.sp,
     ),
     bodySmall = TextStyle(
@@ -82,8 +80,8 @@ val Typography = Typography(
         fontFamily = poppins,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
-        lineHeight = 20.sp,
-        letterSpacing = 0.1.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.5.sp,
     ),
     labelMedium = TextStyle(
         fontFamily = poppins,
@@ -97,6 +95,6 @@ val Typography = Typography(
         fontWeight = FontWeight.Normal,
         fontSize = 10.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.sp,
+        letterSpacing = 0.5.sp,
     ),
 )
