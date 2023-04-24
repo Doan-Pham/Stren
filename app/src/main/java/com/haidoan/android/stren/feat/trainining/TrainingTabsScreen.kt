@@ -18,7 +18,7 @@ private const val TAG = "TrainingTabsScreen"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TrainingTabsScreen(tabNamesAndScreenComposables: List<Pair<String, Unit>>) {
+fun TrainingTabsScreen(tabNamesAndScreenComposables: List<Pair<String, @Composable () -> Unit>>) {
     // on below line we are creating variable for pager state.
     val pagerState = rememberPagerState(initialPage = 0)
     val tabIndex = pagerState.currentPage
@@ -56,8 +56,7 @@ fun TrainingTabsScreen(tabNamesAndScreenComposables: List<Pair<String, Unit>>) {
             state = pagerState,
             pageCount = tabNamesAndScreenComposables.size
         ) { page ->
-            tabNamesAndScreenComposables[page].second
+            tabNamesAndScreenComposables[page].second()
         }
     }
-
 }

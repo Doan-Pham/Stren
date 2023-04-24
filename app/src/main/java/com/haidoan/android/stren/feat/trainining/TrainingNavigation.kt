@@ -4,6 +4,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.navigation.*
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
+import com.haidoan.android.stren.core.designsystem.component.DummyBoxWithText
 import com.haidoan.android.stren.feat.trainining.exercises.EXERCISES_SCREEN_ROUTE
 import com.haidoan.android.stren.feat.trainining.exercises.ExercisesRoute
 
@@ -18,9 +19,9 @@ fun NavGraphBuilder.trainingGraph() {
 
             TrainingTabsScreen(
                 tabNamesAndScreenComposables = listOf(
-                    Pair("Exercises", ExercisesRoute()),
-                    Pair("History", ExercisesRoute()),
-                    Pair("Routines", ExercisesRoute())
+                    Pair("Exercises") { ExercisesRoute() },
+                    Pair("History") { DummyBoxWithText(text = "History") },
+                    Pair("Routines") { DummyBoxWithText(text = "Routines") },
                 )
             )
         }
