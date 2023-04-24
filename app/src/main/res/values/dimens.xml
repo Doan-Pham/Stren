@@ -11,5 +11,5 @@
     <dimen name="icon_size_small">16dp</dimen>
     <dimen name="icon_size_medium">24dp</dimen>
     <dimen name="icon_size_large">32dp</dimen>
-    <dimen name="icon_size_extra_large">56dp</dimen>
+    <dimen name="icon_size_extra_large">48dp</dimen>
 </resources>

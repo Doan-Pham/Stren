@@ -1,15 +1,19 @@
 package com.haidoan.android.stren.feat.trainining.exercises
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.core.designsystem.component.LoadingAnimation
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
@@ -65,10 +69,17 @@ private fun ExerciseItem(modifier: Modifier = Modifier, exercise: Exercise) {
             .padding(dimensionResource(id = R.dimen.padding_small)),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large)),
-            painter = painterResource(id = R.drawable.ic_training),
-            contentDescription = "An exercise image"
+        AsyncImage(
+            model = "https://static.strengthlevel.com/images/illustrations/bench-press-1000x1000.jpg",
+            modifier = Modifier
+                .size(dimensionResource(id = R.dimen.icon_size_extra_large))
+                .clip(
+                    RoundedCornerShape(6.dp)
+                ),
+            placeholder = painterResource(id = R.drawable.ic_app_logo_no_padding),
+            error = painterResource(id = R.drawable.ic_app_logo_no_padding),
+            contentDescription = "An exercise image",
+            contentScale = ContentScale.Crop
         )
         Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
         Column {
