@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ContentAlpha
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -218,7 +217,7 @@ internal fun SignupScreen(
                                 colors = listOf(
                                     Red40, Red50
                                 )
-                            ), alpha = if (uiState.isInputValid) 1f else ContentAlpha.disabled
+                            ), alpha = if (uiState.isInputValid) 1f else 0.3f
                         )
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 12.dp),
