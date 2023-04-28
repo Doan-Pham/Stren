@@ -20,6 +20,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.haidoan.android.stren.R
+import com.haidoan.android.stren.app.navigation.AppBarConfiguration
+import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.component.LoadingAnimation
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.model.Exercise
@@ -31,9 +33,24 @@ const val EXERCISES_EXERCISE_LIST_TEST_TAG = "List-Exercises"
 @Composable
 internal fun ExercisesRoute(
     modifier: Modifier = Modifier,
-    viewModel: ExercisesViewModel = hiltViewModel()
+    viewModel: ExercisesViewModel = hiltViewModel(),
+    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val exercisesAppBarConfiguration = AppBarConfiguration(
+        actionIcons =
+        listOf(
+            IconButtonInfo(
+                drawableResourceId = R.drawable.ic_nutrition,
+                description = "MenuItem-Search",
+                clickHandler = {}),
+            IconButtonInfo(
+                drawableResourceId = R.drawable.ic_dashboard,
+                description = "MenuItem-Filter",
+                clickHandler = {})
+        )
+    )
+    appBarConfigurationChangeHandler(exercisesAppBarConfiguration)
     ExercisesScreen(
         modifier = modifier, uiState = uiState
     )

@@ -41,7 +41,8 @@ fun StrenApp(
                 if (appState.shouldShowTopBar) {
                     StrenTopAppBar(
                         modifier = Modifier.testTag(TEST_TAG_TOP_BAR),
-                        title = stringResource(id = R.string.app_name)
+                        title = stringResource(id = R.string.app_name),
+                        appBarConfiguration = appState.currentTopAppBarConfiguration
                     )
                 }
             },
@@ -58,7 +59,10 @@ fun StrenApp(
             StrenNavHost(
                 modifier = Modifier.padding(it),
                 navController = appState.navController,
-                isUserSignedIn = isUserSignedIn
+                isUserSignedIn = isUserSignedIn,
+                appBarConfigurationChangeHandler = { newConfiguration ->
+                    appState.currentTopAppBarConfiguration = newConfiguration
+                }
             )
         }
     }
