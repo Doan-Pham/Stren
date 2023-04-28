@@ -1,12 +1,12 @@
 package com.haidoan.android.stren.app.ui
 
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.TopLevelDestination
 
 
@@ -53,4 +53,7 @@ class StrenAppState(val navController: NavHostController) {
 
     val shouldShowTopBar: Boolean
         @Composable get() = currentTopLevelDestination != null
+
+    var currentTopAppBarConfiguration by mutableStateOf(AppBarConfiguration())
+
 }

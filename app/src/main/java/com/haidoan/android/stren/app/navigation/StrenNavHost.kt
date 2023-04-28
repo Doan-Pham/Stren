@@ -8,8 +8,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -27,8 +29,11 @@ private const val TAG = "StrenNavHost"
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun StrenNavHost(
-    navController: NavHostController, modifier: Modifier = Modifier, isUserSignedIn: Boolean,
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+    isUserSignedIn: Boolean,
     startDestination: String = NAV_ROUTE_AUTH,
+    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {}
 ) {
     Log.d(TAG, "isUserSignedIn: $isUserSignedIn")
     AnimatedNavHost(
@@ -67,15 +72,20 @@ fun StrenNavHost(
                     .fillMaxSize()
                     .background(color = Color.Black)
                     .testTag("Screen-Dashboard")
-            )
+            ) {
+                appBarConfigurationChangeHandler(AppBarConfiguration())
+            }
         }
-        trainingGraph()
+        trainingGraph(appBarConfigurationChangeHandler)
         composable(route = TopLevelDestination.NUTRITION.route) {
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(color = Color.Yellow)
-            )
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("nutrition")
+                appBarConfigurationChangeHandler(AppBarConfiguration())
+            }
         }
         composable(route = TopLevelDestination.PROFILE.route) {
             Box(
@@ -87,7 +97,9 @@ fun StrenNavHost(
                             .getInstance()
                             .signOut()
                     }
-            )
+            ) {
+                appBarConfigurationChangeHandler(AppBarConfiguration())
+            }
         }
     }
 
