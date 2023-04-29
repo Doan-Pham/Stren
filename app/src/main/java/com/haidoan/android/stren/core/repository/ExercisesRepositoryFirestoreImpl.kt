@@ -31,10 +31,10 @@ class ExercisesRepositoryFirestoreImpl @Inject constructor() :
             Exercise(
                 document.id,
                 document.getString("name") ?: "",
-                document.getString("instruction") ?: "",
-                document.getString("imageUrl") ?: "",
-                document.get("belongedCategories") as List<String>,
-                document.get("trainedMuscleGroups") as List<String>
+                document.get("instructions") as List<String>,
+                document.get("images") as List<String>,
+                document.getString("equipment") ?: document.getString("category") ?: "",
+                document.get("primaryMuscles") as List<String>
             )
         }
     }
