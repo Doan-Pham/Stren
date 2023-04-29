@@ -6,8 +6,8 @@ data class Exercise(
     @DocumentId
     val id: String,
     val name: String,
-    val instruction: String = "",
-    val imageUrl: String = "",
-    val belongedCategories: List<String> = listOf(),
+    val instruction: List<String> = listOf(),
+    val imageUrls: List<String> = listOf(),
+    val belongedCategory: String = "",
     val trainedMuscleGroups: List<String> = listOf()
 )

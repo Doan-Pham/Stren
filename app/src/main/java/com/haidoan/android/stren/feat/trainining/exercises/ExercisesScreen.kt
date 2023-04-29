@@ -88,7 +88,7 @@ private fun ExerciseItem(modifier: Modifier = Modifier, exercise: Exercise) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
-            model = exercise.imageUrl,
+            model = exercise.imageUrls.first(),
             modifier = Modifier
                 .size(dimensionResource(id = R.dimen.icon_size_extra_large))
                 .clip(
