@@ -1,6 +1,9 @@
 package com.haidoan.android.stren.app.ui
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -43,7 +46,11 @@ fun StrenApp(
         Scaffold(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             topBar = {
-                if (appState.shouldShowTopBar) {
+                AnimatedVisibility(
+                    visible = appState.shouldShowTopBar,
+                    enter = slideInVertically(initialOffsetY = { it }),
+                    exit = slideOutVertically(targetOffsetY = { it })
+                ) {
                     StrenTopAppBar(
                         modifier = Modifier.testTag(TEST_TAG_TOP_BAR),
                         title = stringResource(id = R.string.app_name),
