@@ -1,6 +1,5 @@
 package com.haidoan.android.stren.app.navigation
 
-import android.util.Log
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
@@ -9,8 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,7 +33,6 @@ fun StrenNavHost(
     startDestination: String = NAV_ROUTE_AUTH,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {}
 ) {
-    Log.d(TAG, "isUserSignedIn: $isUserSignedIn")
     AnimatedNavHost(
         navController = navController,
         startDestination = startDestination,
@@ -73,7 +70,11 @@ fun StrenNavHost(
                     .background(color = Color.Black)
                     .testTag("Screen-Dashboard")
             ) {
-                appBarConfigurationChangeHandler(AppBarConfiguration())
+                var isAppBarConfigured by remember { mutableStateOf(false) }
+                if (!isAppBarConfigured) {
+                    appBarConfigurationChangeHandler(AppBarConfiguration())
+                    isAppBarConfigured = true
+                }
             }
         }
         trainingGraph(appBarConfigurationChangeHandler)
@@ -84,7 +85,11 @@ fun StrenNavHost(
                 contentAlignment = Alignment.Center
             ) {
                 Text("nutrition")
-                appBarConfigurationChangeHandler(AppBarConfiguration())
+                var isAppBarConfigured by remember { mutableStateOf(false) }
+                if (!isAppBarConfigured) {
+                    appBarConfigurationChangeHandler(AppBarConfiguration())
+                    isAppBarConfigured = true
+                }
             }
         }
         composable(route = TopLevelDestination.PROFILE.route) {
@@ -98,7 +103,11 @@ fun StrenNavHost(
                             .signOut()
                     }
             ) {
-                appBarConfigurationChangeHandler(AppBarConfiguration())
+                var isAppBarConfigured by remember { mutableStateOf(false) }
+                if (!isAppBarConfigured) {
+                    appBarConfigurationChangeHandler(AppBarConfiguration())
+                    isAppBarConfigured = true
+                }
             }
         }
     }
