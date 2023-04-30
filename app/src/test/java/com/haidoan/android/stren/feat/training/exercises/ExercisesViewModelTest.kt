@@ -1,16 +1,16 @@
 package com.haidoan.android.stren.feat.training.exercises
 
+import androidx.paging.PagingData
+import androidx.paging.testing.asSnapshot
+import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.repository.fake.FakeExercisesRepository
 import com.haidoan.android.stren.core.testing.data.exercisesTestData
 import com.haidoan.android.stren.core.testing.util.MainDispatcherRule
-import com.haidoan.android.stren.feat.trainining.exercises.ExercisesUiState
 import com.haidoan.android.stren.feat.trainining.exercises.ExercisesViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.test.*
 import org.junit.Assert.*
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -23,28 +23,22 @@ class ExercisesViewModelTest {
     private lateinit var viewModel: ExercisesViewModel
     private lateinit var fakeExercisesRepository: FakeExercisesRepository
 
-    @Before
-    fun setUp() {
-        fakeExercisesRepository = FakeExercisesRepository()
+    @Test
+    fun exercises_exercisesLoadedFromDataLayer_viewModelUpdated() = runTest {
+        // Since the flow in repository may outlive ViewModel, needs to pass
+        // backgroundScope
+        fakeExercisesRepository = FakeExercisesRepository(this.backgroundScope)
         viewModel = ExercisesViewModel(fakeExercisesRepository)
-    }
 
-    @Test
-    fun uiState_initialValue_isLoading() = runTest {
-        assertEquals(ExercisesUiState.Loading, viewModel.uiState.value)
-    }
-
-    @Test
-    fun uiState_exercisesLoaded_isLoadComplete() = runTest {
-        // Need to manually collect flow since StateFlow created with stateIn doesn't update unless there's collectors
-        val collectJob = launch(UnconfinedTestDispatcher()) { viewModel.uiState.collect() }
+        val exercises: Flow<PagingData<Exercise>> = viewModel.exercises
 
         fakeExercisesRepository.setExercises(exercisesTestData)
-        assertEquals(ExercisesUiState.LoadComplete(exercisesTestData), viewModel.uiState.value)
+        var snapshot: List<Exercise> = exercises.asSnapshot(coroutineScope = this) {}
+        assertEquals(snapshot, exercisesTestData)
 
         fakeExercisesRepository.setExercises(emptyList())
-        assertEquals(ExercisesUiState.LoadComplete(emptyList()), viewModel.uiState.value)
+        snapshot = exercises.asSnapshot(coroutineScope = this) {}
+        assertEquals(snapshot, emptyList<Exercise>())
 
-        collectJob.cancel()
     }
 }

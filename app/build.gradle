@@ -62,7 +62,7 @@ dependencies {
 
     //PAGING
     implementation "androidx.paging:paging-runtime:$paging_version"
-    implementation "androidx.paging:paging-common-ktx:$paging_version"
+    implementation "androidx.paging:paging-testing:$paging_version"
     implementation "androidx.paging:paging-compose:$paging_compose_version"
     // NAVIGATION
     implementation "androidx.navigation:navigation-compose:$navigation_version"
