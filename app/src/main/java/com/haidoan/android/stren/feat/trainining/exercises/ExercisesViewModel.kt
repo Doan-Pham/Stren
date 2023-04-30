@@ -11,5 +11,5 @@ import javax.inject.Inject
 internal class ExercisesViewModel @Inject constructor(exercisesRepository: ExercisesRepository) :
     ViewModel() {
     val exercises =
-        exercisesRepository.getAllExercisesStream().cachedIn(viewModelScope)
+        exercisesRepository.getExercisesWithLimit().cachedIn(viewModelScope)
 }

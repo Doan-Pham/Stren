@@ -4,17 +4,22 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
+import com.haidoan.android.stren.core.datasource.ExercisesRemoteDataSource
 import com.haidoan.android.stren.core.model.Exercise
 
 import kotlinx.coroutines.tasks.await
 
-class FirestorePagingSource(private val exercisesQuery: Query) :
+class ExercisesPagingSource(
+    private val dataSource: ExercisesRemoteDataSource,
+    private val pageSize: Long
+) :
     PagingSource<QuerySnapshot, Exercise>() {
 
     override fun getRefreshKey(state: PagingState<QuerySnapshot, Exercise>): QuerySnapshot? = null
 
     override suspend fun load(params: LoadParams<QuerySnapshot>): LoadResult<QuerySnapshot, Exercise> {
         return try {
+            val exercisesQuery: Query = dataSource.getExercisesWithLimitAsQuery(pageSize)
             val currentPage = params.key ?: exercisesQuery.get().await()
             val lastVisibleExercise = currentPage.documents[currentPage.size() - 1]
             val nextPage = exercisesQuery.startAfter(lastVisibleExercise).get().await()
