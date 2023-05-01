@@ -1,17 +1,18 @@
 package com.haidoan.android.stren.core.repository
 
+import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
-import com.haidoan.android.stren.core.datasource.ExercisesRemoteDataSource
 import com.haidoan.android.stren.core.model.Exercise
-
 import kotlinx.coroutines.tasks.await
 
+private const val TAG = "ExercisesPagingSource"
+
 class ExercisesPagingSource(
-    private val dataSource: ExercisesRemoteDataSource,
-    private val pageSize: Long
+    private val query: Query
 ) :
     PagingSource<QuerySnapshot, Exercise>() {
 
@@ -19,21 +20,31 @@ class ExercisesPagingSource(
 
     override suspend fun load(params: LoadParams<QuerySnapshot>): LoadResult<QuerySnapshot, Exercise> {
         return try {
-            val exercisesQuery: Query = dataSource.getExercisesWithLimitAsQuery(pageSize)
-            val currentPage = params.key ?: exercisesQuery.get().await()
-            val lastVisibleExercise = currentPage.documents[currentPage.size() - 1]
-            val nextPage = exercisesQuery.startAfter(lastVisibleExercise).get().await()
+            val currentPage = params.key ?: query.get().await()
+            var lastVisibleExercise: DocumentSnapshot? = null
+
+            if (currentPage.size() > 0) {
+                lastVisibleExercise = currentPage.documents[currentPage.size() - 1]
+                Log.d(TAG, "lastVisibleExercise: ${lastVisibleExercise.get("name")}")
+            }
+
+            val nextPage =
+                if (lastVisibleExercise != null) query.startAfter(lastVisibleExercise).get()
+                    .await() else null
+
             LoadResult.Page(
                 data = currentPage.toExerciseList(),
                 prevKey = null,
                 nextKey = nextPage
             )
         } catch (e: Exception) {
+            Log.e(TAG, "Loading Page Error: $e")
             LoadResult.Error(e)
         }
     }
 
     private fun QuerySnapshot.toExerciseList() = this.mapNotNull { document ->
+        Log.d(TAG, "toExerciseList() - document: $document")
         @Suppress("UNCHECKED_CAST")
         (Exercise(
             document.id,
@@ -43,6 +54,5 @@ class ExercisesPagingSource(
             document.getString("equipment") ?: document.getString("category") ?: "",
             document.get("primaryMuscles") as List<String>
         ))
-
     }
 }
