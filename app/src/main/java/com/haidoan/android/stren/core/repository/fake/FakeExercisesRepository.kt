@@ -27,4 +27,11 @@ class FakeExercisesRepository(testScope: CoroutineScope) : ExercisesRepository {
 
     override fun getExercisesWithLimit(limit: Long): Flow<PagingData<Exercise>> =
         Pager(config = PagingConfig(20), pagingSourceFactory = { pagingSourceFactory() }).flow
+
+    override fun getExercisesByNameWithLimit(
+        exerciseName: String,
+        limit: Long
+    ): Flow<PagingData<Exercise>> {
+        TODO("Not yet implemented")
+    }
 }
