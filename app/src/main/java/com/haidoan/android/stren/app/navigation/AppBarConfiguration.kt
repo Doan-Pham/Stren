@@ -1,5 +1,6 @@
 package com.haidoan.android.stren.app.navigation
 
+import androidx.compose.runtime.MutableState
 import com.haidoan.android.stren.R
 
 /**
@@ -18,7 +19,7 @@ sealed interface AppBarConfiguration {
     ) : AppBarConfiguration
 
     data class SearchAppBar(
-        val text: String,
+        val text: MutableState<String>,
         val placeholder: String,
         val onTextChange: (String) -> Unit,
         val onSearchClicked: (String) -> Unit,
