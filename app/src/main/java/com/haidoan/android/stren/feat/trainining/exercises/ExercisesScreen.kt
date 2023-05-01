@@ -48,9 +48,9 @@ internal fun ExercisesRoute(
                 description = "MenuItem-Search",
                 clickHandler = {
                     val searchBarConfiguration = AppBarConfiguration.SearchAppBar(
-                        text = viewModel.searchQuery,
+                        text = viewModel.searchBarText,
                         placeholder = "Search exercise",
-                        onTextChange = { viewModel.searchQuery.value = it },
+                        onTextChange = { viewModel.searchBarText.value = it },
                         onSearchClicked = { viewModel.searchExerciseByName(it) })
                     appBarConfigurationChangeHandler(searchBarConfiguration)
                 }),

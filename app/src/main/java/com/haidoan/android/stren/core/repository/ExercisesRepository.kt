@@ -8,4 +8,8 @@ const val DEFAULT_ITEM_COUNT_LIMIT = 20L
 
 interface ExercisesRepository {
     fun getExercisesWithLimit(limit: Long = DEFAULT_ITEM_COUNT_LIMIT): Flow<PagingData<Exercise>>
+    fun getExercisesByNameWithLimit(
+        exerciseName: String,
+        limit: Long = DEFAULT_ITEM_COUNT_LIMIT
+    ): Flow<PagingData<Exercise>>
 }

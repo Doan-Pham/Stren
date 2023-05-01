@@ -8,5 +8,10 @@ interface ExercisesRemoteDataSource {
      * This method returns a [Query] which can be reused to build different queries instead
      * of just running the query immediately
      */
-    suspend fun getExercisesWithLimitAsQuery(limit: Long = DEFAULT_ITEM_COUNT_LIMIT): Query
+    fun getExercisesWithLimitAsQuery(limit: Long = DEFAULT_ITEM_COUNT_LIMIT): Query
+
+    fun getExercisesByNameAsQuery(
+        exerciseName: String,
+        resultCountLimit: Long = DEFAULT_ITEM_COUNT_LIMIT
+    ): Query
 }
