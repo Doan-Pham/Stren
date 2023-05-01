@@ -40,13 +40,20 @@ internal fun ExercisesRoute(
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {}
 ) {
     val pagedExercises = viewModel.exercises.collectAsLazyPagingItems()
-    val exercisesAppBarConfiguration = AppBarConfiguration(
+    val exercisesAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons =
         listOf(
             IconButtonInfo(
-                drawableResourceId = R.drawable.ic_nutrition,
+                drawableResourceId = R.drawable.ic_search,
                 description = "MenuItem-Search",
-                clickHandler = {}),
+                clickHandler = {
+                    val searchBarConfiguration = AppBarConfiguration.SearchAppBar(
+                        text = viewModel.searchQuery,
+                        placeholder = "Search exercise",
+                        onTextChange = { viewModel.searchQuery = it },
+                        onSearchClicked = { viewModel.searchExerciseByName(it) })
+                    appBarConfigurationChangeHandler(searchBarConfiguration)
+                }),
             IconButtonInfo(
                 drawableResourceId = R.drawable.ic_dashboard,
                 description = "MenuItem-Filter",

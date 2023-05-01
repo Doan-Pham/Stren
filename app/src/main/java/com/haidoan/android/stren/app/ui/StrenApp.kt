@@ -19,6 +19,7 @@ import com.haidoan.android.stren.app.StrenAppViewModel
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.StrenNavHost
 import com.haidoan.android.stren.core.designsystem.component.BottomNavigationBar
+import com.haidoan.android.stren.core.designsystem.component.SearchBar
 import com.haidoan.android.stren.core.designsystem.component.StrenTopAppBar
 import com.haidoan.android.stren.core.designsystem.component.TEST_TAG_TOP_BAR
 
@@ -33,12 +34,13 @@ fun StrenApp(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val isUserSignedIn by rememberSaveable { viewModel.isUserSignedIn }
-    var currentTopAppBarConfiguration by remember {
-        mutableStateOf(AppBarConfiguration())
+    var currentTopAppBarConfiguration: AppBarConfiguration by remember {
+        mutableStateOf(AppBarConfiguration.NavigationAppBar())
     }
 
     Log.d(TAG, "isUserSignedIn: $isUserSignedIn")
     Log.d(TAG, "currentTopAppBarConfiguration: ${currentTopAppBarConfiguration}")
+
     // This allows any screen in the composition to access snackbar
     CompositionLocalProvider(
         LocalSnackbarHostState provides snackbarHostState
@@ -51,11 +53,26 @@ fun StrenApp(
                     enter = slideInVertically(initialOffsetY = { it }),
                     exit = slideOutVertically(targetOffsetY = { it })
                 ) {
-                    StrenTopAppBar(
-                        modifier = Modifier.testTag(TEST_TAG_TOP_BAR),
-                        title = stringResource(id = R.string.app_name),
-                        appBarConfiguration = currentTopAppBarConfiguration
-                    )
+                    when (currentTopAppBarConfiguration) {
+                        is AppBarConfiguration.NavigationAppBar -> {
+                            StrenTopAppBar(
+                                modifier = Modifier.testTag(TEST_TAG_TOP_BAR),
+                                title = stringResource(id = R.string.app_name),
+                                appBarConfiguration = currentTopAppBarConfiguration as AppBarConfiguration.NavigationAppBar
+                            )
+                        }
+                        is AppBarConfiguration.SearchAppBar -> {
+                            val searchBarProperties =
+                                currentTopAppBarConfiguration as AppBarConfiguration.SearchAppBar
+                            SearchBar(
+                                text = searchBarProperties.text,
+                                placeholder = searchBarProperties.placeholder,
+                                onTextChange = searchBarProperties.onTextChange,
+                                onSearchClicked = searchBarProperties.onSearchClicked
+                            )
+                        }
+                    }
+
                 }
             },
             bottomBar = {

@@ -1,7 +1,9 @@
 package com.haidoan.android.stren.feat.trainining
 
+import android.util.Log
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.navigation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
@@ -11,23 +13,27 @@ import com.haidoan.android.stren.feat.trainining.exercises.ExercisesRoute
 
 const val TRAINING_GRAPH_ROUTE = "training_graph_route"
 const val TRAINING_GRAPH_STARTING_ROUTE = "training_graph_starting_route"
+private const val TAG = "trainingGraph"
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 fun NavGraphBuilder.trainingGraph(appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {}) {
     navigation(startDestination = TRAINING_GRAPH_STARTING_ROUTE, route = TRAINING_GRAPH_ROUTE) {
         composable(route = TRAINING_GRAPH_STARTING_ROUTE) {
-            //val tabs = listOf("History", "Routines", "Exercises")
-
             TrainingTabsScreen(
                 tabNamesAndScreenComposables = listOf(
-                    Pair("Exercises") { ExercisesRoute(appBarConfigurationChangeHandler = appBarConfigurationChangeHandler) },
+                    Pair("Exercises") {
+                        ExercisesRoute(appBarConfigurationChangeHandler = {
+                            appBarConfigurationChangeHandler(it)
+                            Log.d("ExercisesScreen", "App bar configured")
+                        })
+                    },
                     Pair("History") {
                         DummyBoxWithText(text = "History")
-                        appBarConfigurationChangeHandler(AppBarConfiguration())
+                        appBarConfigurationChangeHandler(AppBarConfiguration.NavigationAppBar())
                     },
                     Pair("Routines") {
                         DummyBoxWithText(text = "Routines")
-                        appBarConfigurationChangeHandler(AppBarConfiguration())
+                        appBarConfigurationChangeHandler(AppBarConfiguration.NavigationAppBar())
                     },
                 )
             )
