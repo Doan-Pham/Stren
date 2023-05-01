@@ -25,7 +25,7 @@ const val TEST_TAG_TOP_BAR = "Navigation-Top-Bar"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StrenTopAppBar(
+fun StrenSmallTopAppBar(
     modifier: Modifier = Modifier,
     title: String,
     appBarConfiguration: AppBarConfiguration.NavigationAppBar

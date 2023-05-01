@@ -6,7 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,7 +60,12 @@ internal fun ExercisesRoute(
                 clickHandler = {})
         )
     )
-    appBarConfigurationChangeHandler(exercisesAppBarConfiguration)
+    var isAppBarConfigured by remember { mutableStateOf(false) }
+    if (!isAppBarConfigured) {
+        appBarConfigurationChangeHandler(exercisesAppBarConfiguration)
+        isAppBarConfigured = true
+    }
+
     ExercisesScreen(
         modifier = modifier, pagedExercises = pagedExercises
     )

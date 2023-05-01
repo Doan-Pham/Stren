@@ -1,5 +1,6 @@
 package com.haidoan.android.stren.core.designsystem.component
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardActions
@@ -20,6 +21,7 @@ fun SearchBar(
     text: String,
     placeholder: String,
     onTextChange: (String) -> Unit,
+    onBackClicked: () -> Unit,
     onSearchClicked: (String) -> Unit,
 ) {
     Surface(
@@ -30,6 +32,14 @@ fun SearchBar(
         shadowElevation = 0.dp,
         color = Color.White
     ) {
+        var isBackPressHandled by remember {
+            mutableStateOf(false)
+        }
+        BackHandler(enabled = !isBackPressHandled) {
+            onBackClicked()
+            isBackPressHandled = true
+        }
+
         TextField(modifier = Modifier
             .fillMaxWidth(),
             value = text,
@@ -44,6 +54,18 @@ fun SearchBar(
             },
             textStyle = MaterialTheme.typography.bodyLarge,
             singleLine = true,
+            leadingIcon = {
+                IconButton(
+                    onClick = {
+                        onBackClicked()
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_arrow_left),
+                        contentDescription = "Back Icon",
+                    )
+                }
+            },
             trailingIcon = {
                 IconButton(
                     onClick = {
@@ -81,6 +103,7 @@ fun SearchAppBarPreview() {
     SearchBar(
         text = text,
         placeholder = "Search exercise",
+        onBackClicked = {},
         onTextChange = { text = it },
         onSearchClicked = {}
     )
