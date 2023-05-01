@@ -6,6 +6,7 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.TopLevelDestination
 
 
@@ -21,7 +22,7 @@ class StrenAppState(val navController: NavHostController) {
 
     val topLevelDestinations = TopLevelDestination.values().asList()
 
-    val currentDestination: NavDestination?
+    private val currentDestination: NavDestination?
         @Composable get() = navController
             .currentBackStackEntryAsState().value?.destination
 
@@ -53,4 +54,8 @@ class StrenAppState(val navController: NavHostController) {
     val shouldShowTopBar: Boolean
         @Composable get() = currentTopLevelDestination != null
 
+
+    var currentAppBarConfiguration by mutableStateOf<AppBarConfiguration>(AppBarConfiguration.NavigationAppBar())
+
+    var previousAppBarConfiguration: AppBarConfiguration = currentAppBarConfiguration
 }

@@ -20,7 +20,7 @@ import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.StrenNavHost
 import com.haidoan.android.stren.core.designsystem.component.BottomNavigationBar
 import com.haidoan.android.stren.core.designsystem.component.SearchBar
-import com.haidoan.android.stren.core.designsystem.component.StrenTopAppBar
+import com.haidoan.android.stren.core.designsystem.component.StrenSmallTopAppBar
 import com.haidoan.android.stren.core.designsystem.component.TEST_TAG_TOP_BAR
 
 private const val TAG = "StrenApp"
@@ -34,12 +34,8 @@ fun StrenApp(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val isUserSignedIn by rememberSaveable { viewModel.isUserSignedIn }
-    var currentTopAppBarConfiguration: AppBarConfiguration by remember {
-        mutableStateOf(AppBarConfiguration.NavigationAppBar())
-    }
-
     Log.d(TAG, "isUserSignedIn: $isUserSignedIn")
-    Log.d(TAG, "currentTopAppBarConfiguration: ${currentTopAppBarConfiguration}")
+    Log.d(TAG, "appState.currentAppBarConfiguration: ${appState.currentAppBarConfiguration}")
 
     // This allows any screen in the composition to access snackbar
     CompositionLocalProvider(
@@ -48,32 +44,14 @@ fun StrenApp(
         Scaffold(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             topBar = {
-                AnimatedVisibility(
-                    visible = appState.shouldShowTopBar,
-                    enter = slideInVertically(initialOffsetY = { it }),
-                    exit = slideOutVertically(targetOffsetY = { it })
-                ) {
-                    when (currentTopAppBarConfiguration) {
-                        is AppBarConfiguration.NavigationAppBar -> {
-                            StrenTopAppBar(
-                                modifier = Modifier.testTag(TEST_TAG_TOP_BAR),
-                                title = stringResource(id = R.string.app_name),
-                                appBarConfiguration = currentTopAppBarConfiguration as AppBarConfiguration.NavigationAppBar
-                            )
-                        }
-                        is AppBarConfiguration.SearchAppBar -> {
-                            val searchBarProperties =
-                                currentTopAppBarConfiguration as AppBarConfiguration.SearchAppBar
-                            SearchBar(
-                                text = searchBarProperties.text.value,
-                                placeholder = searchBarProperties.placeholder,
-                                onTextChange = searchBarProperties.onTextChange,
-                                onSearchClicked = searchBarProperties.onSearchClicked
-                            )
-                        }
+                StrenTopAppBar(
+                    shouldShowTopAppBar = appState.shouldShowTopBar,
+                    configuration = appState.currentAppBarConfiguration,
+                    onBackClicked = {
+                        appState.currentAppBarConfiguration =
+                            appState.previousAppBarConfiguration
                     }
-
-                }
+                )
             },
             bottomBar = {
                 if (appState.shouldShowBottomBar) {
@@ -90,9 +68,46 @@ fun StrenApp(
                 navController = appState.navController,
                 isUserSignedIn = isUserSignedIn,
                 appBarConfigurationChangeHandler = { newConfiguration ->
-                    currentTopAppBarConfiguration = newConfiguration
+                    appState.previousAppBarConfiguration = appState.currentAppBarConfiguration
+                    appState.currentAppBarConfiguration = newConfiguration
                 }
             )
         }
+    }
+}
+
+/***
+ * A separate composable for readability and (potentially) testability
+ */
+@Composable
+private fun StrenTopAppBar(
+    shouldShowTopAppBar: Boolean,
+    configuration: AppBarConfiguration,
+    onBackClicked: () -> Unit
+) {
+    AnimatedVisibility(
+        visible = shouldShowTopAppBar,
+        enter = slideInVertically(initialOffsetY = { it }),
+        exit = slideOutVertically(targetOffsetY = { it })
+    ) {
+        when (configuration) {
+            is AppBarConfiguration.NavigationAppBar -> {
+                StrenSmallTopAppBar(
+                    modifier = Modifier.testTag(TEST_TAG_TOP_BAR),
+                    title = stringResource(id = R.string.app_name),
+                    appBarConfiguration = configuration
+                )
+            }
+            is AppBarConfiguration.SearchAppBar -> {
+                SearchBar(
+                    text = configuration.text.value,
+                    placeholder = configuration.placeholder,
+                    onTextChange = configuration.onTextChange,
+                    onBackClicked = { onBackClicked() },
+                    onSearchClicked = configuration.onSearchClicked
+                )
+            }
+        }
+
     }
 }
