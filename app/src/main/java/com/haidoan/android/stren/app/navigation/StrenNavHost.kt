@@ -72,7 +72,7 @@ fun StrenNavHost(
             ) {
                 var isAppBarConfigured by remember { mutableStateOf(false) }
                 if (!isAppBarConfigured) {
-                    appBarConfigurationChangeHandler(AppBarConfiguration())
+                    appBarConfigurationChangeHandler(AppBarConfiguration.NavigationAppBar())
                     isAppBarConfigured = true
                 }
             }
@@ -87,7 +87,7 @@ fun StrenNavHost(
                 Text("nutrition")
                 var isAppBarConfigured by remember { mutableStateOf(false) }
                 if (!isAppBarConfigured) {
-                    appBarConfigurationChangeHandler(AppBarConfiguration())
+                    appBarConfigurationChangeHandler(AppBarConfiguration.NavigationAppBar())
                     isAppBarConfigured = true
                 }
             }
@@ -105,7 +105,7 @@ fun StrenNavHost(
             ) {
                 var isAppBarConfigured by remember { mutableStateOf(false) }
                 if (!isAppBarConfigured) {
-                    appBarConfigurationChangeHandler(AppBarConfiguration())
+                    appBarConfigurationChangeHandler(AppBarConfiguration.NavigationAppBar())
                     isAppBarConfigured = true
                 }
             }

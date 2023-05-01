@@ -28,7 +28,7 @@ const val TEST_TAG_TOP_BAR = "Navigation-Top-Bar"
 fun StrenTopAppBar(
     modifier: Modifier = Modifier,
     title: String,
-    appBarConfiguration: AppBarConfiguration
+    appBarConfiguration: AppBarConfiguration.NavigationAppBar
 ) {
     TopAppBar(
         modifier = modifier, title = {
