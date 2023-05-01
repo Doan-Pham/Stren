@@ -18,16 +18,19 @@ private const val TAG = "TrainingTabsScreen"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TrainingTabsScreen(tabNamesAndScreenComposables: List<Pair<String, @Composable () -> Unit>>) {
-    // on below line we are creating variable for pager state.
+fun TrainingTabsScreen(
+    tabNamesAndScreenComposables: List<Pair<String, @Composable () -> Unit>>
+) {
     val pagerState = rememberPagerState(initialPage = 0)
-    val tabIndex = pagerState.currentPage
+    val currentTabIndex = pagerState.currentPage
+    var previousTabIndex = remember { tabNamesAndScreenComposables.size }
+
     val coroutineScope = rememberCoroutineScope()
     Column(modifier = Modifier.fillMaxWidth()) {
-        TabRow(selectedTabIndex = tabIndex, containerColor = Color.White, indicator = {
+        TabRow(selectedTabIndex = currentTabIndex, containerColor = Color.White, indicator = {
             TabRowDefaults.Indicator(
                 modifier = Modifier
-                    .tabIndicatorOffset(it[tabIndex]),
+                    .tabIndicatorOffset(it[currentTabIndex]),
                 color = MaterialTheme.colorScheme.primary
             )
         }) {
@@ -39,7 +42,7 @@ fun TrainingTabsScreen(tabNamesAndScreenComposables: List<Pair<String, @Composab
                             style = MaterialTheme.typography.titleSmall
                         )
                     },
-                    selected = tabIndex == index,
+                    selected = currentTabIndex == index,
                     onClick = {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(index)
@@ -56,7 +59,16 @@ fun TrainingTabsScreen(tabNamesAndScreenComposables: List<Pair<String, @Composab
             state = pagerState,
             pageCount = tabNamesAndScreenComposables.size
         ) { page ->
-            tabNamesAndScreenComposables[page].second()
+
+            // The [page] value changes much more frequently than tabIndex in order to create
+            // animation. Without the below check, the composables will be unnecessarily recomposed
+            // many times
+            //Log.d(TAG, "currentTabIndex: $currentTabIndex ; page: $page ")
+            if (page == currentTabIndex && previousTabIndex != currentTabIndex) {
+                previousTabIndex = currentTabIndex
+                //Log.d(TAG, "Shown - currentTabIndex: $currentTabIndex ; previousTabIndex: $previousTabIndex ")
+                tabNamesAndScreenComposables[currentTabIndex].second()
+            }
         }
     }
 }
