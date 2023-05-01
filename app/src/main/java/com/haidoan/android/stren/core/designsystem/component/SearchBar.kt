@@ -1,14 +1,16 @@
 package com.haidoan.android.stren.core.designsystem.component
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -24,26 +26,30 @@ fun SearchBar(
     onBackClicked: () -> Unit,
     onSearchClicked: (String) -> Unit,
 ) {
-    Surface(
+    var isBackPressHandled by remember {
+        mutableStateOf(false)
+    }
+    BackHandler(enabled = !isBackPressHandled) {
+        onBackClicked()
+        isBackPressHandled = true
+    }
+
+    var shouldShowCancelIcon by remember {
+        mutableStateOf(false)
+    }
+
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp),
-        tonalElevation = 0.dp,
-        shadowElevation = 0.dp,
-        color = Color.White
+            .padding(end = 16.dp)
+            .height(56.dp)
+            .background(color = Color.White),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        var isBackPressHandled by remember {
-            mutableStateOf(false)
-        }
-        BackHandler(enabled = !isBackPressHandled) {
-            onBackClicked()
-            isBackPressHandled = true
-        }
-
-        TextField(modifier = Modifier
-            .fillMaxWidth(),
+        TextField(modifier = Modifier.weight(1f),
             value = text,
             onValueChange = {
+                shouldShowCancelIcon = !(it.isBlank() || it.isEmpty())
                 onTextChange(it)
             },
             placeholder = {
@@ -67,15 +73,19 @@ fun SearchBar(
                 }
             },
             trailingIcon = {
-                IconButton(
-                    onClick = {
-                        onSearchClicked(text)
+                if (shouldShowCancelIcon) {
+                    IconButton(
+                        onClick = {
+                            shouldShowCancelIcon = false
+                            onTextChange("")
+                            onSearchClicked("")
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_cancel_circle),
+                            contentDescription = "Search Icon",
+                        )
                     }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_search),
-                        contentDescription = "Search Icon",
-                    )
                 }
             },
             keyboardOptions = KeyboardOptions(
@@ -93,7 +103,24 @@ fun SearchBar(
                 focusedIndicatorColor = Color.Transparent,
                 cursorColor = Color.Black
             ))
+
+        IconButton(
+            modifier = Modifier
+                .size(dimensionResource(id = R.dimen.icon_size_medium)),
+            onClick = {
+                onSearchClicked(text)
+            }
+        ) {
+            Icon(
+                modifier = Modifier
+                    .size(dimensionResource(id = R.dimen.icon_size_medium)),
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = "Search Icon",
+            )
+        }
     }
+
+
 }
 
 @Composable
