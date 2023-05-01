@@ -50,7 +50,7 @@ internal fun ExercisesRoute(
                     val searchBarConfiguration = AppBarConfiguration.SearchAppBar(
                         text = viewModel.searchQuery,
                         placeholder = "Search exercise",
-                        onTextChange = { viewModel.searchQuery = it },
+                        onTextChange = { viewModel.searchQuery.value = it },
                         onSearchClicked = { viewModel.searchExerciseByName(it) })
                     appBarConfigurationChangeHandler(searchBarConfiguration)
                 }),

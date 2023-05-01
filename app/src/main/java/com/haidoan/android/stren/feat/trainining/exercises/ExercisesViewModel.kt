@@ -1,9 +1,7 @@
 package com.haidoan.android.stren.feat.trainining.exercises
 
 import android.util.Log
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
@@ -16,7 +14,7 @@ private const val TAG = "ExercisesViewModel"
 @HiltViewModel
 internal class ExercisesViewModel @Inject constructor(exercisesRepository: ExercisesRepository) :
     ViewModel() {
-    var searchQuery by mutableStateOf("")
+    var searchQuery = mutableStateOf("")
 
     val exercises =
         exercisesRepository.getExercisesWithLimit().cachedIn(viewModelScope)

@@ -65,7 +65,7 @@ fun StrenApp(
                             val searchBarProperties =
                                 currentTopAppBarConfiguration as AppBarConfiguration.SearchAppBar
                             SearchBar(
-                                text = searchBarProperties.text,
+                                text = searchBarProperties.text.value,
                                 placeholder = searchBarProperties.placeholder,
                                 onTextChange = searchBarProperties.onTextChange,
                                 onSearchClicked = searchBarProperties.onSearchClicked
