@@ -51,7 +51,7 @@ class ExercisesPagingSource(
             document.getString("name") ?: "",
             document.get("instructions") as List<String>,
             document.get("images") as List<String>,
-            document.getString("equipment") ?: document.getString("category") ?: "",
+            document.getString("category") ?: "",
             document.get("primaryMuscles") as List<String>
         ))
     }

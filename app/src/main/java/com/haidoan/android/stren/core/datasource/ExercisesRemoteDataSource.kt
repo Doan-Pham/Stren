@@ -1,6 +1,8 @@
 package com.haidoan.android.stren.core.datasource
 
 import com.google.firebase.firestore.Query
+import com.haidoan.android.stren.core.model.ExerciseCategory
+import com.haidoan.android.stren.core.model.MuscleGroup
 import com.haidoan.android.stren.core.repository.DEFAULT_ITEM_COUNT_LIMIT
 
 interface ExercisesRemoteDataSource {
@@ -14,4 +16,7 @@ interface ExercisesRemoteDataSource {
         exerciseName: String,
         resultCountLimit: Long = DEFAULT_ITEM_COUNT_LIMIT
     ): Query
+
+    suspend fun getAllExerciseCategories(): List<ExerciseCategory>
+    suspend fun getAllMuscleGroups(): List<MuscleGroup>
 }
