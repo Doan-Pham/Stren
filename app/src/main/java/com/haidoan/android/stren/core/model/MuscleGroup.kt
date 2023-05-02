@@ -4,6 +4,6 @@ import com.google.firebase.firestore.DocumentId
 
 data class MuscleGroup(
     @DocumentId
-    val id: String,
-    val name: String
+    val id: String = "UNDEFINED_ID",
+    val name: String = "UNDEFINED_NAME"
 )

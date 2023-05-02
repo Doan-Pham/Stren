@@ -45,8 +45,31 @@ internal fun ExercisesRoute(
 ) {
     var shouldShowFilterSheet by rememberSaveable { mutableStateOf(false) }
     val pagedExercises = viewModel.exercises.collectAsLazyPagingItems()
+
     val exerciseCategories by viewModel.exerciseCategories.collectAsStateWithLifecycle()
-    Log.d(TAG, "exerciseCategories: $exerciseCategories")
+    val exerciseCategoryFilter = FilterStandard(
+        standardName = "Category",
+        filterLabels = exerciseCategories.map {
+            FilterLabel(
+                it.category.id,
+                it.category.name,
+                it.isChosen
+            )
+        },
+        onLabelSelected = { chosenLabel -> viewModel.toggleCategorySelection(chosenLabel.id) },
+    )
+    val muscleGroups by viewModel.muscleGroups.collectAsStateWithLifecycle()
+    val muscleGroupFilter = FilterStandard(
+        standardName = "Muscle group",
+        filterLabels = muscleGroups.map {
+            FilterLabel(
+                it.muscleGroup.id,
+                it.muscleGroup.name,
+                it.isChosen
+            )
+        },
+        onLabelSelected = { chosenLabel -> viewModel.toggleMuscleGroupSelection(chosenLabel.id) },
+    )
 
     val exercisesAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons =
@@ -79,8 +102,7 @@ internal fun ExercisesRoute(
         pagedExercises = pagedExercises,
         shouldShowFilterSheet = shouldShowFilterSheet,
         onHideFilterSheet = { shouldShowFilterSheet = false },
-        exerciseCategories = exerciseCategories,
-        onFilterLabelSelected = { chosenLabel -> viewModel.toggleCategorySelection(chosenLabel.id) }
+        filterStandards = listOf(exerciseCategoryFilter, muscleGroupFilter)
     )
 }
 
@@ -89,8 +111,7 @@ internal fun ExercisesRoute(
 internal fun ExercisesScreen(
     modifier: Modifier = Modifier,
     pagedExercises: LazyPagingItems<Exercise>,
-    exerciseCategories: List<ExerciseCategoryWrapper> = listOf(),
-    onFilterLabelSelected: (FilterLabel) -> Unit = {},
+    filterStandards: List<FilterStandard> = listOf(),
     shouldShowFilterSheet: Boolean = false,
     onHideFilterSheet: () -> Unit = {}
 ) {
@@ -162,19 +183,7 @@ internal fun ExercisesScreen(
             bottomSheetState = rememberModalBottomSheetState(
                 skipPartiallyExpanded = true
             ),
-            filterStandards = listOf(
-                FilterStandard(
-                    standardName = "Category",
-                    filterLabels = exerciseCategories.map {
-                        FilterLabel(
-                            it.category.id,
-                            it.category.name,
-                            it.isChosen
-                        )
-                    },
-                    onLabelSelected = onFilterLabelSelected,
-                )
-            )
+            filterStandards = filterStandards
         )
     }
 

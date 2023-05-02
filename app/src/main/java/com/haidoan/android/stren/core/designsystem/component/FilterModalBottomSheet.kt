@@ -1,6 +1,5 @@
 package com.haidoan.android.stren.core.designsystem.component
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -99,7 +98,7 @@ private fun FilterRegion(modifier: Modifier = Modifier, filterStandard: FilterSt
             horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
         ) {
             filterStandard.filterLabels.forEach { filterLabel ->
-                Log.d("FilterRegion", "filterLabel: $filterLabel")
+//                Log.d("FilterRegion", "filterLabel: $filterLabel")
                 FilterChip(
                     selected = filterLabel.isSelected,
                     onClick = { filterStandard.onLabelSelected(filterLabel) },

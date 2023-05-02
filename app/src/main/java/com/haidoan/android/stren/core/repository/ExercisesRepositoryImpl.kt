@@ -53,8 +53,14 @@ class ExercisesRepositoryImpl @Inject constructor(
             )
         }
 
-    override fun getAllMuscleGroups(): Flow<List<MuscleGroup>> {
-        TODO("Not yet implemented")
+    override fun getAllMuscleGroups(): Flow<List<MuscleGroup>> = flow {
+        emit(dataSource.getAllMuscleGroups())
     }
+        .catch {
+            Log.e(
+                TAG,
+                "getAllMuscleGroups() - Exception: ${it.message}"
+            )
+        }
 
 }
