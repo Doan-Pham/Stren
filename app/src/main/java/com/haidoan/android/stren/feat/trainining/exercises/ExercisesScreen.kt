@@ -4,9 +4,9 @@ import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,6 +24,8 @@ import coil.compose.AsyncImage
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
+import com.haidoan.android.stren.core.designsystem.component.FilterModalBottomSheet
+import com.haidoan.android.stren.core.designsystem.component.FilterStandard
 import com.haidoan.android.stren.core.designsystem.component.LoadingAnimation
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.model.Exercise
@@ -39,7 +41,9 @@ internal fun ExercisesRoute(
     viewModel: ExercisesViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {}
 ) {
+    var shouldShowFilterSheet by rememberSaveable { mutableStateOf(false) }
     val pagedExercises = viewModel.exercises.collectAsLazyPagingItems()
+
     val exercisesAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons =
         listOf(
@@ -55,9 +59,9 @@ internal fun ExercisesRoute(
                     appBarConfigurationChangeHandler(searchBarConfiguration)
                 }),
             IconButtonInfo(
-                drawableResourceId = R.drawable.ic_dashboard,
+                drawableResourceId = R.drawable.ic_filter,
                 description = "MenuItem-Filter",
-                clickHandler = {})
+                clickHandler = { shouldShowFilterSheet = true })
         )
     )
     var isAppBarConfigured by remember { mutableStateOf(false) }
@@ -67,28 +71,35 @@ internal fun ExercisesRoute(
     }
 
     ExercisesScreen(
-        modifier = modifier, pagedExercises = pagedExercises
+        modifier = modifier,
+        pagedExercises = pagedExercises,
+        shouldShowFilterSheet = shouldShowFilterSheet,
+        onHideFilterSheet = { shouldShowFilterSheet = false }
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ExercisesScreen(
     modifier: Modifier = Modifier,
-    pagedExercises: LazyPagingItems<Exercise>
+    pagedExercises: LazyPagingItems<Exercise>,
+    shouldShowFilterSheet: Boolean = false,
+    onHideFilterSheet: () -> Unit = {}
 ) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .testTag(EXERCISES_EXERCISE_LIST_TEST_TAG),
-        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_large)),
-        contentPadding = PaddingValues(
-            horizontal = dimensionResource(id = R.dimen.padding_medium),
-            vertical = dimensionResource(id = R.dimen.padding_medium)
-        )
-    ) {
+            .testTag(EXERCISES_EXERCISE_LIST_TEST_TAG)
+    )
+    {
         items(items = pagedExercises) { exercise ->
             exercise?.let {
-                ExerciseItem(exercise = exercise)
+                ExerciseItem(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(dimensionResource(id = R.dimen.padding_medium)),
+                    exercise = exercise
+                )
             }
         }
         Log.d(TAG, "itemCount : ${pagedExercises.itemCount}")
@@ -136,13 +147,25 @@ internal fun ExercisesScreen(
             is LoadState.Error -> TODO()
         }
     }
+
+    if (shouldShowFilterSheet) {
+        FilterModalBottomSheet(
+            onDismissRequest = onHideFilterSheet,
+            bottomSheetState = rememberModalBottomSheetState(
+                skipPartiallyExpanded = true
+            ),
+            filterStandards = listOf(
+                FilterStandard("a", mapOf("a" to false, "b" to true, "c" to false)),
+                FilterStandard("b", mapOf("a" to false, "b" to true, "c" to false))
+            )
+        )
+    }
 }
 
 @Composable
 private fun ExerciseItem(modifier: Modifier = Modifier, exercise: Exercise) {
     Row(
-        modifier = modifier
-            .fillMaxWidth(),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
