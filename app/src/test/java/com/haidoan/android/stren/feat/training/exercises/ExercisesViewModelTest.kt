@@ -4,7 +4,7 @@ import androidx.paging.PagingData
 import androidx.paging.testing.asSnapshot
 import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.repository.fake.FakeExercisesRepository
-import com.haidoan.android.stren.core.testing.data.exercisesTestData
+import com.haidoan.android.stren.core.testing.data.EXERCISES_TEST_DATA
 import com.haidoan.android.stren.core.testing.util.MainDispatcherRule
 import com.haidoan.android.stren.feat.trainining.exercises.ExercisesViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,9 +32,9 @@ class ExercisesViewModelTest {
 
         val exercises: Flow<PagingData<Exercise>> = viewModel.exercises
 
-        fakeExercisesRepository.setExercises(exercisesTestData)
+        fakeExercisesRepository.setExercises(EXERCISES_TEST_DATA)
         var snapshot: List<Exercise> = exercises.asSnapshot(coroutineScope = this) {}
-        assertEquals(snapshot, exercisesTestData)
+        assertEquals(snapshot, EXERCISES_TEST_DATA)
 
         fakeExercisesRepository.setExercises(emptyList())
         snapshot = exercises.asSnapshot(coroutineScope = this) {}
