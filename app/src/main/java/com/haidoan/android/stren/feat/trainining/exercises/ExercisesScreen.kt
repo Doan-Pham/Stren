@@ -16,6 +16,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -24,6 +25,7 @@ import coil.compose.AsyncImage
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
+import com.haidoan.android.stren.core.designsystem.component.FilterLabel
 import com.haidoan.android.stren.core.designsystem.component.FilterModalBottomSheet
 import com.haidoan.android.stren.core.designsystem.component.FilterStandard
 import com.haidoan.android.stren.core.designsystem.component.LoadingAnimation
@@ -43,6 +45,8 @@ internal fun ExercisesRoute(
 ) {
     var shouldShowFilterSheet by rememberSaveable { mutableStateOf(false) }
     val pagedExercises = viewModel.exercises.collectAsLazyPagingItems()
+    val exerciseCategories by viewModel.exerciseCategories.collectAsStateWithLifecycle()
+    Log.d(TAG, "exerciseCategories: $exerciseCategories")
 
     val exercisesAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons =
@@ -74,7 +78,9 @@ internal fun ExercisesRoute(
         modifier = modifier,
         pagedExercises = pagedExercises,
         shouldShowFilterSheet = shouldShowFilterSheet,
-        onHideFilterSheet = { shouldShowFilterSheet = false }
+        onHideFilterSheet = { shouldShowFilterSheet = false },
+        exerciseCategories = exerciseCategories,
+        onFilterLabelSelected = { chosenLabel -> viewModel.toggleCategorySelection(chosenLabel.id) }
     )
 }
 
@@ -83,6 +89,8 @@ internal fun ExercisesRoute(
 internal fun ExercisesScreen(
     modifier: Modifier = Modifier,
     pagedExercises: LazyPagingItems<Exercise>,
+    exerciseCategories: List<ExerciseCategoryWrapper> = listOf(),
+    onFilterLabelSelected: (FilterLabel) -> Unit = {},
     shouldShowFilterSheet: Boolean = false,
     onHideFilterSheet: () -> Unit = {}
 ) {
@@ -155,11 +163,21 @@ internal fun ExercisesScreen(
                 skipPartiallyExpanded = true
             ),
             filterStandards = listOf(
-                FilterStandard("a", mapOf("a" to false, "b" to true, "c" to false)),
-                FilterStandard("b", mapOf("a" to false, "b" to true, "c" to false))
+                FilterStandard(
+                    standardName = "Category",
+                    filterLabels = exerciseCategories.map {
+                        FilterLabel(
+                            it.category.id,
+                            it.category.name,
+                            it.isChosen
+                        )
+                    },
+                    onLabelSelected = onFilterLabelSelected,
+                )
             )
         )
     }
+
 }
 
 @Composable

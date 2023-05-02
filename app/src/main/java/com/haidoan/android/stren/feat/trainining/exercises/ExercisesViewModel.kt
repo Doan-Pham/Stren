@@ -5,13 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
+import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.repository.ExercisesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
 private const val TAG = "ExercisesViewModel"
@@ -20,6 +18,44 @@ private const val TAG = "ExercisesViewModel"
 internal class ExercisesViewModel @Inject constructor(exercisesRepository: ExercisesRepository) :
     ViewModel() {
     var searchBarText = mutableStateOf("")
+
+    private val _chosenCategoriesIds: MutableStateFlow<MutableList<String>> =
+        MutableStateFlow(mutableListOf())
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val exerciseCategories = _chosenCategoriesIds.flatMapLatest { ids ->
+        Log.d(TAG, "chosenCategoriesIds-map()- ids: $ids")
+        exercisesRepository.getAllExerciseCategories()
+            .map { categories ->
+                Log.d(TAG, "chosenCategoriesIds-map()- ids: $ids")
+                categories.map {
+                    Log.d(
+                        TAG, "chosenCategoriesIds-map()- ids: $ids"
+                    )
+                    ExerciseCategoryWrapper(
+                        it,
+                        ids.contains(it.id)
+                    )
+                }
+            }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
+
+    fun toggleCategorySelection(categoryId: String) {
+        Log.d(TAG, "toggleCategorySelection() - categoryId(): $categoryId")
+        if (_chosenCategoriesIds.value.contains(categoryId)) {
+            Log.d(TAG, "toggleCategorySelection() - Unselecting")
+            _chosenCategoriesIds.update {
+                it.apply { remove(categoryId) }
+            }
+            Log.d(TAG, "toggleCategorySelection() - After Unselect: ${_chosenCategoriesIds.value}")
+        } else {
+            Log.d(TAG, "toggleCategorySelection() - Selecting")
+            _chosenCategoriesIds.update {
+                it.apply { add(categoryId) }
+            }
+            Log.d(TAG, "toggleCategorySelection() - After Select: ${_chosenCategoriesIds.value}")
+        }
+    }
 
     private val exerciseNameToQuery = MutableStateFlow("")
     fun searchExerciseByName(exerciseName: String) {
@@ -32,7 +68,7 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val exercises = exerciseNameToQuery.filterNotNull().distinctUntilChanged()
+    val exercises = exerciseNameToQuery
         .flatMapLatest { exerciseNameToQuery ->
             if (exerciseNameToQuery.isEmpty() || exerciseNameToQuery.isBlank()) {
                 exercisesRepository.getExercisesWithLimit()
@@ -44,3 +80,5 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
         .cachedIn(viewModelScope)
 
 }
+
+data class ExerciseCategoryWrapper(val category: ExerciseCategory, val isChosen: Boolean)
