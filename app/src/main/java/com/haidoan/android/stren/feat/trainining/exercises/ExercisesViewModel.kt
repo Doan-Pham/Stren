@@ -19,19 +19,15 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
     ViewModel() {
     var searchBarText = mutableStateOf("")
 
-    private val _chosenCategoriesIds: MutableStateFlow<MutableList<String>> =
-        MutableStateFlow(mutableListOf())
+    private val _chosenCategoriesIds: MutableStateFlow<List<String>> =
+        MutableStateFlow(listOf())
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val exerciseCategories = _chosenCategoriesIds.flatMapLatest { ids ->
         Log.d(TAG, "chosenCategoriesIds-map()- ids: $ids")
         exercisesRepository.getAllExerciseCategories()
             .map { categories ->
-                Log.d(TAG, "chosenCategoriesIds-map()- ids: $ids")
                 categories.map {
-                    Log.d(
-                        TAG, "chosenCategoriesIds-map()- ids: $ids"
-                    )
                     ExerciseCategoryWrapper(
                         it,
                         ids.contains(it.id)
@@ -42,19 +38,20 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
 
     fun toggleCategorySelection(categoryId: String) {
         Log.d(TAG, "toggleCategorySelection() - categoryId(): $categoryId")
+
+        // MutableStateFlow works by comparing old and new value with equals() and emit
+        // based on that. So MUTATING the object wrapped in StateFlow DOESN'T UPDATE
+        // STATEFLOW since it's still the SAME OBJECT.
+        // Need to create NEW object and assign it
+        val newValue = mutableListOf<String>()
+        newValue.addAll(_chosenCategoriesIds.value)
+
         if (_chosenCategoriesIds.value.contains(categoryId)) {
-            Log.d(TAG, "toggleCategorySelection() - Unselecting")
-            _chosenCategoriesIds.update {
-                it.apply { remove(categoryId) }
-            }
-            Log.d(TAG, "toggleCategorySelection() - After Unselect: ${_chosenCategoriesIds.value}")
+            newValue.remove(categoryId)
         } else {
-            Log.d(TAG, "toggleCategorySelection() - Selecting")
-            _chosenCategoriesIds.update {
-                it.apply { add(categoryId) }
-            }
-            Log.d(TAG, "toggleCategorySelection() - After Select: ${_chosenCategoriesIds.value}")
+            newValue.add(categoryId)
         }
+        _chosenCategoriesIds.value = newValue.toList()
     }
 
     private val exerciseNameToQuery = MutableStateFlow("")
