@@ -1,5 +1,6 @@
 package com.haidoan.android.stren.core.designsystem.component
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -97,19 +98,19 @@ private fun FilterRegion(modifier: Modifier = Modifier, filterStandard: FilterSt
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
         ) {
-            filterStandard.selectedStateOfFilterLabels.forEach { labelAndSelectedState ->
-                var selected by remember { mutableStateOf(labelAndSelectedState.value) }
+            filterStandard.filterLabels.forEach { filterLabel ->
+                Log.d("FilterRegion", "filterLabel: $filterLabel")
                 FilterChip(
-                    selected = selected,
-                    onClick = { selected = !selected },
-                    label = { Text(labelAndSelectedState.key) },
+                    selected = filterLabel.isSelected,
+                    onClick = { filterStandard.onLabelSelected(filterLabel) },
+                    label = { Text(filterLabel.name) },
                     colors = FilterChipDefaults.filterChipColors(
                         containerColor = Color.White,
                         labelColor = MaterialTheme.colorScheme.primary,
                         selectedContainerColor = MaterialTheme.colorScheme.primary,
                         selectedLabelColor = Color.White
                     ),
-                    border = if (!selected) FilterChipDefaults.filterChipBorder(
+                    border = if (!filterLabel.isSelected) FilterChipDefaults.filterChipBorder(
                         borderColor = MaterialTheme.colorScheme.primary
                     ) else null
                 )
@@ -121,5 +122,8 @@ private fun FilterRegion(modifier: Modifier = Modifier, filterStandard: FilterSt
 
 data class FilterStandard(
     val standardName: String,
-    val selectedStateOfFilterLabels: Map<String, Boolean>
+    val onLabelSelected: (FilterLabel) -> Unit,
+    val filterLabels: List<FilterLabel>
 )
+
+data class FilterLabel(val id: String, val name: String, val isSelected: Boolean)
