@@ -1,8 +1,9 @@
 package com.haidoan.android.stren.core.testing.data
 
 import com.haidoan.android.stren.core.model.Exercise
+import com.haidoan.android.stren.core.model.ExerciseCategory
 
-val exercisesTestData: List<Exercise> = listOf(
+val EXERCISES_TEST_DATA: List<Exercise> = listOf(
     Exercise(
         id = "1",
         name = "Bench Press (Barbell)",
@@ -21,4 +22,19 @@ val exercisesTestData: List<Exercise> = listOf(
         imageUrls = listOf("https://static.strengthlevel.com/images/illustrations/squat-1000x1000.jpg"),
         trainedMuscleGroups = listOf("Quad")
     )
+)
+
+val EXERCISE_CATEGORIES_TEST_DATA: List<ExerciseCategory> = listOf(
+    ExerciseCategory(
+        id = "1",
+        name = "Barbell",
+    ),
+    ExerciseCategory(
+        id = "2",
+        name = "Dumbbell",
+    ),
+    ExerciseCategory(
+        id = "3",
+        name = "Cardio",
+    ),
 )
