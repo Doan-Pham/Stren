@@ -5,22 +5,32 @@ import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.haidoan.android.stren.core.model.ExerciseCategory
+import com.haidoan.android.stren.core.model.MuscleGroup
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 const val EXERCISE_COLLECTION_PATH = "Exercise"
+const val EXERCISE_CATEGORY_COLLECTION_PATH = "ExerciseCategory"
+const val MUSCLE_GROUP_COLLECTION_PATH = "MuscleGroup"
+private const val TAG = "ExercisesFirestoreDataSource"
 
 class ExercisesFirestoreDataSource @Inject constructor() : ExercisesRemoteDataSource {
-    private var collection: CollectionReference
+    private var exerciseCollection: CollectionReference
+    private var exerciseCategoryCollection: CollectionReference
+    private var muscleGroupCollection: CollectionReference
 
     init {
         val firestore = Firebase.firestore
         firestore.firestoreSettings =
             FirebaseFirestoreSettings.Builder().setPersistenceEnabled(false).build()
-        collection = firestore.collection(EXERCISE_COLLECTION_PATH)
+        exerciseCollection = firestore.collection(EXERCISE_COLLECTION_PATH)
+        exerciseCategoryCollection = firestore.collection(EXERCISE_CATEGORY_COLLECTION_PATH)
+        muscleGroupCollection = firestore.collection(MUSCLE_GROUP_COLLECTION_PATH)
     }
 
     override fun getExercisesWithLimitAsQuery(limit: Long): Query =
-        collection.orderBy("name", Query.Direction.ASCENDING)
+        exerciseCollection.orderBy("name", Query.Direction.ASCENDING)
             .limit(limit)
 
 
@@ -35,8 +45,17 @@ class ExercisesFirestoreDataSource @Inject constructor() : ExercisesRemoteDataSo
      * [Reference](https://stackoverflow.com/questions/46568142/google-firestore-query-on-substring-of-a-property-value-text-search)
      */
     override fun getExercisesByNameAsQuery(exerciseName: String, resultCountLimit: Long): Query =
-        collection.whereGreaterThanOrEqualTo("name", exerciseName)
+        exerciseCollection.whereGreaterThanOrEqualTo("name", exerciseName)
             .whereLessThanOrEqualTo("name", "$exerciseName\\uf8ff")
             .orderBy("name", Query.Direction.ASCENDING)
             .limit(resultCountLimit)
+
+    override suspend fun getAllExerciseCategories(): List<ExerciseCategory> =
+        exerciseCategoryCollection.get().await()
+            .mapNotNull { it.toObject(ExerciseCategory::class.java) }
+
+
+    override suspend fun getAllMuscleGroups(): List<MuscleGroup> =
+        muscleGroupCollection.get().await()
+            .mapNotNull { it.toObject(MuscleGroup::class.java) }
 }
