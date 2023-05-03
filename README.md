@@ -37,14 +37,27 @@
 
 ## How To Run
 
-To clone and run this application, you'll need [Git](https://git-scm.com) and [Android Studio](https://developer.android.com/studio/install) installed on your computer. 
-You can either clone the project using the terminal:
+1. To clone and run this application, you'll need [Git](https://git-scm.com) and [Android Studio](https://developer.android.com/studio/install) installed on your computer. 
+You can clone the project using the terminal 
+
 ```bash
 # Clone this repository
 $ git clone https://github.com/Doan-Pham/Stren
 ```
-then open the project in Android Studio. Or you can do the cloning in Android Studio itself following this [guide](https://www.geeksforgeeks.org/how-to-clone-android-project-from-github-in-android-studio/).
-Then click Run -> Run 'app' or use the shortcut 'Shift + F10' to start the application.
+
+then open the project in Android Studio. Or you can clone the project in Android Studio itself following this [guide](https://www.geeksforgeeks.org/how-to-clone-android-project-from-github-in-android-studio/).
+
+2. Get [google-services.json](https://console.firebase.google.com/u/2/project/stren-55f4e/settings/general/android:com.haidoan.android.stren) from Firebase Console -> Project Settings and add to "app" directory
+3. To use Sign in with Facebook/Google feature, add a "credentials.properties" file in the root project directory with the following content
+
+```
+FACEBOOK_APP_ID = [FACEBOOK_APP_ID]
+FACEBOOK_LOGIN_PROTOCOL_SCHEME = [FACEBOOK_LOGIN_PROTOCOL_SCHEME]
+FACEBOOK_CLIENT_TOKEN = [FACEBOOK_CLIENT_TOKEN]
+GOOGLE_WEB_CLIENT_ID = [GOOGLE_WEB_CLIENT_ID]
+```
+4. Click Build -> Rebuild Project.
+5. Click Run -> Run 'app'
 
 ## Architecture
 The application's architecture follows the MVVM pattern based on [Now In Android's](https://github.com/android/nowinandroid/tree/main) [Architecture Learning Journey](https://github.com/android/nowinandroid/blob/main/docs/ArchitectureLearningJourney.md) but without a local database and support for offline usage.
@@ -76,7 +89,7 @@ The application's conventions loosely follow the following guidelines:
 - Icons: [Severicons](https://www.figma.com/community/file/929620430222653376/Severicons---Essential-icon-set).
 
 ## Author
-  - [**Pham Truong Hai Doan**](https://github.com/Doan-Pham)
+ [**Pham Truong Hai Doan**](https://github.com/Doan-Pham)
 
 ## Acknowledgement
   - The application takes inspiration from the following products: [Strong](https://www.strong.app/), [Hevy](https://www.hevyapp.com/), [FitNotes](http://www.fitnotesapp.com/), [Cronometer](https://cronometer.com/), [MyFitnessPal](https://www.myfitnesspal.com/).
