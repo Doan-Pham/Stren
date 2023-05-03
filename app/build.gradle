@@ -22,11 +22,19 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+
+        Properties properties = new Properties()
+        properties.load(project.rootProject.file("credentials.properties").newDataInputStream())
+
+        resValue "string", "FACEBOOK_APP_ID", "\"${properties.getProperty("FACEBOOK_APP_ID")}\""
+        resValue "string", "FACEBOOK_LOGIN_PROTOCOL_SCHEME", "\"${properties.getProperty("FACEBOOK_LOGIN_PROTOCOL_SCHEME")}\""
+        resValue "string", "FACEBOOK_CLIENT_TOKEN", "\"${properties.getProperty("FACEBOOK_CLIENT_TOKEN")}\""
+        resValue "string", "GOOGLE_WEB_CLIENT_ID", "\"${properties.getProperty("GOOGLE_WEB_CLIENT_ID")}\""
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
