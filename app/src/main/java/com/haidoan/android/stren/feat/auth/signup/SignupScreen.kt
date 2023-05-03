@@ -85,7 +85,7 @@ fun SignupScreen(
         )
         Text(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(R.string.signup_welcom_title),
+            text = stringResource(R.string.signup_welcome_title),
             style = MaterialTheme.typography.headlineMedium,
             textAlign = TextAlign.Center
         )

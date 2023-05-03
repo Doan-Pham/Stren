@@ -3,12 +3,8 @@
     <string name="login_welcome_subtitle">Welcome back!</string>
     <string name="login_welcome_title">Ready to train?</string>
     <string name="signup_welcome_subtitle">Don\'t have an account?</string>
-    <string name="signup_welcom_title">Sign up!</string>
+    <string name="signup_welcome_title">Sign up!</string>
 
-    <string name="facebook_app_id">6158931374184122</string>
-    <string name="fb_login_protocol_scheme">fb6158931374184122</string>
-    <string name="facebook_client_token">9421f2b1e585a290d358fcd9babd6cae</string>
-    <string name="your_web_client_id">943688591214-glcdmni8r07h3n3osa74jq32galm1k00.apps.googleusercontent.com</string>
 
 
 </resources>
