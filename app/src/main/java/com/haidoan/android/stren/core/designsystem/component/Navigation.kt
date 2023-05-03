@@ -1,31 +1,81 @@
 package com.haidoan.android.stren.core.designsystem.component
 
 
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavDestination
+import com.haidoan.android.stren.R
+import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.TopLevelDestination
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.designsystem.theme.poppins
 
 const val TEST_TAG_BOTTOM_NAV = "Navigation-Bottom-Bar"
+const val TEST_TAG_TOP_BAR = "Navigation-Top-Bar"
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StrenSmallTopAppBar(
+    modifier: Modifier = Modifier,
+    title: String,
+    appBarConfiguration: AppBarConfiguration.NavigationAppBar
+) {
+    TopAppBar(
+        modifier = modifier, title = {
+            Row {
+                Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
+                Text(title)
+            }
+        },
+        navigationIcon = {
+            IconButton(
+                onClick = appBarConfiguration.navigationIcon.clickHandler,
+                enabled = appBarConfiguration.navigationButtonEnabled
+            ) {
+                Icon(
+                    painter = painterResource(id = appBarConfiguration.navigationIcon.drawableResourceId),
+                    contentDescription = appBarConfiguration.navigationIcon.description,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large))
+                )
+            }
+        }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
+        actions = {
+            appBarConfiguration.actionIcons.forEach {
+                IconButton(onClick = it.clickHandler) {
+                    Icon(
+                        painter = painterResource(it.drawableResourceId),
+                        contentDescription = it.description
+                    )
+                }
+            }
+
+        }
+    )
+}
 
 @Composable
 fun BottomNavigationBar(
     modifier: Modifier = Modifier,
     destinations: List<TopLevelDestination>,
-    currentDestination: NavDestination?,
+    currentTopLevelDestination: TopLevelDestination?,
     onNavigateToDestination: (TopLevelDestination) -> Unit,
 ) {
 
-    NavigationBar(modifier = modifier.testTag(TEST_TAG_BOTTOM_NAV), containerColor = Color.White) {
+    NavigationBar(
+        modifier = modifier.testTag(TEST_TAG_BOTTOM_NAV),
+        containerColor = Color.Transparent
+    ) {
         destinations.forEach { destination ->
             NavigationBarItem(
                 icon = {
@@ -51,7 +101,7 @@ fun BottomNavigationBar(
                     indicatorColor = Color.White,
                 ),
                 alwaysShowLabel = true,
-                selected = currentDestination?.route == destination.route,
+                selected = destination.route == currentTopLevelDestination?.route,
                 onClick = { onNavigateToDestination(destination) }
             )
         }

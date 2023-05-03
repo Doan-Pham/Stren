@@ -1,12 +1,12 @@
 package com.haidoan.android.stren.app.ui
 
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.TopLevelDestination
 
 
@@ -22,18 +22,18 @@ class StrenAppState(val navController: NavHostController) {
 
     val topLevelDestinations = TopLevelDestination.values().asList()
 
-    val currentDestination: NavDestination?
+    private val currentDestination: NavDestination?
         @Composable get() = navController
             .currentBackStackEntryAsState().value?.destination
 
-    private val currentTopLevelDestination: TopLevelDestination?
-        @Composable get() = when (currentDestination?.route) {
-            TopLevelDestination.DASHBOARD.route -> TopLevelDestination.DASHBOARD
-            TopLevelDestination.TRAINING.route -> TopLevelDestination.TRAINING
-            TopLevelDestination.NUTRITION.route -> TopLevelDestination.NUTRITION
-            TopLevelDestination.PROFILE.route -> TopLevelDestination.PROFILE
-            else -> null
-        }
+    val currentTopLevelDestination: TopLevelDestination?
+        @Composable get() = topLevelDestinations.firstOrNull { it.route == currentDestination?.route || it.route == currentDestination?.parent?.route }
+
+    private fun NavDestination?.isTopLevelOrTopLevelImmediateChild() =
+        topLevelDestinations.map { it.route }.contains(this?.route) ||
+                topLevelDestinations.flatMap { it.immediateChildDestinationRoutes }
+                    .contains(this?.route)
+
 
     private val startingTopLevelDestination = TopLevelDestination.DASHBOARD
 
@@ -49,5 +49,13 @@ class StrenAppState(val navController: NavHostController) {
     }
 
     val shouldShowBottomBar: Boolean
+        @Composable get() = currentDestination.isTopLevelOrTopLevelImmediateChild()
+
+    val shouldShowTopBar: Boolean
         @Composable get() = currentTopLevelDestination != null
+
+
+    var currentAppBarConfiguration by mutableStateOf<AppBarConfiguration>(AppBarConfiguration.NavigationAppBar())
+
+    var previousAppBarConfiguration: AppBarConfiguration = currentAppBarConfiguration
 }

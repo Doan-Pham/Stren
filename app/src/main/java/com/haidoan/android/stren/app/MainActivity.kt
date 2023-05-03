@@ -11,7 +11,10 @@ import com.facebook.CallbackManager
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.haidoan.android.stren.R
+import com.haidoan.android.stren.app.ui.StrenApp
 import com.haidoan.android.stren.core.designsystem.theme.StrenTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -29,6 +32,7 @@ class MainActivity : ComponentActivity() {
 
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        Firebase.auth.signOut()
         oneTapClient = Identity.getSignInClient(this)
         signInRequest = BeginSignInRequest.builder()
             .setPasswordRequestOptions(
@@ -40,7 +44,7 @@ class MainActivity : ComponentActivity() {
                 BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                     .setSupported(true)
                     // Your server's client ID, not your Android client ID.
-                    .setServerClientId(getString(R.string.your_web_client_id))
+                    .setServerClientId(getString(R.string.GOOGLE_WEB_CLIENT_ID))
                     // Only show accounts previously used to sign in.
                     .setFilterByAuthorizedAccounts(true)
                     .build()

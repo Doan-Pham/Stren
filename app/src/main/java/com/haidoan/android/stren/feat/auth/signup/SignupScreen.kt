@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ContentAlpha
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,7 +27,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.haidoan.android.stren.R
-import com.haidoan.android.stren.app.LocalSnackbarHostState
+import com.haidoan.android.stren.app.ui.LocalSnackbarHostState
 import com.haidoan.android.stren.core.designsystem.theme.Red40
 import com.haidoan.android.stren.core.designsystem.theme.Red50
 import kotlinx.coroutines.delay
@@ -87,7 +86,7 @@ internal fun SignupScreen(
         )
         Text(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(R.string.signup_welcom_title),
+            text = stringResource(R.string.signup_welcome_title),
             style = MaterialTheme.typography.headlineMedium,
             textAlign = TextAlign.Center
         )
@@ -218,7 +217,7 @@ internal fun SignupScreen(
                                 colors = listOf(
                                     Red40, Red50
                                 )
-                            ), alpha = if (uiState.isInputValid) 1f else ContentAlpha.disabled
+                            ), alpha = if (uiState.isInputValid) 1f else 0.3f
                         )
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 12.dp),

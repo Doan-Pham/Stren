@@ -32,7 +32,7 @@ import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.LocalFacebookCallbackManager
-import com.haidoan.android.stren.app.LocalSnackbarHostState
+import com.haidoan.android.stren.app.ui.LocalSnackbarHostState
 import com.haidoan.android.stren.core.designsystem.component.OutlinedTextAndIconButton
 import com.haidoan.android.stren.core.designsystem.theme.Red40
 import com.haidoan.android.stren.core.designsystem.theme.Red50
@@ -268,7 +268,7 @@ internal fun LoginScreen(
 private fun GoogleSignInButton(onTokenIdReceived: (String) -> Unit, modifier: Modifier = Modifier) {
     val oneTapSignInState = rememberOneTapSignInState()
     OneTapSignInWithGoogle(state = oneTapSignInState,
-        clientId = stringResource(id = R.string.your_web_client_id),
+        clientId = stringResource(id = R.string.GOOGLE_WEB_CLIENT_ID),
         onTokenIdReceived = onTokenIdReceived,
         onDialogDismissed = { message ->
             Log.d(TAG, "One tap dialog dismissed - message: $message")

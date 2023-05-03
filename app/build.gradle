@@ -22,11 +22,19 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+
+        Properties properties = new Properties()
+        properties.load(project.rootProject.file("credentials.properties").newDataInputStream())
+
+        resValue "string", "FACEBOOK_APP_ID", "\"${properties.getProperty("FACEBOOK_APP_ID")}\""
+        resValue "string", "FACEBOOK_LOGIN_PROTOCOL_SCHEME", "\"${properties.getProperty("FACEBOOK_LOGIN_PROTOCOL_SCHEME")}\""
+        resValue "string", "FACEBOOK_CLIENT_TOKEN", "\"${properties.getProperty("FACEBOOK_CLIENT_TOKEN")}\""
+        resValue "string", "GOOGLE_WEB_CLIENT_ID", "\"${properties.getProperty("GOOGLE_WEB_CLIENT_ID")}\""
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -54,23 +62,28 @@ dependencies {
 
     implementation 'androidx.core:core-ktx:1.10.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
-    implementation 'androidx.activity:activity-compose:1.7.0'
+    implementation "androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version"
+    implementation 'androidx.activity:activity-compose:1.7.1'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation 'androidx.core:core-splashscreen:1.0.0'
+    implementation 'androidx.core:core-splashscreen:1.0.1'
 
+    //PAGING
+    implementation "androidx.paging:paging-runtime:$paging_version"
+    implementation "androidx.paging:paging-testing:$paging_version"
+    implementation "androidx.paging:paging-compose:$paging_compose_version"
     // NAVIGATION
     implementation "androidx.navigation:navigation-compose:$navigation_version"
 
     // MATERIAL
     implementation("androidx.compose.material3:material3:$material_design_version")
     implementation("androidx.compose.material3:material3-window-size-class:$material_design_version")
-    implementation "androidx.compose.material:material:1.4.1"
 
     // FIREBASE
     implementation platform('com.google.firebase:firebase-bom:31.3.0')
     implementation 'com.google.firebase:firebase-auth-ktx'
-    implementation 'com.facebook.android:facebook-login:16.0.0'
+    implementation 'com.google.firebase:firebase-firestore-ktx'
+    implementation 'com.facebook.android:facebook-login:16.0.1'
     implementation 'com.google.android.gms:play-services-auth:20.5.0'
     implementation 'com.github.stevdza-san:OneTapCompose:1.0.0'
 
@@ -81,9 +94,13 @@ dependencies {
 
     // ACCOMPANIST
     implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-flowlayout:$accompanist_version"
 
     // VALIDATORS
     implementation "commons-validator:commons-validator:$common_validator_version"
+
+    // COIL
+    implementation "io.coil-kt:coil-compose:$coil_version"
 
     // TEST
     testImplementation 'junit:junit:4.13.2'
