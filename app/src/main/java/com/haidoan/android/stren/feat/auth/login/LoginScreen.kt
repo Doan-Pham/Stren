@@ -268,7 +268,7 @@ internal fun LoginScreen(
 private fun GoogleSignInButton(onTokenIdReceived: (String) -> Unit, modifier: Modifier = Modifier) {
     val oneTapSignInState = rememberOneTapSignInState()
     OneTapSignInWithGoogle(state = oneTapSignInState,
-        clientId = stringResource(id = R.string.your_web_client_id),
+        clientId = stringResource(id = R.string.GOOGLE_WEB_CLIENT_ID),
         onTokenIdReceived = onTokenIdReceived,
         onDialogDismissed = { message ->
             Log.d(TAG, "One tap dialog dismissed - message: $message")
