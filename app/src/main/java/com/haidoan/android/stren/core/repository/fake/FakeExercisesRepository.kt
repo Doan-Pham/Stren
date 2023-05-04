@@ -6,6 +6,7 @@ import androidx.paging.PagingData
 import androidx.paging.testing.asPagingSourceFactory
 import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.model.ExerciseCategory
+import com.haidoan.android.stren.core.model.ExerciseFilterStandards
 import com.haidoan.android.stren.core.model.MuscleGroup
 import com.haidoan.android.stren.core.repository.ExercisesRepository
 import kotlinx.coroutines.CoroutineScope
@@ -42,6 +43,13 @@ class FakeExercisesRepository(testScope: CoroutineScope) : ExercisesRepository {
     }
 
     override fun getAllMuscleGroups(): Flow<List<MuscleGroup>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun filterExercises(
+        filterStandards: ExerciseFilterStandards,
+        resultCountLimit: Long
+    ): Flow<PagingData<Exercise>> {
         TODO("Not yet implemented")
     }
 }

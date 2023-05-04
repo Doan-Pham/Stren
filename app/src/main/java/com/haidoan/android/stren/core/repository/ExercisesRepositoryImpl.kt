@@ -7,6 +7,7 @@ import androidx.paging.PagingData
 import com.haidoan.android.stren.core.datasource.ExercisesRemoteDataSource
 import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.model.ExerciseCategory
+import com.haidoan.android.stren.core.model.ExerciseFilterStandards
 import com.haidoan.android.stren.core.model.MuscleGroup
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -23,7 +24,11 @@ class ExercisesRepositoryImpl @Inject constructor(
         config = PagingConfig(
             pageSize = limit.toInt(),
         ),
-        pagingSourceFactory = { ExercisesPagingSource(dataSource.getExercisesWithLimitAsQuery(limit)) }
+        pagingSourceFactory = {
+            ExercisesPagingSource(
+                dataSource.getExercisesWithLimitAsQuery(limit).toQueryWrapper()
+            )
+        }
     ).flow
 
     override fun getExercisesByNameWithLimit(
@@ -38,12 +43,16 @@ class ExercisesRepositoryImpl @Inject constructor(
                 dataSource.getExercisesByNameAsQuery(
                     exerciseName,
                     limit
-                )
+                ).toQueryWrapper()
             )
         }
     ).flow
 
     override fun getAllExerciseCategories(): Flow<List<ExerciseCategory>> = flow {
+        Log.d(
+            TAG,
+            "getAllExerciseCategories() has been called"
+        )
         emit(dataSource.getAllExerciseCategories())
     }
         .catch {
@@ -54,6 +63,10 @@ class ExercisesRepositoryImpl @Inject constructor(
         }
 
     override fun getAllMuscleGroups(): Flow<List<MuscleGroup>> = flow {
+        Log.d(
+            TAG,
+            "getAllMuscleGroups() has been called"
+        )
         emit(dataSource.getAllMuscleGroups())
     }
         .catch {
@@ -62,5 +75,22 @@ class ExercisesRepositoryImpl @Inject constructor(
                 "getAllMuscleGroups() - Exception: ${it.message}"
             )
         }
+
+    override fun filterExercises(
+        filterStandards: ExerciseFilterStandards,
+        resultCountLimit: Long
+    ): Flow<PagingData<Exercise>> = Pager(
+        config = PagingConfig(
+            pageSize = resultCountLimit.toInt(),
+        ),
+        pagingSourceFactory = {
+            ExercisesPagingSource(
+                dataSource.getFilteredExercisesAsQuery(
+                    filterStandards,
+                    resultCountLimit
+                )
+            )
+        }
+    ).flow
 
 }
