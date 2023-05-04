@@ -6,10 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import com.haidoan.android.stren.core.model.ExerciseCategory
+import com.haidoan.android.stren.core.model.ExerciseFilterStandards
 import com.haidoan.android.stren.core.model.MuscleGroup
 import com.haidoan.android.stren.core.repository.ExercisesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
@@ -20,7 +21,6 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
     ViewModel() {
     var searchBarText = mutableStateOf("")
 
-
     private val _selectedCategoriesIds: MutableStateFlow<List<String>> =
         MutableStateFlow(listOf())
 
@@ -30,7 +30,7 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
         exercisesRepository.getAllExerciseCategories()
             .map { categories ->
                 categories.map {
-                    ExerciseCategoryWrapper(
+                    ExerciseCategorySelectionState(
                         it,
                         ids.contains(it.id)
                     )
@@ -66,7 +66,7 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
         exercisesRepository.getAllMuscleGroups()
             .map { categories ->
                 categories.map {
-                    MuscleGroupWrapper(
+                    MuscleGroupSelectionState(
                         it,
                         ids.contains(it.id)
                     )
@@ -87,31 +87,67 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
         _selectedMuscleGroupsIds.value = newValue.toList()
     }
 
+    private val _exercisesFilterStandards =
+        MutableStateFlow(ExerciseFilterStandards("", listOf(), listOf()))
 
-    private val exerciseNameToQuery = MutableStateFlow("")
+    private val _exerciseNameToQuery = MutableStateFlow("")
     fun searchExerciseByName(exerciseName: String) {
-        Log.d(TAG, "searchExerciseByName() - [Param]exerciseName: $exerciseName")
-        exerciseNameToQuery.value = exerciseName
-        Log.d(
-            TAG,
-            "searchExerciseByName() - [Param]exerciseNameToQuery.value: ${exerciseNameToQuery.value}"
-        )
+//        Log.d(TAG, "searchExerciseByName() - [Param]exerciseName: $exerciseName")
+        _exercisesFilterStandards.value =
+            _exercisesFilterStandards.value.copy(exerciseName = exerciseName)
+
+    }
+
+    fun resetFilters() {
+        viewModelScope.launch {
+            _selectedCategoriesIds.value = listOf()
+            _selectedMuscleGroupsIds.value = listOf()
+            applyFilters()
+        }
+    }
+
+    fun applyFilters() {
+        // If no filter is selected, application should show all exercises,
+        // as if ALL filters are selected
+        val exerciseCategoriesToFilterBy =
+            if (exerciseCategories.value.any { it.isSelected }) {
+                exerciseCategories.value.filter { it.isSelected }
+            } else {
+                exerciseCategories.value
+            }.map { it.category }
+
+        val muscleGroupsToFilterBy =
+            if (muscleGroups.value.any { it.isSelected }) {
+                muscleGroups.value.filter { it.isSelected }
+            } else {
+                muscleGroups.value
+            }.map { it.muscleGroup }
+
+        _exercisesFilterStandards.value =
+            _exercisesFilterStandards.value.copy(
+                exerciseCategories = exerciseCategoriesToFilterBy,
+                muscleGroupsTrained = muscleGroupsToFilterBy
+            )
+
+//        Log.d(TAG, "applyFilters() - exerciseCategoriesToFilterBy: $exerciseCategoriesToFilterBy")
+//        Log.d(TAG, "applyFilters() - muscleGroupsToFilterBy: $muscleGroupsToFilterBy")
+//        Log.d(TAG, "applyFilters() - _exercisesFilterStandards: ${_exercisesFilterStandards.value}")
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val exercises = exerciseNameToQuery
-        .flatMapLatest { exerciseNameToQuery ->
-            if (exerciseNameToQuery.isEmpty() || exerciseNameToQuery.isBlank()) {
-                exercisesRepository.getExercisesWithLimit()
-            } else {
-                exercisesRepository.getExercisesByNameWithLimit(exerciseName = exerciseNameToQuery)
+    val exercises = _exercisesFilterStandards
+        .flatMapLatest { filterStandards ->
+            Log.d(TAG, "val exercises - filterStandards: $filterStandards")
+            withContext(viewModelScope.coroutineContext) {
+                exercisesRepository.filterExercises(filterStandards = filterStandards)
             }
 
         }
         .cachedIn(viewModelScope)
-
 }
 
-data class ExerciseCategoryWrapper(val category: ExerciseCategory, val isChosen: Boolean)
 
-data class MuscleGroupWrapper(val muscleGroup: MuscleGroup, val isChosen: Boolean)
+data class ExerciseCategorySelectionState(val category: ExerciseCategory, val isSelected: Boolean)
+
+data class MuscleGroupSelectionState(val muscleGroup: MuscleGroup, val isSelected: Boolean)
+

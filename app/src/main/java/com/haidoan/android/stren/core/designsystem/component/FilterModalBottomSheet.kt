@@ -21,7 +21,9 @@ fun FilterModalBottomSheet(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
     bottomSheetState: SheetState,
-    filterStandards: List<FilterStandard>
+    filterStandards: List<FilterStandard>,
+    onResetFilters: () -> Unit,
+    onApplyFilters: () -> Unit
 ) {
     ModalBottomSheet(
         modifier = modifier,
@@ -65,13 +67,13 @@ fun FilterModalBottomSheet(
         ) {
             StrenTextButton(
                 modifier = Modifier.weight(1f),
-                onClickHandler = {},
+                onClickHandler = onResetFilters,
                 text = "Reset",
                 textStyle = MaterialTheme.typography.bodyMedium
             )
             StrenFilledButton(
                 modifier = Modifier.weight(1f),
-                onClickHandler = {},
+                onClickHandler = onApplyFilters,
                 text = "Apply",
                 textStyle = MaterialTheme.typography.bodyMedium
             )

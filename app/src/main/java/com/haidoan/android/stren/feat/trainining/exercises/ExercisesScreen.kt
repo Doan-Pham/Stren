@@ -53,7 +53,7 @@ internal fun ExercisesRoute(
             FilterLabel(
                 it.category.id,
                 it.category.name,
-                it.isChosen
+                it.isSelected
             )
         },
         onLabelSelected = { chosenLabel -> viewModel.toggleCategorySelection(chosenLabel.id) },
@@ -65,7 +65,7 @@ internal fun ExercisesRoute(
             FilterLabel(
                 it.muscleGroup.id,
                 it.muscleGroup.name,
-                it.isChosen
+                it.isSelected
             )
         },
         onLabelSelected = { chosenLabel -> viewModel.toggleMuscleGroupSelection(chosenLabel.id) },
@@ -102,7 +102,9 @@ internal fun ExercisesRoute(
         pagedExercises = pagedExercises,
         shouldShowFilterSheet = shouldShowFilterSheet,
         onHideFilterSheet = { shouldShowFilterSheet = false },
-        filterStandards = listOf(exerciseCategoryFilter, muscleGroupFilter)
+        filterStandards = listOf(exerciseCategoryFilter, muscleGroupFilter),
+        onResetFilters = viewModel::resetFilters,
+        onApplyFilters = viewModel::applyFilters
     )
 }
 
@@ -113,7 +115,9 @@ internal fun ExercisesScreen(
     pagedExercises: LazyPagingItems<Exercise>,
     filterStandards: List<FilterStandard> = listOf(),
     shouldShowFilterSheet: Boolean = false,
-    onHideFilterSheet: () -> Unit = {}
+    onHideFilterSheet: () -> Unit = {},
+    onResetFilters: () -> Unit,
+    onApplyFilters: () -> Unit
 ) {
     LazyColumn(
         modifier = modifier
@@ -183,7 +187,9 @@ internal fun ExercisesScreen(
             bottomSheetState = rememberModalBottomSheetState(
                 skipPartiallyExpanded = true
             ),
-            filterStandards = filterStandards
+            filterStandards = filterStandards,
+            onResetFilters = onResetFilters,
+            onApplyFilters = onApplyFilters
         )
     }
 
