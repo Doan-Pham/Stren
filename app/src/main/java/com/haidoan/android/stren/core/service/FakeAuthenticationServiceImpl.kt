@@ -1,8 +1,8 @@
 package com.haidoan.android.stren.core.service
 
-import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.facebook.AccessToken
+import timber.log.Timber
 
 private const val TAG = "FakeAuthenticationServiceImpl"
 
@@ -13,7 +13,7 @@ class FakeAuthenticationServiceImpl : AuthenticationService {
 
     var isUserSignedIn = false
         set(value) {
-            Log.d(TAG, "setIsUserSignedIn: $field")
+            Timber.d(TAG, "setIsUserSignedIn: $field")
             if (field != value) {
                 field = value
                 checkAuthStateAndExecuteCallbacks()
@@ -40,7 +40,7 @@ class FakeAuthenticationServiceImpl : AuthenticationService {
     override suspend fun authenticate(email: String, password: String) {
         if (email == "asd@gmail.com" && password == "asdqwe") {
             isUserSignedIn = true
-            Log.d(TAG, "authenticate() - Called: Email and passwords are correct")
+            Timber.d(TAG, "authenticate() - Called: Email and passwords are correct")
         }
     }
 

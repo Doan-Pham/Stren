@@ -1,6 +1,5 @@
 package com.haidoan.android.stren.feat.auth.signup
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,6 +8,7 @@ import com.haidoan.android.stren.core.service.AuthenticationService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 private const val TAG = "SignupViewModel"
@@ -46,7 +46,7 @@ class SignupViewModel @Inject constructor(private val authService: Authenticatio
             if (throwable is FirebaseAuthUserCollisionException) {
                 errorMessage = "Email already exists"
             }
-            Log.e(TAG, "onSignUpClick - exception - ${throwable::class}: ${throwable.message}")
+            Timber.e(TAG, "onSignUpClick - exception - ${throwable::class}: ${throwable.message}")
             uiState.value = uiState.value.copy(
                 isSignupFailed = true,
                 isLoading = false,

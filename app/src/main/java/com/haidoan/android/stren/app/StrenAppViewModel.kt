@@ -1,11 +1,11 @@
 package com.haidoan.android.stren.app
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.haidoan.android.stren.core.service.AuthenticationService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import timber.log.Timber
 import javax.inject.Inject
 
 private const val TAG = "StrenAppViewModel"
@@ -21,11 +21,11 @@ class StrenAppViewModel @Inject constructor(
         authenticationService.addAuthStateListeners(
             onUserAuthenticated = {
                 isUserSignedIn.value = true
-                Log.d(TAG, "stateListen - isUserSignedIn: ${isUserSignedIn.value}")
+                Timber.d(TAG, "stateListen - isUserSignedIn: ${isUserSignedIn.value}")
             },
             onUserNotAuthenticated = {
                 isUserSignedIn.value = false
-                Log.d(TAG, "stateListen - isUserSignedIn: ${isUserSignedIn.value}")
+                Timber.d(TAG, "stateListen - isUserSignedIn: ${isUserSignedIn.value}")
 
             })
     }

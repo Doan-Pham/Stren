@@ -1,6 +1,5 @@
 package com.haidoan.android.stren.feat.auth.login
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,6 +8,7 @@ import com.haidoan.android.stren.core.service.AuthenticationService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 private const val TAG = "LoginViewModel"
@@ -38,7 +38,7 @@ class LoginViewModel @Inject constructor(private val authService: Authentication
 
     fun onSignInClick() {
         viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
-            Log.e(TAG, "onSignInClick - exception: ${throwable.message}")
+            Timber.e(TAG, "onSignInClick - exception: ${throwable.message}")
             uiState.value = uiState.value.copy(
                 isAuthFailed = true,
                 isLoading = false,
@@ -55,9 +55,9 @@ class LoginViewModel @Inject constructor(private val authService: Authentication
     }
 
     fun onSignInWithFacebookClick(token: AccessToken) {
-        Log.d(TAG, "onSignInWithFacebookClick() - :$token")
+        Timber.d(TAG, "onSignInWithFacebookClick() - :$token")
         viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
-            Log.e(TAG, "onSignInWithFacebookClick() - exception: ${throwable.message}")
+            Timber.e(TAG, "onSignInWithFacebookClick() - exception: ${throwable.message}")
             uiState.value = uiState.value.copy(
                 isAuthFailed = true,
                 isLoading = false,
@@ -74,9 +74,9 @@ class LoginViewModel @Inject constructor(private val authService: Authentication
     }
 
     fun onSignInWithGoogleClick(tokenId: String) {
-        Log.d(TAG, "onSignInWithGoogleClick() - :$tokenId")
+        Timber.d(TAG, "onSignInWithGoogleClick() - :$tokenId")
         viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
-            Log.e(TAG, "onSignInWithGoogleClick() - exception: ${throwable.message}")
+            Timber.e(TAG, "onSignInWithGoogleClick() - exception: ${throwable.message}")
             uiState.value = uiState.value.copy(
                 isAuthFailed = true,
                 isLoading = false,

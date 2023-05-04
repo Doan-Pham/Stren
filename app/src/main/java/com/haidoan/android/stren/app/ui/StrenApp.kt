@@ -1,6 +1,5 @@
 package com.haidoan.android.stren.app.ui
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -22,6 +21,7 @@ import com.haidoan.android.stren.core.designsystem.component.BottomNavigationBar
 import com.haidoan.android.stren.core.designsystem.component.SearchBar
 import com.haidoan.android.stren.core.designsystem.component.StrenSmallTopAppBar
 import com.haidoan.android.stren.core.designsystem.component.TEST_TAG_TOP_BAR
+import timber.log.Timber
 
 private const val TAG = "StrenApp"
 val LocalSnackbarHostState =
@@ -34,8 +34,8 @@ fun StrenApp(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val isUserSignedIn by rememberSaveable { viewModel.isUserSignedIn }
-    Log.d(TAG, "isUserSignedIn: $isUserSignedIn")
-    Log.d(TAG, "appState.currentAppBarConfiguration: ${appState.currentAppBarConfiguration}")
+    Timber.d(TAG, "isUserSignedIn: $isUserSignedIn")
+    Timber.d(TAG, "appState.currentAppBarConfiguration: ${appState.currentAppBarConfiguration}")
 
     // This allows any screen in the composition to access snackbar
     CompositionLocalProvider(

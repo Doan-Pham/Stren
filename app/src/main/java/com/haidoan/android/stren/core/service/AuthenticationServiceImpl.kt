@@ -1,12 +1,12 @@
 package com.haidoan.android.stren.core.service
 
-import android.util.Log
 import com.facebook.AccessToken
 import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
+import timber.log.Timber
 import javax.inject.Inject
 
 private const val TAG = "AuthenticationServiceImpl"
@@ -19,7 +19,7 @@ class AuthenticationServiceImpl @Inject constructor() : AuthenticationService {
     ) {
         //Firebase.auth.signOut()
         Firebase.auth.addAuthStateListener {
-            Log.d(TAG, "addAuthStateListeners() - currentUser: ${it.currentUser}")
+            Timber.d(TAG, "addAuthStateListeners() - currentUser: ${it.currentUser}")
             if (it.currentUser != null) {
                 onUserAuthenticated()
             } else {

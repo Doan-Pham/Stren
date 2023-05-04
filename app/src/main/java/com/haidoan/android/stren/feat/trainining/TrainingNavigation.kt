@@ -1,6 +1,5 @@
 package com.haidoan.android.stren.feat.trainining
 
-import android.util.Log
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.navigation.NavGraphBuilder
@@ -10,10 +9,10 @@ import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.core.designsystem.component.DummyBoxWithText
 import com.haidoan.android.stren.feat.trainining.exercises.EXERCISES_SCREEN_ROUTE
 import com.haidoan.android.stren.feat.trainining.exercises.ExercisesRoute
+import timber.log.Timber
 
 const val TRAINING_GRAPH_ROUTE = "training_graph_route"
 const val TRAINING_GRAPH_STARTING_ROUTE = "training_graph_starting_route"
-private const val TAG = "trainingGraph"
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 fun NavGraphBuilder.trainingGraph(appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {}) {
@@ -24,7 +23,7 @@ fun NavGraphBuilder.trainingGraph(appBarConfigurationChangeHandler: (AppBarConfi
                     Pair("Exercises") {
                         ExercisesRoute(appBarConfigurationChangeHandler = {
                             appBarConfigurationChangeHandler(it)
-                            Log.d("ExercisesScreen", "App bar configured")
+                            Timber.d("ExercisesScreen", "App bar configured")
                         })
                     },
                     Pair("History") {

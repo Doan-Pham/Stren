@@ -100,7 +100,7 @@ private fun FilterRegion(modifier: Modifier = Modifier, filterStandard: FilterSt
             horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
         ) {
             filterStandard.filterLabels.forEach { filterLabel ->
-//                Log.d("FilterRegion", "filterLabel: $filterLabel")
+//                Timber.d("FilterRegion", "filterLabel: $filterLabel")
                 FilterChip(
                     selected = filterLabel.isSelected,
                     onClick = { filterStandard.onLabelSelected(filterLabel) },

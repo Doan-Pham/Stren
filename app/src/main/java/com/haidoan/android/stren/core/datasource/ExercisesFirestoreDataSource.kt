@@ -16,7 +16,6 @@ import javax.inject.Inject
 const val EXERCISE_COLLECTION_PATH = "Exercise"
 const val EXERCISE_CATEGORY_COLLECTION_PATH = "ExerciseCategory"
 const val MUSCLE_GROUP_COLLECTION_PATH = "MuscleGroup"
-private const val TAG = "ExercisesFirestoreDataSource"
 
 class ExercisesFirestoreDataSource @Inject constructor() : ExercisesRemoteDataSource {
     private var exerciseCollection: CollectionReference
@@ -77,9 +76,9 @@ class ExercisesFirestoreDataSource @Inject constructor() : ExercisesRemoteDataSo
 
         val categoriesToFilterBy = filterStandards.exerciseCategories.map { it.name }
         val muscleGroupsToFilterBy = filterStandards.muscleGroupsTrained.map { it.name }
-//        Log.d(TAG, "getFilteredExercisesAsQuery() - categoriesToFilterBy: $categoriesToFilterBy")
+//        Timber.d(TAG, "getFilteredExercisesAsQuery() - categoriesToFilterBy: $categoriesToFilterBy")
 //
-//        Log.d(
+//        Timber.d(
 //            TAG,
 //            "getFilteredExercisesAsQuery() - muscleGroupsToFilterBy: $muscleGroupsToFilterBy"
 //        )

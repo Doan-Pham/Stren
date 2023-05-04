@@ -1,6 +1,5 @@
 package com.haidoan.android.stren.core.repository
 
-import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.google.firebase.firestore.DocumentSnapshot
@@ -10,6 +9,7 @@ import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.model.MuscleGroup
 import kotlinx.coroutines.tasks.await
+import timber.log.Timber
 
 private const val TAG = "ExercisesPagingSource"
 
@@ -30,34 +30,34 @@ internal class ExercisesPagingSource(
             var data: List<Exercise> = currentPage.toExerciseList()
             val documentIndexes = data.mapIndexed { index, exercise -> exercise to index }.toMap()
 
-            Log.d(TAG, "load() - query: ${query} ")
-            Log.d(TAG, "load() - extraFilter - categories: $categoriesToFilterBy ")
-            Log.d(TAG, "load() - extraFilter - muscleGroupsToFilterBy: $muscleGroupsToFilterBy ")
-            Log.d(TAG, "load() - data (before): $data ")
+            Timber.d(TAG, "load() - query: ${query} ")
+            Timber.d(TAG, "load() - extraFilter - categories: $categoriesToFilterBy ")
+            Timber.d(TAG, "load() - extraFilter - muscleGroupsToFilterBy: $muscleGroupsToFilterBy ")
+            Timber.d(TAG, "load() - data (before): $data ")
 
             if (categoriesToFilterBy.isNotEmpty()) {
                 data = data.filter { exercise ->
                     categoriesToFilterBy.contains(exercise.belongedCategory)
                 }
-                Log.d(TAG, "load() - data (filtering categories): $data ")
+                Timber.d(TAG, "load() - data (filtering categories): $data ")
             }
             if (muscleGroupsToFilterBy.isNotEmpty()) {
                 data = data.filter { exercise ->
-                    Log.d(
+                    Timber.d(
                         TAG,
                         "load() - data (Filtering muscles) - cur exercise: ${exercise.name};${exercise.trainedMuscleGroups}  "
                     )
                     exercise.trainedMuscleGroups.any { it in muscleGroupsToFilterBy }
                 }
-                Log.d(TAG, "load() - data (After filtering muscles): $data ")
+                Timber.d(TAG, "load() - data (After filtering muscles): $data ")
             }
-            Log.d(TAG, "load() - data (after): $data ")
+            Timber.d(TAG, "load() - data (after): $data ")
 
             var lastVisibleExercise: DocumentSnapshot? = null
 
             if (data.isNotEmpty()) {
                 lastVisibleExercise = currentPage.documents[documentIndexes[data.last()] ?: 0]
-                Log.d(TAG, "lastVisibleExercise: ${lastVisibleExercise.get("name")}")
+                Timber.d(TAG, "lastVisibleExercise: ${lastVisibleExercise.get("name")}")
             }
 
             val nextPage =
@@ -70,13 +70,13 @@ internal class ExercisesPagingSource(
                 nextKey = nextPage
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Loading Page Error: $e")
+            Timber.e(TAG, "Loading Page Error: $e")
             LoadResult.Error(e)
         }
     }
 
     private fun QuerySnapshot.toExerciseList() = this.mapNotNull { document ->
-        //Log.d(TAG, "toExerciseList() - document: $document")
+        //Timber.d(TAG, "toExerciseList() - document: $document")
         @Suppress("UNCHECKED_CAST")
         (Exercise(
             document.id,

@@ -1,6 +1,5 @@
 package com.haidoan.android.stren.feat.trainining.exercises
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,6 +30,7 @@ import com.haidoan.android.stren.core.designsystem.component.FilterStandard
 import com.haidoan.android.stren.core.designsystem.component.LoadingAnimation
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.model.Exercise
+import timber.log.Timber
 
 internal const val EXERCISES_SCREEN_ROUTE = "exercises_screen_route"
 const val EXERCISES_LOADING_ANIMATION_TEST_TAG = "Loading-Exercises"
@@ -135,12 +135,12 @@ internal fun ExercisesScreen(
                 )
             }
         }
-        Log.d(TAG, "itemCount : ${pagedExercises.itemCount}")
+        Timber.d(TAG, "itemCount : ${pagedExercises.itemCount}")
 
         when (pagedExercises.loadState.append) {
             is LoadState.NotLoading -> Unit
             is LoadState.Loading -> {
-                Log.d(TAG, "loadState - append: ${pagedExercises.loadState.append}")
+                Timber.d(TAG, "loadState - append: ${pagedExercises.loadState.append}")
                 item {
                     Box(
                         modifier = Modifier
@@ -162,7 +162,7 @@ internal fun ExercisesScreen(
         when (pagedExercises.loadState.refresh) {
             is LoadState.NotLoading -> Unit
             is LoadState.Loading -> {
-                Log.d(TAG, "loadState - refresh: ${pagedExercises.loadState.refresh}")
+                Timber.d(TAG, "loadState - refresh: ${pagedExercises.loadState.refresh}")
                 item {
                     Box(
                         modifier = Modifier

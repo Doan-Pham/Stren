@@ -1,6 +1,5 @@
 package com.haidoan.android.stren.core.repository
 
-import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -12,6 +11,7 @@ import com.haidoan.android.stren.core.model.MuscleGroup
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import timber.log.Timber
 import javax.inject.Inject
 
 private const val TAG = "ExercisesRepositoryImpl"
@@ -49,28 +49,28 @@ class ExercisesRepositoryImpl @Inject constructor(
     ).flow
 
     override fun getAllExerciseCategories(): Flow<List<ExerciseCategory>> = flow {
-        Log.d(
+        Timber.d(
             TAG,
             "getAllExerciseCategories() has been called"
         )
         emit(dataSource.getAllExerciseCategories())
     }
         .catch {
-            Log.e(
+            Timber.e(
                 TAG,
                 "getAllExerciseCategories() - Exception: ${it.message}"
             )
         }
 
     override fun getAllMuscleGroups(): Flow<List<MuscleGroup>> = flow {
-        Log.d(
+        Timber.d(
             TAG,
             "getAllMuscleGroups() has been called"
         )
         emit(dataSource.getAllMuscleGroups())
     }
         .catch {
-            Log.e(
+            Timber.e(
                 TAG,
                 "getAllMuscleGroups() - Exception: ${it.message}"
             )

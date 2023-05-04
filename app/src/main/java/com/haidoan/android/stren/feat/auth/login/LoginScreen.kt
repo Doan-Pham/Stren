@@ -1,6 +1,5 @@
 package com.haidoan.android.stren.feat.auth.login
 
-import android.util.Log
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -39,6 +38,7 @@ import com.haidoan.android.stren.core.designsystem.theme.Red50
 import com.stevdzasan.onetap.OneTapSignInWithGoogle
 import com.stevdzasan.onetap.rememberOneTapSignInState
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 private const val TAG = "LoginScreen"
 internal const val LOGIN_SCREEN_ROUTE = "login_screen_route"
@@ -215,7 +215,7 @@ internal fun LoginScreen(
             FacebookSignInButton(
                 onAuthSuccess = { result ->
                     viewModel.onSignInWithFacebookClick(result.accessToken)
-                    Log.d(TAG, "facebook:onSuccess:$result")
+                    Timber.d(TAG, "facebook:onSuccess:$result")
                 }, modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp)
@@ -271,7 +271,7 @@ private fun GoogleSignInButton(onTokenIdReceived: (String) -> Unit, modifier: Mo
         clientId = stringResource(id = R.string.GOOGLE_WEB_CLIENT_ID),
         onTokenIdReceived = onTokenIdReceived,
         onDialogDismissed = { message ->
-            Log.d(TAG, "One tap dialog dismissed - message: $message")
+            Timber.d(TAG, "One tap dialog dismissed - message: $message")
         })
 
     OutlinedTextAndIconButton(
@@ -299,11 +299,11 @@ private fun FacebookSignInButton(
                 }
 
                 override fun onCancel() {
-                    Log.d(TAG, "facebook:onCancel")
+                    Timber.d(TAG, "facebook:onCancel")
                 }
 
                 override fun onError(error: FacebookException) {
-                    Log.d(TAG, "facebook:onError", error)
+                    Timber.d(TAG, "facebook:onError", error)
                 }
             })
         onDispose {

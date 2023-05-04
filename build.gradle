@@ -11,6 +11,7 @@ buildscript {
         material_design_version = '1.1.0-beta02'
         paging_version = '3.2.0-alpha04'
         paging_compose_version = '1.0.0-alpha18'
+        timber_version = '5.0.1'
     }
 
     repositories {

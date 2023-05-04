@@ -1,6 +1,5 @@
 package com.haidoan.android.stren.feat.trainining.exercises
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,6 +11,7 @@ import com.haidoan.android.stren.core.repository.ExercisesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import timber.log.Timber
 import javax.inject.Inject
 
 private const val TAG = "ExercisesViewModel"
@@ -26,7 +26,7 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val exerciseCategories = _selectedCategoriesIds.flatMapLatest { ids ->
-        Log.d(TAG, "chosenCategoriesIds-map()- ids: $ids")
+        Timber.d(TAG, "chosenCategoriesIds-map()- ids: $ids")
         exercisesRepository.getAllExerciseCategories()
             .map { categories ->
                 categories.map {
@@ -39,7 +39,7 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
 
     fun toggleCategorySelection(categoryId: String) {
-        Log.d(TAG, "toggleCategorySelection() - categoryId(): $categoryId")
+        Timber.d(TAG, "toggleCategorySelection() - categoryId(): $categoryId")
 
         // MutableStateFlow works by comparing old and new value with equals() and emit
         // based on that. So MUTATING the object wrapped in StateFlow DOESN'T UPDATE
@@ -62,7 +62,7 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val muscleGroups = _selectedMuscleGroupsIds.flatMapLatest { ids ->
-        Log.d(TAG, "chosenCategoriesIds-map()- ids: $ids")
+        Timber.d(TAG, "chosenCategoriesIds-map()- ids: $ids")
         exercisesRepository.getAllMuscleGroups()
             .map { categories ->
                 categories.map {
@@ -75,7 +75,7 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
 
     fun toggleMuscleGroupSelection(muscleGroupId: String) {
-        Log.d(TAG, "toggleMuscleGroupSelection() - muscleGroupId(): $muscleGroupId")
+        Timber.d(TAG, "toggleMuscleGroupSelection() - muscleGroupId(): $muscleGroupId")
         val newValue = mutableListOf<String>()
         newValue.addAll(_selectedMuscleGroupsIds.value)
 
@@ -90,9 +90,8 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
     private val _exercisesFilterStandards =
         MutableStateFlow(ExerciseFilterStandards("", listOf(), listOf()))
 
-    private val _exerciseNameToQuery = MutableStateFlow("")
     fun searchExerciseByName(exerciseName: String) {
-//        Log.d(TAG, "searchExerciseByName() - [Param]exerciseName: $exerciseName")
+//        Timber.d(TAG, "searchExerciseByName() - [Param]exerciseName: $exerciseName")
         _exercisesFilterStandards.value =
             _exercisesFilterStandards.value.copy(exerciseName = exerciseName)
 
@@ -152,15 +151,15 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
                 muscleGroupsTrained = muscleGroupsToFilterBy
             )
 //
-//        Log.d(TAG, "applyFilters() - exerciseCategoriesToFilterBy: $exerciseCategoriesToFilterBy")
-//        Log.d(TAG, "applyFilters() - muscleGroupsToFilterBy: $muscleGroupsToFilterBy")
-//        Log.d(TAG, "applyFilters() - _exercisesFilterStandards: ${_exercisesFilterStandards.value}")
+//        Timber.d(TAG, "applyFilters() - exerciseCategoriesToFilterBy: $exerciseCategoriesToFilterBy")
+//        Timber.d(TAG, "applyFilters() - muscleGroupsToFilterBy: $muscleGroupsToFilterBy")
+//        Timber.d(TAG, "applyFilters() - _exercisesFilterStandards: ${_exercisesFilterStandards.value}")
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val exercises = _exercisesFilterStandards
         .flatMapLatest { filterStandards ->
-            Log.d(TAG, "val exercises - filterStandards: $filterStandards")
+            Timber.d(TAG, "val exercises - filterStandards: $filterStandards")
             withContext(viewModelScope.coroutineContext) {
                 exercisesRepository.filterExercises(filterStandards = filterStandards)
             }
