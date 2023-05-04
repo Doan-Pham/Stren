@@ -107,20 +107,43 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
     }
 
     fun applyFilters() {
+
+        // Need to reset exerciseCategories and muscleGroups selection state
+        // before applying filters, since some updates to the selection state
+        // may not be fast enough
+        val selectedCategoriesIds = _selectedCategoriesIds.value
+        val exerciseCategoriesAfterReset =
+            exerciseCategories.value.map {
+                ExerciseCategorySelectionState(
+                    it.category,
+                    selectedCategoriesIds.contains(it.category.id)
+                )
+            }
+
+        val selectedMuscleGroupsIds = _selectedMuscleGroupsIds.value
+
+        val muscleGroupsAfterReset =
+            muscleGroups.value.map {
+                MuscleGroupSelectionState(
+                    it.muscleGroup,
+                    selectedMuscleGroupsIds.contains(it.muscleGroup.id)
+                )
+            }
+
         // If no filter is selected, application should show all exercises,
         // as if ALL filters are selected
         val exerciseCategoriesToFilterBy =
-            if (exerciseCategories.value.any { it.isSelected }) {
-                exerciseCategories.value.filter { it.isSelected }
+            if (exerciseCategoriesAfterReset.any { it.isSelected }) {
+                exerciseCategoriesAfterReset.filter { it.isSelected }
             } else {
-                exerciseCategories.value
+                exerciseCategoriesAfterReset
             }.map { it.category }
 
         val muscleGroupsToFilterBy =
-            if (muscleGroups.value.any { it.isSelected }) {
-                muscleGroups.value.filter { it.isSelected }
+            if (muscleGroupsAfterReset.any { it.isSelected }) {
+                muscleGroupsAfterReset.filter { it.isSelected }
             } else {
-                muscleGroups.value
+                muscleGroupsAfterReset
             }.map { it.muscleGroup }
 
         _exercisesFilterStandards.value =
@@ -128,7 +151,7 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
                 exerciseCategories = exerciseCategoriesToFilterBy,
                 muscleGroupsTrained = muscleGroupsToFilterBy
             )
-
+//
 //        Log.d(TAG, "applyFilters() - exerciseCategoriesToFilterBy: $exerciseCategoriesToFilterBy")
 //        Log.d(TAG, "applyFilters() - muscleGroupsToFilterBy: $muscleGroupsToFilterBy")
 //        Log.d(TAG, "applyFilters() - _exercisesFilterStandards: ${_exercisesFilterStandards.value}")
