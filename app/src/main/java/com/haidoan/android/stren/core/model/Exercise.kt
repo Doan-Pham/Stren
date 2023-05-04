@@ -11,3 +11,9 @@ data class Exercise(
     val belongedCategory: String = "",
     val trainedMuscleGroups: List<String> = listOf()
 )
+
+data class ExerciseFilterStandards(
+    val exerciseName: String,
+    val exerciseCategories: List<ExerciseCategory>,
+    val muscleGroupsTrained: List<MuscleGroup>
+)

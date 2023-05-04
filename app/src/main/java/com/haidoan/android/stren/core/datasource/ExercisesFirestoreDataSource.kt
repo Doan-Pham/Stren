@@ -6,7 +6,10 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.haidoan.android.stren.core.model.ExerciseCategory
+import com.haidoan.android.stren.core.model.ExerciseFilterStandards
 import com.haidoan.android.stren.core.model.MuscleGroup
+import com.haidoan.android.stren.core.repository.ExerciseExtraFilter
+import com.haidoan.android.stren.core.repository.QueryWrapper
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -58,4 +61,54 @@ class ExercisesFirestoreDataSource @Inject constructor() : ExercisesRemoteDataSo
     override suspend fun getAllMuscleGroups(): List<MuscleGroup> =
         muscleGroupCollection.get().await()
             .mapNotNull { it.toObject(MuscleGroup::class.java) }
+
+    /**
+     * This query is very limited due to Firestore's query constraint
+     */
+    override fun getFilteredExercisesAsQuery(
+        filterStandards: ExerciseFilterStandards,
+        resultCountLimit: Long
+    ): QueryWrapper {
+        val query =
+            exerciseCollection.whereGreaterThanOrEqualTo("name", filterStandards.exerciseName)
+                .whereLessThanOrEqualTo("name", "${filterStandards.exerciseName}\\uf8ff")
+                .orderBy("name", Query.Direction.ASCENDING)
+                .limit(resultCountLimit)
+
+        val categoriesToFilterBy = filterStandards.exerciseCategories.map { it.name }
+        val muscleGroupsToFilterBy = filterStandards.muscleGroupsTrained.map { it.name }
+//        Log.d(TAG, "getFilteredExercisesAsQuery() - categoriesToFilterBy: $categoriesToFilterBy")
+//
+//        Log.d(
+//            TAG,
+//            "getFilteredExercisesAsQuery() - muscleGroupsToFilterBy: $muscleGroupsToFilterBy"
+//        )
+
+        if (categoriesToFilterBy.isEmpty()) {
+            return if (muscleGroupsToFilterBy.isEmpty()) {
+                QueryWrapper(
+                    query
+                )
+            } else {
+                QueryWrapper(
+                    query.whereArrayContainsAny(
+                        "primaryMuscles",
+                        muscleGroupsToFilterBy
+                    )
+                )
+            }
+        } else {
+            return if (muscleGroupsToFilterBy.isEmpty()) {
+                QueryWrapper(
+                    query.whereIn("category", categoriesToFilterBy)
+                )
+            } else {
+                QueryWrapper(
+                    query.whereIn("category", categoriesToFilterBy),
+                    ExerciseExtraFilter(muscleGroups = filterStandards.muscleGroupsTrained)
+                )
+
+            }
+        }
+    }
 }
