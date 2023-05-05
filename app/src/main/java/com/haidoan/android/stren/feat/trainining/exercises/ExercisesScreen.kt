@@ -1,5 +1,6 @@
 package com.haidoan.android.stren.feat.trainining.exercises
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,7 +42,8 @@ private const val TAG = "ExercisesScreen"
 internal fun ExercisesRoute(
     modifier: Modifier = Modifier,
     viewModel: ExercisesViewModel = hiltViewModel(),
-    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {}
+    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {},
+    onNavigateToExerciseDetailScreen: (exerciseId: String) -> Unit,
 ) {
     var shouldShowFilterSheet by rememberSaveable { mutableStateOf(false) }
     val pagedExercises = viewModel.exercises.collectAsLazyPagingItems()
@@ -104,7 +106,8 @@ internal fun ExercisesRoute(
         onHideFilterSheet = { shouldShowFilterSheet = false },
         filterStandards = listOf(exerciseCategoryFilter, muscleGroupFilter),
         onResetFilters = viewModel::resetFilters,
-        onApplyFilters = viewModel::applyFilters
+        onApplyFilters = viewModel::applyFilters,
+        onNavigateToExerciseDetailScreen = onNavigateToExerciseDetailScreen
     )
 }
 
@@ -117,7 +120,8 @@ internal fun ExercisesScreen(
     shouldShowFilterSheet: Boolean = false,
     onHideFilterSheet: () -> Unit = {},
     onResetFilters: () -> Unit,
-    onApplyFilters: () -> Unit
+    onApplyFilters: () -> Unit,
+    onNavigateToExerciseDetailScreen: (exerciseId: String) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier
@@ -131,7 +135,8 @@ internal fun ExercisesScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(dimensionResource(id = R.dimen.padding_medium)),
-                    exercise = exercise
+                    exercise = exercise,
+                    onClickHandler = onNavigateToExerciseDetailScreen
                 )
             }
         }
@@ -196,9 +201,13 @@ internal fun ExercisesScreen(
 }
 
 @Composable
-private fun ExerciseItem(modifier: Modifier = Modifier, exercise: Exercise) {
+private fun ExerciseItem(
+    modifier: Modifier = Modifier,
+    exercise: Exercise,
+    onClickHandler: (exerciseId: String) -> Unit
+) {
     Row(
-        modifier = modifier,
+        modifier = modifier.clickable { onClickHandler(exercise.id) },
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
