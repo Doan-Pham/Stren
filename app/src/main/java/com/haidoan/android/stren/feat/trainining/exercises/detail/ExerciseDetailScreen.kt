@@ -5,7 +5,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
-import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.component.DummyBoxWithText
 import com.haidoan.android.stren.feat.trainining.exercises.ExercisesViewModel
 import timber.log.Timber
@@ -20,9 +19,7 @@ internal fun ExerciseDetailRoute(
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {}
 ) {
 
-    val exercisesAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
-        navigationIcon = (IconButtonInfo(1, "sf") {}).copy(clickHandler = {})
-    )
+    val exercisesAppBarConfiguration = AppBarConfiguration.NavigationAppBar()
     var isAppBarConfigured by remember { mutableStateOf(false) }
     if (!isAppBarConfigured) {
         appBarConfigurationChangeHandler(exercisesAppBarConfiguration)

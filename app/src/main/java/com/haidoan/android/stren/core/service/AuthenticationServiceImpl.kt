@@ -9,8 +9,6 @@ import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import javax.inject.Inject
 
-private const val TAG = "AuthenticationServiceImpl"
-
 class AuthenticationServiceImpl @Inject constructor() : AuthenticationService {
 
     override fun addAuthStateListeners(
@@ -19,7 +17,7 @@ class AuthenticationServiceImpl @Inject constructor() : AuthenticationService {
     ) {
         //Firebase.auth.signOut()
         Firebase.auth.addAuthStateListener {
-            Timber.d(TAG, "addAuthStateListeners() - currentUser: ${it.currentUser}")
+            Timber.d("addAuthStateListeners() - currentUser: ${it.currentUser}")
             if (it.currentUser != null) {
                 onUserAuthenticated()
             } else {

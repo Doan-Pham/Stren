@@ -76,7 +76,7 @@ class ExercisesFirestoreDataSource @Inject constructor() : ExercisesRemoteDataSo
 
         val categoriesToFilterBy = filterStandards.exerciseCategories.map { it.name }
         val muscleGroupsToFilterBy = filterStandards.muscleGroupsTrained.map { it.name }
-//        Timber.d(TAG, "getFilteredExercisesAsQuery() - categoriesToFilterBy: $categoriesToFilterBy")
+//        Timber.d("getFilteredExercisesAsQuery() - categoriesToFilterBy: $categoriesToFilterBy")
 //
 //        Timber.d(
 //            TAG,

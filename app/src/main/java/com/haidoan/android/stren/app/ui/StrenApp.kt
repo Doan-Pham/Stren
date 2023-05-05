@@ -23,7 +23,6 @@ import com.haidoan.android.stren.core.designsystem.component.StrenSmallTopAppBar
 import com.haidoan.android.stren.core.designsystem.component.TEST_TAG_TOP_BAR
 import timber.log.Timber
 
-private const val TAG = "StrenApp"
 val LocalSnackbarHostState =
     compositionLocalOf<SnackbarHostState> { error("No SnackbarHostState provided") }
 
@@ -34,8 +33,8 @@ fun StrenApp(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val isUserSignedIn by rememberSaveable { viewModel.isUserSignedIn }
-    Timber.d(TAG, "isUserSignedIn: $isUserSignedIn")
-    Timber.d(TAG, "appState.currentAppBarConfiguration: ${appState.currentAppBarConfiguration}")
+    Timber.d("isUserSignedIn: $isUserSignedIn")
+    Timber.d("appState.currentAppBarConfiguration: ${appState.currentAppBarConfiguration}")
 
     // This allows any screen in the composition to access snackbar
     CompositionLocalProvider(

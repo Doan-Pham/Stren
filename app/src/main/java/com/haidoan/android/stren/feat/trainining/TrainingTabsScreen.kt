@@ -61,10 +61,10 @@ fun TrainingTabsScreen(
             // The [page] value changes much more frequently than tabIndex in order to create
             // animation. Without the below check, the composables will be unnecessarily recomposed
             // many times
-            //Timber.d(TAG, "currentTabIndex: $currentTabIndex ; page: $page ")
+            //Timber.d( "currentTabIndex: $currentTabIndex ; page: $page ")
             if (page == currentTabIndex && previousTabIndex != currentTabIndex) {
                 previousTabIndex = currentTabIndex
-                //Timber.d(TAG, "Shown - currentTabIndex: $currentTabIndex ; previousTabIndex: $previousTabIndex ")
+                //Timber.d( "Shown - currentTabIndex: $currentTabIndex ; previousTabIndex: $previousTabIndex ")
                 tabNamesAndScreenComposables[currentTabIndex].second()
             }
         }

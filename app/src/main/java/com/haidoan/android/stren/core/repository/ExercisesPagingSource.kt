@@ -30,16 +30,16 @@ internal class ExercisesPagingSource(
             var data: List<Exercise> = currentPage.toExerciseList()
             val documentIndexes = data.mapIndexed { index, exercise -> exercise to index }.toMap()
 
-            Timber.d(TAG, "load() - query: ${query} ")
-            Timber.d(TAG, "load() - extraFilter - categories: $categoriesToFilterBy ")
-            Timber.d(TAG, "load() - extraFilter - muscleGroupsToFilterBy: $muscleGroupsToFilterBy ")
-            Timber.d(TAG, "load() - data (before): $data ")
+            Timber.d("load() - query: ${query} ")
+            Timber.d("load() - extraFilter - categories: $categoriesToFilterBy ")
+            Timber.d("load() - extraFilter - muscleGroupsToFilterBy: $muscleGroupsToFilterBy ")
+            Timber.d("load() - data (before): $data ")
 
             if (categoriesToFilterBy.isNotEmpty()) {
                 data = data.filter { exercise ->
                     categoriesToFilterBy.contains(exercise.belongedCategory)
                 }
-                Timber.d(TAG, "load() - data (filtering categories): $data ")
+                Timber.d("load() - data (filtering categories): $data ")
             }
             if (muscleGroupsToFilterBy.isNotEmpty()) {
                 data = data.filter { exercise ->
@@ -49,15 +49,15 @@ internal class ExercisesPagingSource(
                     )
                     exercise.trainedMuscleGroups.any { it in muscleGroupsToFilterBy }
                 }
-                Timber.d(TAG, "load() - data (After filtering muscles): $data ")
+                Timber.d("load() - data (After filtering muscles): $data ")
             }
-            Timber.d(TAG, "load() - data (after): $data ")
+            Timber.d("load() - data (after): $data ")
 
             var lastVisibleExercise: DocumentSnapshot? = null
 
             if (data.isNotEmpty()) {
                 lastVisibleExercise = currentPage.documents[documentIndexes[data.last()] ?: 0]
-                Timber.d(TAG, "lastVisibleExercise: ${lastVisibleExercise.get("name")}")
+                Timber.d("lastVisibleExercise: ${lastVisibleExercise.get("name")}")
             }
 
             val nextPage =
@@ -76,7 +76,7 @@ internal class ExercisesPagingSource(
     }
 
     private fun QuerySnapshot.toExerciseList() = this.mapNotNull { document ->
-        //Timber.d(TAG, "toExerciseList() - document: $document")
+        //Timber.d( "toExerciseList() - document: $document")
         @Suppress("UNCHECKED_CAST")
         (Exercise(
             document.id,

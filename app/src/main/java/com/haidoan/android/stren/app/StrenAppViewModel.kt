@@ -8,8 +8,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import timber.log.Timber
 import javax.inject.Inject
 
-private const val TAG = "StrenAppViewModel"
-
 @HiltViewModel
 class StrenAppViewModel @Inject constructor(
     authenticationService: AuthenticationService
@@ -21,11 +19,11 @@ class StrenAppViewModel @Inject constructor(
         authenticationService.addAuthStateListeners(
             onUserAuthenticated = {
                 isUserSignedIn.value = true
-                Timber.d(TAG, "stateListen - isUserSignedIn: ${isUserSignedIn.value}")
+                Timber.d("stateListen - isUserSignedIn: ${isUserSignedIn.value}")
             },
             onUserNotAuthenticated = {
                 isUserSignedIn.value = false
-                Timber.d(TAG, "stateListen - isUserSignedIn: ${isUserSignedIn.value}")
+                Timber.d("stateListen - isUserSignedIn: ${isUserSignedIn.value}")
 
             })
     }

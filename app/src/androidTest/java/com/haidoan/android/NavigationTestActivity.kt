@@ -19,8 +19,6 @@ import com.haidoan.android.stren.core.service.FakeAuthenticationServiceImpl
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
-private const val TAG = "NavigationTestActivity"
-
 @AndroidEntryPoint
 class NavigationTestActivity : ComponentActivity() {
     private var facebookCallbackManager = CallbackManager.Factory.create()
@@ -42,7 +40,7 @@ class NavigationTestActivity : ComponentActivity() {
                     LocalFacebookCallbackManager provides facebookCallbackManager,
                     LocalActivityResultRegistryOwner provides this
                 ) {
-                    Timber.d(TAG, "isUserSignedIn: $isUserSignedIn")
+                    Timber.d("isUserSignedIn: $isUserSignedIn")
                     fakeAuthenticationServiceImpl.isUserSignedIn = isUserSignedIn
 
                     StrenApp(viewModel = viewModel)

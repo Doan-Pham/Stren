@@ -14,8 +14,6 @@ import kotlinx.coroutines.flow.*
 import timber.log.Timber
 import javax.inject.Inject
 
-private const val TAG = "ExercisesViewModel"
-
 @HiltViewModel
 internal class ExercisesViewModel @Inject constructor(exercisesRepository: ExercisesRepository) :
     ViewModel() {
@@ -26,7 +24,7 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val exerciseCategories = _selectedCategoriesIds.flatMapLatest { ids ->
-        Timber.d(TAG, "chosenCategoriesIds-map()- ids: $ids")
+        Timber.d("chosenCategoriesIds-map()- ids: $ids")
         exercisesRepository.getAllExerciseCategories()
             .map { categories ->
                 categories.map {
@@ -39,7 +37,7 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
 
     fun toggleCategorySelection(categoryId: String) {
-        Timber.d(TAG, "toggleCategorySelection() - categoryId(): $categoryId")
+        Timber.d("toggleCategorySelection() - categoryId(): $categoryId")
 
         // MutableStateFlow works by comparing old and new value with equals() and emit
         // based on that. So MUTATING the object wrapped in StateFlow DOESN'T UPDATE
@@ -62,7 +60,7 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val muscleGroups = _selectedMuscleGroupsIds.flatMapLatest { ids ->
-        Timber.d(TAG, "chosenCategoriesIds-map()- ids: $ids")
+        Timber.d("chosenCategoriesIds-map()- ids: $ids")
         exercisesRepository.getAllMuscleGroups()
             .map { categories ->
                 categories.map {
@@ -75,7 +73,7 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
 
     fun toggleMuscleGroupSelection(muscleGroupId: String) {
-        Timber.d(TAG, "toggleMuscleGroupSelection() - muscleGroupId(): $muscleGroupId")
+        Timber.d("toggleMuscleGroupSelection() - muscleGroupId(): $muscleGroupId")
         val newValue = mutableListOf<String>()
         newValue.addAll(_selectedMuscleGroupsIds.value)
 
@@ -91,7 +89,7 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
         MutableStateFlow(ExerciseFilterStandards("", listOf(), listOf()))
 
     fun searchExerciseByName(exerciseName: String) {
-//        Timber.d(TAG, "searchExerciseByName() - [Param]exerciseName: $exerciseName")
+//        Timber.d( "searchExerciseByName() - [Param]exerciseName: $exerciseName")
         _exercisesFilterStandards.value =
             _exercisesFilterStandards.value.copy(exerciseName = exerciseName)
 
@@ -151,15 +149,15 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
                 muscleGroupsTrained = muscleGroupsToFilterBy
             )
 //
-//        Timber.d(TAG, "applyFilters() - exerciseCategoriesToFilterBy: $exerciseCategoriesToFilterBy")
-//        Timber.d(TAG, "applyFilters() - muscleGroupsToFilterBy: $muscleGroupsToFilterBy")
-//        Timber.d(TAG, "applyFilters() - _exercisesFilterStandards: ${_exercisesFilterStandards.value}")
+//        Timber.d( "applyFilters() - exerciseCategoriesToFilterBy: $exerciseCategoriesToFilterBy")
+//        Timber.d( "applyFilters() - muscleGroupsToFilterBy: $muscleGroupsToFilterBy")
+//        Timber.d( "applyFilters() - _exercisesFilterStandards: ${_exercisesFilterStandards.value}")
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val exercises = _exercisesFilterStandards
         .flatMapLatest { filterStandards ->
-            Timber.d(TAG, "val exercises - filterStandards: $filterStandards")
+            Timber.d("val exercises - filterStandards: $filterStandards")
             withContext(viewModelScope.coroutineContext) {
                 exercisesRepository.filterExercises(filterStandards = filterStandards)
             }

@@ -4,8 +4,6 @@ import androidx.annotation.VisibleForTesting
 import com.facebook.AccessToken
 import timber.log.Timber
 
-private const val TAG = "FakeAuthenticationServiceImpl"
-
 @VisibleForTesting
 class FakeAuthenticationServiceImpl : AuthenticationService {
     private var onUserAuthenticated: () -> Unit = {}
@@ -13,7 +11,7 @@ class FakeAuthenticationServiceImpl : AuthenticationService {
 
     var isUserSignedIn = false
         set(value) {
-            Timber.d(TAG, "setIsUserSignedIn: $field")
+            Timber.d("setIsUserSignedIn: $field")
             if (field != value) {
                 field = value
                 checkAuthStateAndExecuteCallbacks()
@@ -40,7 +38,7 @@ class FakeAuthenticationServiceImpl : AuthenticationService {
     override suspend fun authenticate(email: String, password: String) {
         if (email == "asd@gmail.com" && password == "asdqwe") {
             isUserSignedIn = true
-            Timber.d(TAG, "authenticate() - Called: Email and passwords are correct")
+            Timber.d("authenticate() - Called: Email and passwords are correct")
         }
     }
 

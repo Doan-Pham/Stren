@@ -27,8 +27,7 @@ internal fun NavGraphBuilder.exerciseGraph(
             navArgument(EXERCISE_ID_ARG) { type = NavType.StringType },
         )
     ) { backStackEntry ->
-        Timber.tag("exerciseGraph")
-            .d("Moved to detail, id: ${backStackEntry.arguments?.getString(EXERCISE_ID_ARG)}")
+        Timber.d("Moved to detail, id: ${backStackEntry.arguments?.getString(EXERCISE_ID_ARG)}")
         ExerciseDetailRoute(appBarConfigurationChangeHandler = appBarConfigurationChangeHandler)
     }
 

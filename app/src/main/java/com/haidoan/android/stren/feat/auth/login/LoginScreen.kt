@@ -40,7 +40,6 @@ import com.stevdzasan.onetap.rememberOneTapSignInState
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-private const val TAG = "LoginScreen"
 internal const val LOGIN_SCREEN_ROUTE = "login_screen_route"
 const val TEST_TAG_SCREEN_LOGIN = "Screen-Login"
 
@@ -215,7 +214,7 @@ internal fun LoginScreen(
             FacebookSignInButton(
                 onAuthSuccess = { result ->
                     viewModel.onSignInWithFacebookClick(result.accessToken)
-                    Timber.d(TAG, "facebook:onSuccess:$result")
+                    Timber.d("facebook:onSuccess:$result")
                 }, modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp)
@@ -271,7 +270,7 @@ private fun GoogleSignInButton(onTokenIdReceived: (String) -> Unit, modifier: Mo
         clientId = stringResource(id = R.string.GOOGLE_WEB_CLIENT_ID),
         onTokenIdReceived = onTokenIdReceived,
         onDialogDismissed = { message ->
-            Timber.d(TAG, "One tap dialog dismissed - message: $message")
+            Timber.d("One tap dialog dismissed - message: $message")
         })
 
     OutlinedTextAndIconButton(
@@ -299,11 +298,11 @@ private fun FacebookSignInButton(
                 }
 
                 override fun onCancel() {
-                    Timber.d(TAG, "facebook:onCancel")
+                    Timber.d("facebook:onCancel")
                 }
 
                 override fun onError(error: FacebookException) {
-                    Timber.d(TAG, "facebook:onError", error)
+                    Timber.d("facebook:onError", error)
                 }
             })
         onDispose {

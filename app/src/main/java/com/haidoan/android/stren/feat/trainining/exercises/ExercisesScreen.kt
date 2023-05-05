@@ -36,7 +36,6 @@ import timber.log.Timber
 internal const val EXERCISES_SCREEN_ROUTE = "exercises_screen_route"
 const val EXERCISES_LOADING_ANIMATION_TEST_TAG = "Loading-Exercises"
 const val EXERCISES_EXERCISE_LIST_TEST_TAG = "List-Exercises"
-private const val TAG = "ExercisesScreen"
 
 @Composable
 internal fun ExercisesRoute(
@@ -140,12 +139,12 @@ internal fun ExercisesScreen(
                 )
             }
         }
-        Timber.d(TAG, "itemCount : ${pagedExercises.itemCount}")
+        Timber.d("itemCount : ${pagedExercises.itemCount}")
 
         when (pagedExercises.loadState.append) {
             is LoadState.NotLoading -> Unit
             is LoadState.Loading -> {
-                Timber.d(TAG, "loadState - append: ${pagedExercises.loadState.append}")
+                Timber.d("loadState - append: ${pagedExercises.loadState.append}")
                 item {
                     Box(
                         modifier = Modifier
@@ -167,7 +166,7 @@ internal fun ExercisesScreen(
         when (pagedExercises.loadState.refresh) {
             is LoadState.NotLoading -> Unit
             is LoadState.Loading -> {
-                Timber.d(TAG, "loadState - refresh: ${pagedExercises.loadState.refresh}")
+                Timber.d("loadState - refresh: ${pagedExercises.loadState.refresh}")
                 item {
                     Box(
                         modifier = Modifier

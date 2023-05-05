@@ -55,7 +55,7 @@ class LoginViewModel @Inject constructor(private val authService: Authentication
     }
 
     fun onSignInWithFacebookClick(token: AccessToken) {
-        Timber.d(TAG, "onSignInWithFacebookClick() - :$token")
+        Timber.d("onSignInWithFacebookClick() - :$token")
         viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
             Timber.e(TAG, "onSignInWithFacebookClick() - exception: ${throwable.message}")
             uiState.value = uiState.value.copy(
@@ -74,7 +74,7 @@ class LoginViewModel @Inject constructor(private val authService: Authentication
     }
 
     fun onSignInWithGoogleClick(tokenId: String) {
-        Timber.d(TAG, "onSignInWithGoogleClick() - :$tokenId")
+        Timber.d("onSignInWithGoogleClick() - :$tokenId")
         viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
             Timber.e(TAG, "onSignInWithGoogleClick() - exception: ${throwable.message}")
             uiState.value = uiState.value.copy(
