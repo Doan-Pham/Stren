@@ -40,7 +40,7 @@ fun StrenSmallTopAppBar(
         navigationIcon = {
             IconButton(
                 onClick = appBarConfiguration.navigationIcon.clickHandler,
-                enabled = appBarConfiguration.navigationButtonEnabled
+                enabled = appBarConfiguration.navigationIcon.isEnabled
             ) {
                 Icon(
                     painter = painterResource(id = appBarConfiguration.navigationIcon.drawableResourceId),
