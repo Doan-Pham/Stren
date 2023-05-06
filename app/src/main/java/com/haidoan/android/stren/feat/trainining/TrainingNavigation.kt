@@ -45,6 +45,8 @@ fun NavGraphBuilder.trainingGraph(
                 )
             )
         }
-        exerciseGraph(appBarConfigurationChangeHandler = appBarConfigurationChangeHandler)
+        exerciseGraph(
+            appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
+            onBackToPreviousScreen = { navController.popBackStack() })
     }
 }

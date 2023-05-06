@@ -19,7 +19,8 @@ internal fun NavController.navigateToExerciseDetail(exerciseId: String) {
 
 @OptIn(ExperimentalAnimationApi::class)
 internal fun NavGraphBuilder.exerciseGraph(
-    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {}
+    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
+    onBackToPreviousScreen: () -> Unit
 ) {
     composable(
         route = "$EXERCISE_DETAIL_SCREEN_ROUTE/{$EXERCISE_ID_ARG}",
@@ -28,7 +29,10 @@ internal fun NavGraphBuilder.exerciseGraph(
         )
     ) { backStackEntry ->
         Timber.d("Moved to detail, id: ${backStackEntry.arguments?.getString(EXERCISE_ID_ARG)}")
-        ExerciseDetailRoute(appBarConfigurationChangeHandler = appBarConfigurationChangeHandler)
+        ExerciseDetailRoute(
+            appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
+            onBackToPreviousScreen = onBackToPreviousScreen
+        )
     }
 
 }
