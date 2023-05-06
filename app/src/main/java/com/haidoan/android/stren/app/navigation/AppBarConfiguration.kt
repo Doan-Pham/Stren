@@ -8,8 +8,7 @@ import com.haidoan.android.stren.R
  */
 sealed interface AppBarConfiguration {
     data class NavigationAppBar(
-        val screenRoute: String = "",
-        val titleResourceId: Int = R.string.app_name,
+        val title: String = "Stren",
         val navigationIcon: IconButtonInfo = IconButtonInfo.APP_ICON,
         val actionIcons: List<IconButtonInfo> = emptyList()
     ) : AppBarConfiguration
@@ -40,8 +39,8 @@ data class IconButtonInfo(
 
         val BACK_ICON = IconButtonInfo(
             isEnabled = true,
-            drawableResourceId = R.drawable.ic_app_logo_no_padding,
-            description = "App icon",
+            drawableResourceId = R.drawable.ic_arrow_left,
+            description = "Back Arrow Icon",
             clickHandler = {})
     }
 }

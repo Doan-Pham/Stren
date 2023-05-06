@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
+import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.app.navigation.TopLevelDestination
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.designsystem.theme.poppins
@@ -27,14 +28,13 @@ const val TEST_TAG_TOP_BAR = "Navigation-Top-Bar"
 @Composable
 fun StrenSmallTopAppBar(
     modifier: Modifier = Modifier,
-    title: String,
     appBarConfiguration: AppBarConfiguration.NavigationAppBar
 ) {
     TopAppBar(
         modifier = modifier, title = {
             Row {
                 Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
-                Text(title)
+                Text(appBarConfiguration.title)
             }
         },
         navigationIcon = {
@@ -45,7 +45,7 @@ fun StrenSmallTopAppBar(
                 Icon(
                     painter = painterResource(id = appBarConfiguration.navigationIcon.drawableResourceId),
                     contentDescription = appBarConfiguration.navigationIcon.description,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = if (appBarConfiguration.navigationIcon == IconButtonInfo.APP_ICON) MaterialTheme.colorScheme.primary else Color.Black,
                     modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large))
                 )
             }
