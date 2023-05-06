@@ -77,7 +77,7 @@ fun StrenNavHost(
                 }
             }
         }
-        trainingGraph(appBarConfigurationChangeHandler)
+        trainingGraph(navController, appBarConfigurationChangeHandler)
         composable(route = TopLevelDestination.NUTRITION.route) {
             Box(
                 modifier = Modifier

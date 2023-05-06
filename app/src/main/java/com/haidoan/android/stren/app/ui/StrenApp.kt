@@ -1,6 +1,5 @@
 package com.haidoan.android.stren.app.ui
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -12,9 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.StrenAppViewModel
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.StrenNavHost
@@ -22,8 +19,8 @@ import com.haidoan.android.stren.core.designsystem.component.BottomNavigationBar
 import com.haidoan.android.stren.core.designsystem.component.SearchBar
 import com.haidoan.android.stren.core.designsystem.component.StrenSmallTopAppBar
 import com.haidoan.android.stren.core.designsystem.component.TEST_TAG_TOP_BAR
+import timber.log.Timber
 
-private const val TAG = "StrenApp"
 val LocalSnackbarHostState =
     compositionLocalOf<SnackbarHostState> { error("No SnackbarHostState provided") }
 
@@ -34,8 +31,8 @@ fun StrenApp(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val isUserSignedIn by rememberSaveable { viewModel.isUserSignedIn }
-    Log.d(TAG, "isUserSignedIn: $isUserSignedIn")
-    Log.d(TAG, "appState.currentAppBarConfiguration: ${appState.currentAppBarConfiguration}")
+    Timber.d("isUserSignedIn: $isUserSignedIn")
+    Timber.d("appState.currentAppBarConfiguration: ${appState.currentAppBarConfiguration}")
 
     // This allows any screen in the composition to access snackbar
     CompositionLocalProvider(
@@ -94,7 +91,6 @@ private fun StrenTopAppBar(
             is AppBarConfiguration.NavigationAppBar -> {
                 StrenSmallTopAppBar(
                     modifier = Modifier.testTag(TEST_TAG_TOP_BAR),
-                    title = stringResource(id = R.string.app_name),
                     appBarConfiguration = configuration
                 )
             }

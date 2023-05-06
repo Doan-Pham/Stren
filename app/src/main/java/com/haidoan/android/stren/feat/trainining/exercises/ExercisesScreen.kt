@@ -1,6 +1,6 @@
 package com.haidoan.android.stren.feat.trainining.exercises
 
-import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,17 +31,18 @@ import com.haidoan.android.stren.core.designsystem.component.FilterStandard
 import com.haidoan.android.stren.core.designsystem.component.LoadingAnimation
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.model.Exercise
+import timber.log.Timber
 
 internal const val EXERCISES_SCREEN_ROUTE = "exercises_screen_route"
 const val EXERCISES_LOADING_ANIMATION_TEST_TAG = "Loading-Exercises"
 const val EXERCISES_EXERCISE_LIST_TEST_TAG = "List-Exercises"
-private const val TAG = "ExercisesScreen"
 
 @Composable
 internal fun ExercisesRoute(
     modifier: Modifier = Modifier,
     viewModel: ExercisesViewModel = hiltViewModel(),
-    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {}
+    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {},
+    onNavigateToExerciseDetailScreen: (exerciseId: String) -> Unit,
 ) {
     var shouldShowFilterSheet by rememberSaveable { mutableStateOf(false) }
     val pagedExercises = viewModel.exercises.collectAsLazyPagingItems()
@@ -53,7 +54,7 @@ internal fun ExercisesRoute(
             FilterLabel(
                 it.category.id,
                 it.category.name,
-                it.isChosen
+                it.isSelected
             )
         },
         onLabelSelected = { chosenLabel -> viewModel.toggleCategorySelection(chosenLabel.id) },
@@ -65,7 +66,7 @@ internal fun ExercisesRoute(
             FilterLabel(
                 it.muscleGroup.id,
                 it.muscleGroup.name,
-                it.isChosen
+                it.isSelected
             )
         },
         onLabelSelected = { chosenLabel -> viewModel.toggleMuscleGroupSelection(chosenLabel.id) },
@@ -102,7 +103,10 @@ internal fun ExercisesRoute(
         pagedExercises = pagedExercises,
         shouldShowFilterSheet = shouldShowFilterSheet,
         onHideFilterSheet = { shouldShowFilterSheet = false },
-        filterStandards = listOf(exerciseCategoryFilter, muscleGroupFilter)
+        filterStandards = listOf(exerciseCategoryFilter, muscleGroupFilter),
+        onResetFilters = viewModel::resetFilters,
+        onApplyFilters = viewModel::applyFilters,
+        onNavigateToExerciseDetailScreen = onNavigateToExerciseDetailScreen
     )
 }
 
@@ -113,7 +117,10 @@ internal fun ExercisesScreen(
     pagedExercises: LazyPagingItems<Exercise>,
     filterStandards: List<FilterStandard> = listOf(),
     shouldShowFilterSheet: Boolean = false,
-    onHideFilterSheet: () -> Unit = {}
+    onHideFilterSheet: () -> Unit = {},
+    onResetFilters: () -> Unit,
+    onApplyFilters: () -> Unit,
+    onNavigateToExerciseDetailScreen: (exerciseId: String) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier
@@ -127,16 +134,17 @@ internal fun ExercisesScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(dimensionResource(id = R.dimen.padding_medium)),
-                    exercise = exercise
+                    exercise = exercise,
+                    onClickHandler = onNavigateToExerciseDetailScreen
                 )
             }
         }
-        Log.d(TAG, "itemCount : ${pagedExercises.itemCount}")
+        Timber.d("itemCount : ${pagedExercises.itemCount}")
 
         when (pagedExercises.loadState.append) {
             is LoadState.NotLoading -> Unit
             is LoadState.Loading -> {
-                Log.d(TAG, "loadState - append: ${pagedExercises.loadState.append}")
+                Timber.d("loadState - append: ${pagedExercises.loadState.append}")
                 item {
                     Box(
                         modifier = Modifier
@@ -158,7 +166,7 @@ internal fun ExercisesScreen(
         when (pagedExercises.loadState.refresh) {
             is LoadState.NotLoading -> Unit
             is LoadState.Loading -> {
-                Log.d(TAG, "loadState - refresh: ${pagedExercises.loadState.refresh}")
+                Timber.d("loadState - refresh: ${pagedExercises.loadState.refresh}")
                 item {
                     Box(
                         modifier = Modifier
@@ -183,16 +191,22 @@ internal fun ExercisesScreen(
             bottomSheetState = rememberModalBottomSheetState(
                 skipPartiallyExpanded = true
             ),
-            filterStandards = filterStandards
+            filterStandards = filterStandards,
+            onResetFilters = onResetFilters,
+            onApplyFilters = onApplyFilters
         )
     }
 
 }
 
 @Composable
-private fun ExerciseItem(modifier: Modifier = Modifier, exercise: Exercise) {
+private fun ExerciseItem(
+    modifier: Modifier = Modifier,
+    exercise: Exercise,
+    onClickHandler: (exerciseId: String) -> Unit
+) {
     Row(
-        modifier = modifier,
+        modifier = modifier.clickable { onClickHandler(exercise.id) },
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(

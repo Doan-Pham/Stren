@@ -1,7 +1,6 @@
 package com.haidoan.android
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.compose.setContent
@@ -18,8 +17,7 @@ import com.haidoan.android.stren.app.ui.StrenApp
 import com.haidoan.android.stren.core.designsystem.theme.StrenTheme
 import com.haidoan.android.stren.core.service.FakeAuthenticationServiceImpl
 import dagger.hilt.android.AndroidEntryPoint
-
-private const val TAG = "NavigationTestActivity"
+import timber.log.Timber
 
 @AndroidEntryPoint
 class NavigationTestActivity : ComponentActivity() {
@@ -42,7 +40,7 @@ class NavigationTestActivity : ComponentActivity() {
                     LocalFacebookCallbackManager provides facebookCallbackManager,
                     LocalActivityResultRegistryOwner provides this
                 ) {
-                    Log.d(TAG, "isUserSignedIn: $isUserSignedIn")
+                    Timber.d("isUserSignedIn: $isUserSignedIn")
                     fakeAuthenticationServiceImpl.isUserSignedIn = isUserSignedIn
 
                     StrenApp(viewModel = viewModel)
