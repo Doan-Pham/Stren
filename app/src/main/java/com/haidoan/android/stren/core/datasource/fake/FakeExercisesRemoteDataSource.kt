@@ -2,6 +2,7 @@ package com.haidoan.android.stren.core.datasource.fake
 
 import com.google.firebase.firestore.Query
 import com.haidoan.android.stren.core.datasource.ExercisesRemoteDataSource
+import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.model.ExerciseFilterStandards
 import com.haidoan.android.stren.core.model.MuscleGroup
@@ -33,6 +34,10 @@ class FakeExercisesRemoteDataSource : ExercisesRemoteDataSource {
         filterStandards: ExerciseFilterStandards,
         resultCountLimit: Long
     ): QueryWrapper {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getExerciseById(exerciseId: String): Exercise {
         TODO("Not yet implemented")
     }
 }
