@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ExerciseDetailViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     exercisesRepository: ExercisesRepository
 ) : ViewModel() {
 
@@ -26,6 +26,6 @@ class ExerciseDetailViewModel @Inject constructor(
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(5000),
-                Exercise(id = "TestId", name = "TestName")
+                Exercise(id = "", name = "")
             )
 }
