@@ -1,16 +1,19 @@
 package com.haidoan.android.stren.core.datasource
 
 import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.model.ExerciseFilterStandards
 import com.haidoan.android.stren.core.model.MuscleGroup
 import com.haidoan.android.stren.core.repository.ExerciseExtraFilter
 import com.haidoan.android.stren.core.repository.QueryWrapper
 import kotlinx.coroutines.tasks.await
+import timber.log.Timber
 import javax.inject.Inject
 
 const val EXERCISE_COLLECTION_PATH = "Exercise"
@@ -110,4 +113,21 @@ class ExercisesFirestoreDataSource @Inject constructor() : ExercisesRemoteDataSo
             }
         }
     }
+
+    override suspend fun getExerciseById(exerciseId: String): Exercise =
+        exerciseCollection.document(exerciseId).get().await().toExercise()
+
+    private fun DocumentSnapshot.toExercise(): Exercise {
+        Timber.d("document: $this")
+        @Suppress("UNCHECKED_CAST")
+        return Exercise(
+            this.id,
+            this.getString("name") ?: "",
+            this.get("instructions") as List<String>,
+            this.get("images") as List<String>,
+            this.getString("category") ?: "",
+            this.get("primaryMuscles") as List<String>
+        )
+    }
 }
+

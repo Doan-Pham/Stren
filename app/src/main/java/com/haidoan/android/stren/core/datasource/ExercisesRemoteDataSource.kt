@@ -1,6 +1,7 @@
 package com.haidoan.android.stren.core.datasource
 
 import com.google.firebase.firestore.Query
+import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.model.ExerciseFilterStandards
 import com.haidoan.android.stren.core.model.MuscleGroup
@@ -25,4 +26,6 @@ interface ExercisesRemoteDataSource {
         filterStandards: ExerciseFilterStandards,
         resultCountLimit: Long
     ): QueryWrapper
+
+    suspend fun getExerciseById(exerciseId: String): Exercise
 }

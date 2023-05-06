@@ -23,4 +23,6 @@ interface ExercisesRepository {
         filterStandards: ExerciseFilterStandards,
         resultCountLimit: Long = DEFAULT_ITEM_COUNT_LIMIT
     ): Flow<PagingData<Exercise>>
+
+    fun getExerciseById(exerciseId: String): Flow<Exercise>
 }
