@@ -5,10 +5,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
+import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.component.*
-import timber.log.Timber
 
 @Composable
 internal fun TrainingHistoryRoute(
@@ -16,11 +16,26 @@ internal fun TrainingHistoryRoute(
     viewModel: TrainingHistoryViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
 ) {
-    val currentUserId by viewModel._currentUserId.collectAsStateWithLifecycle()
-//    val strenAppViewModel = viewModel<StrenAppViewModel>()
-//    viewModel.setUserId(strenAppViewModel.currentUserId.value)
-//    val currentUserId = viewModel._currentUserId.collectAsStateWithLifecycle()
-    Timber.d("currentUserId: $currentUserId")
+    val trainingHistoryAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
+        actionIcons = listOf(
+            IconButtonInfo(drawableResourceId = R.drawable.ic_add,
+                description = "MenuItem-Add",
+                clickHandler = {
+                    //TODO: Implement "add" menu item
+                }),
+            IconButtonInfo(drawableResourceId = R.drawable.ic_calendar,
+                description = "MenuItem-Calendar",
+                clickHandler = {
+                    //TODO: Implement "calendar" menu item
+                })
+        )
+    )
+    var isAppBarConfigured by remember { mutableStateOf(false) }
+    if (!isAppBarConfigured) {
+        appBarConfigurationChangeHandler(trainingHistoryAppBarConfiguration)
+        isAppBarConfigured = true
+    }
+
     TrainingHistoryScreen(
         modifier = modifier,
     )
