@@ -6,7 +6,7 @@ import timber.log.Timber
 
 @VisibleForTesting
 class FakeAuthenticationServiceImpl : AuthenticationService {
-    private var onUserAuthenticated: () -> Unit = {}
+    private var onUserAuthenticated: (String) -> Unit = {}
     private var onUserNotAuthenticated: () -> Unit = {}
 
     var isUserSignedIn = false
@@ -20,14 +20,14 @@ class FakeAuthenticationServiceImpl : AuthenticationService {
 
     private fun checkAuthStateAndExecuteCallbacks() {
         if (isUserSignedIn) {
-            onUserAuthenticated()
+            onUserAuthenticated("")
         } else {
             onUserNotAuthenticated()
         }
     }
 
     override fun addAuthStateListeners(
-        onUserAuthenticated: () -> Unit,
+        onUserAuthenticated: (String) -> Unit,
         onUserNotAuthenticated: () -> Unit
     ) {
         this.onUserAuthenticated = onUserAuthenticated
