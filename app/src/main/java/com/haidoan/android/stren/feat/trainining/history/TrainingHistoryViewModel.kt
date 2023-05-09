@@ -11,7 +11,10 @@ import javax.inject.Inject
 const val UNDEFINED_USER_ID = "Undefined User ID"
 
 @HiltViewModel
-internal class TrainingHistoryViewModel @Inject constructor(authenticationService: AuthenticationService) :
+internal class TrainingHistoryViewModel @Inject constructor(
+    authenticationService: AuthenticationService,
+    workoutsRepository: WorkoutsRepository
+) :
     ViewModel() {
 
     init {
