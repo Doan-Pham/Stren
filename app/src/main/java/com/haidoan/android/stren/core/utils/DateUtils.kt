@@ -1,7 +1,5 @@
 package com.haidoan.android.stren.core.utils
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.google.firebase.Timestamp
 import java.time.*
 import java.time.temporal.TemporalAdjusters
@@ -9,7 +7,6 @@ import java.util.stream.Collectors
 import java.util.stream.IntStream
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 object DateUtils {
     // The zoneId is currently Asia/Ho_Chi_Minh which has an offset of 7 hours
     private val DEFAULT_TIMEZONE_OFFSET_IN_HOURS = 7
