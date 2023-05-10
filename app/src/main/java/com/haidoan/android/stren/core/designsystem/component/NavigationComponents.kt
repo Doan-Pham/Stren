@@ -30,11 +30,16 @@ fun StrenSmallTopAppBar(
     modifier: Modifier = Modifier,
     appBarConfiguration: AppBarConfiguration.NavigationAppBar
 ) {
+    val navigationIconColor =
+        if (appBarConfiguration.navigationIcon == IconButtonInfo.APP_ICON) MaterialTheme.colorScheme.primary else Color.Black
+    val titleTextStyle =
+        if (appBarConfiguration.navigationIcon == IconButtonInfo.APP_ICON) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyMedium
+
     TopAppBar(
         modifier = modifier, title = {
             Row {
                 Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
-                Text(appBarConfiguration.title)
+                Text(appBarConfiguration.title, style = titleTextStyle)
             }
         },
         navigationIcon = {
@@ -45,7 +50,7 @@ fun StrenSmallTopAppBar(
                 Icon(
                     painter = painterResource(id = appBarConfiguration.navigationIcon.drawableResourceId),
                     contentDescription = appBarConfiguration.navigationIcon.description,
-                    tint = if (appBarConfiguration.navigationIcon == IconButtonInfo.APP_ICON) MaterialTheme.colorScheme.primary else Color.Black,
+                    tint = navigationIconColor,
                     modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large))
                 )
             }
