@@ -1,9 +1,6 @@
 package com.haidoan.android.stren.core.datasource.di
 
-import com.haidoan.android.stren.core.datasource.ExercisesFirestoreDataSource
-import com.haidoan.android.stren.core.datasource.ExercisesRemoteDataSource
-import com.haidoan.android.stren.core.datasource.WorkoutFirestoreDataSource
-import com.haidoan.android.stren.core.datasource.WorkoutRemoteDataSource
+import com.haidoan.android.stren.core.datasource.*
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -17,4 +14,7 @@ abstract class DataSourceModule {
 
     @Binds
     abstract fun bindRemoteWorkoutsDataSource(impl: WorkoutFirestoreDataSource): WorkoutRemoteDataSource
+
+    @Binds
+    abstract fun bindRemoteRoutinesDataSource(impl: RoutinesFirestoreDataSource): RoutinesRemoteDataSource
 }
