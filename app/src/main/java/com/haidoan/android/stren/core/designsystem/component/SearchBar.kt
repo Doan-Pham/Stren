@@ -9,7 +9,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
@@ -38,6 +41,8 @@ fun SearchBar(
         mutableStateOf(false)
     }
 
+    val focusRequester = remember { FocusRequester() }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -46,7 +51,13 @@ fun SearchBar(
             .background(color = Color.White),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        TextField(modifier = Modifier.weight(1f),
+        TextField(
+            modifier = Modifier
+                .weight(1f)
+                .focusRequester(focusRequester)
+                .onGloballyPositioned {
+                    focusRequester.requestFocus() // IMPORTANT
+                },
             value = text,
             onValueChange = {
                 shouldShowCancelIcon = !(it.isBlank() || it.isEmpty())
