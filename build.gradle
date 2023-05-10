@@ -1,6 +1,7 @@
 buildscript {
     ext {
         accompanist_version = '0.30.1'
+        calendar_ui_version = '2.3.0'
         compose_version = '1.4.2'
         common_validator_version = '1.5.1'
         coil_version = '2.3.0'

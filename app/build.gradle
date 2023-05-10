@@ -106,6 +106,9 @@ dependencies {
     // TIMBER - LOGGING
     implementation "com.jakewharton.timber:timber:$timber_version"
 
+    // CALENDAR UI
+    implementation "com.kizitonwose.calendar:compose:$calendar_ui_version"
+
     // TEST
     testImplementation 'junit:junit:4.13.2'
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
