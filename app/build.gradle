@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId "com.haidoan.android.stren"
-        minSdk 24
+        minSdk 26
         //noinspection OldTargetApi SplashScreen API requires this
         targetSdk 33
         versionCode 1
@@ -105,6 +105,9 @@ dependencies {
 
     // TIMBER - LOGGING
     implementation "com.jakewharton.timber:timber:$timber_version"
+
+    // CALENDAR UI
+    implementation "com.kizitonwose.calendar:compose:$calendar_ui_version"
 
     // TEST
     testImplementation 'junit:junit:4.13.2'

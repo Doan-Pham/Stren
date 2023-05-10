@@ -11,7 +11,7 @@ class StrenApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) {
-            Timber.plant(StrenDebugTree())
+            Timber.plant(Timber.DebugTree())
         } else {
             Timber.plant(ReleaseTree())
         }

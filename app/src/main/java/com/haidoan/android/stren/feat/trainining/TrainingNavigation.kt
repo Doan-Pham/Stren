@@ -10,6 +10,7 @@ import com.haidoan.android.stren.core.designsystem.component.DummyBoxWithText
 import com.haidoan.android.stren.feat.trainining.exercises.ExercisesRoute
 import com.haidoan.android.stren.feat.trainining.exercises.navigation.exerciseGraph
 import com.haidoan.android.stren.feat.trainining.exercises.navigation.navigateToExerciseDetail
+import com.haidoan.android.stren.feat.trainining.history.TrainingHistoryRoute
 import timber.log.Timber
 
 internal const val TRAINING_GRAPH_ROUTE = "training_graph_route"
@@ -35,8 +36,11 @@ fun NavGraphBuilder.trainingGraph(
                             })
                     },
                     Pair("History") {
-                        DummyBoxWithText(text = "History")
-                        appBarConfigurationChangeHandler(AppBarConfiguration.NavigationAppBar())
+                        TrainingHistoryRoute(
+                            appBarConfigurationChangeHandler = {
+                                appBarConfigurationChangeHandler(it)
+                            },
+                        )
                     },
                     Pair("Routines") {
                         DummyBoxWithText(text = "Routines")

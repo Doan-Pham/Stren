@@ -33,10 +33,13 @@ class NavigationTest {
     private val context: Context = InstrumentationRegistry.getInstrumentation().targetContext
     private val dashboardBottomNavItem =
         context.resources.getString(TopLevelDestination.DASHBOARD.titleTextId)
+
     private val trainingBottomNavItem =
         context.resources.getString(TopLevelDestination.TRAINING.titleTextId)
+
     private val nutritionBottomNavItem =
         context.resources.getString(TopLevelDestination.NUTRITION.titleTextId)
+
     private val profileBottomNavItem =
         context.resources.getString(TopLevelDestination.PROFILE.titleTextId)
 
@@ -115,8 +118,51 @@ class NavigationTest {
 
             // TODO: Add test cases where use navigates to destinations in nested graph
         }
+    }
+
+    @Test
+    fun topAppBar_navigateToTopLevelDestination_appIconIsShown() {
+        composeTestRule.apply {
+            activity.isUserSignedIn = true
+            waitUntil { onAllNodesWithTag(TEST_TAG_TOP_BAR).fetchSemanticsNodes().size == 1 }
+
+            onNodeWithContentDescription("App icon").assertIsDisplayed()
+
+            onNodeWithText(trainingBottomNavItem).performClick()
+            onNodeWithContentDescription("App icon").assertIsDisplayed()
+
+            onNodeWithText(nutritionBottomNavItem).performClick()
+            onNodeWithContentDescription("App icon").assertIsDisplayed()
+
+            onNodeWithText(profileBottomNavItem).performClick()
+            onNodeWithContentDescription("App icon").assertIsDisplayed()
+
+            onNodeWithText(dashboardBottomNavItem).performClick()
+            onNodeWithContentDescription("App icon").assertIsDisplayed()
+        }
 
         //TODO: Test app bar's icon in top-level/non-top-level destinations
+        //TODO: Test app bar's icon in ProfileScreen
+    }
+
+    @Test
+    fun topAppBar_navigateToNonTopLevelDestination_backIconIsShown() {
+        composeTestRule.apply {
+            activity.isUserSignedIn = true
+            waitUntil { onAllNodesWithTag(TEST_TAG_TOP_BAR).fetchSemanticsNodes().size == 1 }
+
+            onNodeWithText(trainingBottomNavItem).performClick()
+            onNodeWithContentDescription("App icon").assertIsDisplayed()
+
+            onNodeWithText(nutritionBottomNavItem).performClick()
+            onNodeWithContentDescription("App icon").assertIsDisplayed()
+
+            onNodeWithText(profileBottomNavItem).performClick()
+            onNodeWithContentDescription("App icon").assertIsDisplayed()
+
+            onNodeWithText(dashboardBottomNavItem).performClick()
+            onNodeWithContentDescription("App icon").assertIsDisplayed()
+        }
         //TODO: Test app bar's icon in ProfileScreen
     }
 }

@@ -12,14 +12,14 @@ import javax.inject.Inject
 class AuthenticationServiceImpl @Inject constructor() : AuthenticationService {
 
     override fun addAuthStateListeners(
-        onUserAuthenticated: () -> Unit,
+        onUserAuthenticated: (userId: String) -> Unit,
         onUserNotAuthenticated: () -> Unit
     ) {
         //Firebase.auth.signOut()
         Firebase.auth.addAuthStateListener {
             Timber.d("addAuthStateListeners() - currentUser: ${it.currentUser}")
             if (it.currentUser != null) {
-                onUserAuthenticated()
+                onUserAuthenticated(it.currentUser!!.uid)
             } else {
                 onUserNotAuthenticated()
             }

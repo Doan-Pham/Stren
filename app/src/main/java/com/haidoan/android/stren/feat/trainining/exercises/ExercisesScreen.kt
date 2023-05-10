@@ -212,7 +212,7 @@ private fun ExerciseItem(
         AsyncImage(
             model = exercise.imageUrls.first(),
             modifier = Modifier
-                .size(dimensionResource(id = R.dimen.icon_size_extra_large))
+                .size(dimensionResource(id = R.dimen.icon_size_extra_extra_large))
                 .clip(
                     RoundedCornerShape(6.dp)
                 ),

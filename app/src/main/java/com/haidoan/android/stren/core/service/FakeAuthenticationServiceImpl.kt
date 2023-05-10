@@ -2,12 +2,14 @@ package com.haidoan.android.stren.core.service
 
 import androidx.annotation.VisibleForTesting
 import com.facebook.AccessToken
+import com.haidoan.android.stren.feat.trainining.history.UNDEFINED_USER_ID
 import timber.log.Timber
 
 @VisibleForTesting
 class FakeAuthenticationServiceImpl : AuthenticationService {
-    private var onUserAuthenticated: () -> Unit = {}
+    private var onUserAuthenticated: (String) -> Unit = {}
     private var onUserNotAuthenticated: () -> Unit = {}
+    private var userId = UNDEFINED_USER_ID
 
     var isUserSignedIn = false
         set(value) {
@@ -18,16 +20,22 @@ class FakeAuthenticationServiceImpl : AuthenticationService {
             }
         }
 
+    fun setUserId(userId: String) {
+        this.userId = userId
+        this.isUserSignedIn = true
+        checkAuthStateAndExecuteCallbacks()
+    }
+
     private fun checkAuthStateAndExecuteCallbacks() {
         if (isUserSignedIn) {
-            onUserAuthenticated()
+            onUserAuthenticated(userId)
         } else {
             onUserNotAuthenticated()
         }
     }
 
     override fun addAuthStateListeners(
-        onUserAuthenticated: () -> Unit,
+        onUserAuthenticated: (String) -> Unit,
         onUserNotAuthenticated: () -> Unit
     ) {
         this.onUserAuthenticated = onUserAuthenticated
