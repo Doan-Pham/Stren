@@ -66,7 +66,8 @@ internal fun TrainingHistoryRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     TrainingHistoryScreen(
         modifier = modifier,
-        uiState = uiState
+        uiState = uiState,
+        onCurrentDateChange = viewModel::setCurrentDate
     )
 }
 
@@ -74,9 +75,9 @@ internal fun TrainingHistoryRoute(
 @Composable
 internal fun TrainingHistoryScreen(
     modifier: Modifier = Modifier,
-    uiState: TrainingHistoryUiState
+    uiState: TrainingHistoryUiState,
+    onCurrentDateChange: (LocalDate) -> Unit
 ) {
-
     when (uiState) {
         is TrainingHistoryUiState.Loading -> {
             Timber.d("Loading")
@@ -87,15 +88,46 @@ internal fun TrainingHistoryScreen(
         is TrainingHistoryUiState.LoadComplete -> {
             Timber.d("currentDate: ${uiState.currentDate}")
             Timber.d("workouts: ${uiState.workouts}")
-            if (uiState.workouts.isNotEmpty()) {
-                WorkoutList(
-                    modifier = modifier,
-                    workouts = uiState.workouts,
-                    currentDate = uiState.currentDate
+
+            val currentMonth = uiState.currentDate.month.name.toLowerCase(Locale.current)
+                .capitalize(Locale.current)
+            val currentYear = uiState.currentDate.year
+            val currentDate = uiState.currentDate
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(horizontal = dimensionResource(id = R.dimen.padding_medium))
+            ) {
+                MonthYearHeader(
+                    modifier = Modifier.fillMaxWidth(),
+                    headerTitle = "$currentMonth $currentYear"
                 )
-            } else {
-                EmptyScreen()
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    DateUtils.getAllWeekDays(currentDate).forEach { dateInWeek ->
+                        DateItem(
+                            date = dateInWeek,
+                            isSelected = dateInWeek.isEqual(currentDate),
+                            isDateNotInCurrentMonth = dateInWeek.monthValue != currentDate.monthValue,
+                            onClickHandler = onCurrentDateChange
+                        )
+                    }
+                }
+
+                if (uiState.workouts.isNotEmpty()) {
+                    WorkoutList(
+                        modifier = modifier,
+                        workouts = uiState.workouts,
+                        currentDate = currentDate
+                    )
+                } else {
+                    EmptyScreen()
+                }
             }
+
         }
     }
 }
@@ -143,9 +175,7 @@ private fun DateItem(
     date: LocalDate,
     isSelected: Boolean,
     isDateNotInCurrentMonth: Boolean,
-    onClickHandler: (LocalDate) -> Unit = {
-        // TODO
-    }
+    onClickHandler: (LocalDate) -> Unit
 ) {
     var backgroundColorStart = Gray90
     var backgroundColorEnd = Gray90
@@ -162,6 +192,7 @@ private fun DateItem(
     }
     Column(
         modifier = Modifier
+            .clickable { onClickHandler(date) }
             .width(dimensionResource(id = R.dimen.icon_size_extra_large))
             .clip(RoundedCornerShape(5.dp))
             .background(
@@ -190,36 +221,8 @@ private fun DateItem(
 
 @Composable
 private fun WorkoutList(modifier: Modifier, workouts: List<Workout>, currentDate: LocalDate) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = dimensionResource(id = R.dimen.padding_medium))
-    ) {
-        val currentMonth = currentDate.month.name.toLowerCase(Locale.current)
-            .capitalize(Locale.current)
-        val currentYear = currentDate.year
-
-        MonthYearHeader(
-            modifier = Modifier.fillMaxWidth(),
-            headerTitle = "$currentMonth $currentYear"
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            DateUtils.getAllWeekDays(currentDate).forEach { dateInWeek ->
-                DateItem(
-                    date = dateInWeek,
-                    isSelected = dateInWeek.isEqual(currentDate),
-                    isDateNotInCurrentMonth = dateInWeek.monthValue != currentDate.monthValue
-                )
-            }
-        }
-
-        workouts.forEach {
-            WorkoutItem(workout = it)
-        }
+    workouts.forEach {
+        WorkoutItem(workout = it)
     }
 }
 
