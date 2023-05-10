@@ -43,6 +43,10 @@ internal fun TrainingHistoryRoute(
     viewModel: TrainingHistoryViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
 ) {
+    var shouldShowCalendarDialog by remember {
+        mutableStateOf(false)
+    }
+
     val trainingHistoryAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons = listOf(
             IconButtonInfo(drawableResourceId = R.drawable.ic_add,
@@ -50,10 +54,11 @@ internal fun TrainingHistoryRoute(
                 clickHandler = {
                     //TODO: Implement "add" menu item
                 }),
-            IconButtonInfo(drawableResourceId = R.drawable.ic_calendar,
+            IconButtonInfo(
+                drawableResourceId = R.drawable.ic_calendar,
                 description = "MenuItem-Calendar",
                 clickHandler = {
-                    //TODO: Implement "calendar" menu item
+                    shouldShowCalendarDialog = true
                 })
         )
     )
@@ -63,6 +68,7 @@ internal fun TrainingHistoryRoute(
         isAppBarConfigured = true
     }
 
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     TrainingHistoryScreen(
         modifier = modifier,
@@ -70,7 +76,9 @@ internal fun TrainingHistoryRoute(
         onSelectDate = viewModel::selectDate,
         onSelectCurrentDate = viewModel::setCurrentDateToDefault,
         onMoveToNextWeek = viewModel::moveToNextWeek,
-        onMoveToPreviousWeek = viewModel::moveToPreviousWeek
+        onMoveToPreviousWeek = viewModel::moveToPreviousWeek,
+        shouldShowCalendarDialog = shouldShowCalendarDialog,
+        onDismissCalendarDialog = { shouldShowCalendarDialog = false }
     )
 }
 
@@ -79,6 +87,8 @@ internal fun TrainingHistoryRoute(
 internal fun TrainingHistoryScreen(
     modifier: Modifier = Modifier,
     uiState: TrainingHistoryUiState,
+    shouldShowCalendarDialog: Boolean,
+    onDismissCalendarDialog: () -> Unit,
     onSelectDate: (LocalDate) -> Unit,
     onSelectCurrentDate: () -> Unit,
     onMoveToPreviousWeek: () -> Unit,
@@ -94,6 +104,7 @@ internal fun TrainingHistoryScreen(
         is TrainingHistoryUiState.LoadComplete -> {
             Timber.d("selectedDate: ${uiState.selectedDate}")
             Timber.d("workouts: ${uiState.workouts}")
+            Timber.d("dates with workouts: ${uiState.datesThatHaveWorkouts}")
 
             val currentMonth = uiState.selectedDate.month.name.toLowerCase(Locale.current)
                 .capitalize(Locale.current)
@@ -137,6 +148,13 @@ internal fun TrainingHistoryScreen(
                 }
             }
 
+            if (shouldShowCalendarDialog) {
+                CalendarDialog(
+                    onDismissDialog = onDismissCalendarDialog,
+                    selectedDate = selectedDate,
+                    datesThatHaveWorkouts = uiState.datesThatHaveWorkouts
+                )
+            }
         }
     }
 }

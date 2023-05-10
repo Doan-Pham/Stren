@@ -53,8 +53,15 @@ internal class TrainingHistoryViewModel @Inject constructor(
             val selectedDate = triggers.selectedDate
 
             if (userId != UNDEFINED_USER_ID) {
-                workoutsRepository.getWorkoutsByUserIdAndDate(userId, selectedDate).map {
-                    TrainingHistoryUiState.LoadComplete(it, selectedDate)
+                combine(
+                    workoutsRepository.getWorkoutsByUserIdAndDate(userId, selectedDate),
+                    workoutsRepository.getDatesThatHaveWorkoutByUserId(userId)
+                ) { workouts, datesThatHaveWorkouts ->
+                    TrainingHistoryUiState.LoadComplete(
+                        workouts,
+                        selectedDate,
+                        datesThatHaveWorkouts
+                    )
                 }
             } else {
                 flowOf(TrainingHistoryUiState.Loading)

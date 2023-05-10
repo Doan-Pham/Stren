@@ -5,6 +5,9 @@ import java.time.LocalDate
 
 internal sealed interface TrainingHistoryUiState {
     object Loading : TrainingHistoryUiState
-    data class LoadComplete(val workouts: List<Workout>, val selectedDate: LocalDate) :
-        TrainingHistoryUiState
+    data class LoadComplete(
+        val workouts: List<Workout>,
+        val selectedDate: LocalDate,
+        val datesThatHaveWorkouts: List<LocalDate>
+    ) : TrainingHistoryUiState
 }
