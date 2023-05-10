@@ -10,7 +10,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import timber.log.Timber
+import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
 import java.util.*
 import javax.inject.Inject
 
@@ -64,6 +66,20 @@ internal class TrainingHistoryViewModel @Inject constructor(
 
     fun setCurrentDate(date: LocalDate) {
         _dataFetchingTriggers.value = _dataFetchingTriggers.value.copy(currentDate = date)
+    }
+
+    fun setCurrentDateToDefault() {
+        setCurrentDate(DateUtils.getCurrentDate())
+    }
+
+    fun moveToNextWeek() {
+        val currentDate = _dataFetchingTriggers.value.currentDate
+        setCurrentDate(currentDate.with(TemporalAdjusters.next(DayOfWeek.MONDAY)))
+    }
+
+    fun moveToPreviousWeek() {
+        val currentDate = _dataFetchingTriggers.value.currentDate
+        setCurrentDate(currentDate.with(TemporalAdjusters.previous(DayOfWeek.MONDAY)))
     }
 }
 

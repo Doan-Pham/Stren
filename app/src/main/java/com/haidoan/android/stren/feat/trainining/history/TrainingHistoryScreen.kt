@@ -67,7 +67,10 @@ internal fun TrainingHistoryRoute(
     TrainingHistoryScreen(
         modifier = modifier,
         uiState = uiState,
-        onCurrentDateChange = viewModel::setCurrentDate
+        onCurrentDateChange = viewModel::setCurrentDate,
+        onCurrentDateChangeToDefault = viewModel::setCurrentDateToDefault,
+        onMoveToNextWeek = viewModel::moveToNextWeek,
+        onMoveToPreviousWeek = viewModel::moveToPreviousWeek
     )
 }
 
@@ -76,7 +79,10 @@ internal fun TrainingHistoryRoute(
 internal fun TrainingHistoryScreen(
     modifier: Modifier = Modifier,
     uiState: TrainingHistoryUiState,
-    onCurrentDateChange: (LocalDate) -> Unit
+    onCurrentDateChange: (LocalDate) -> Unit,
+    onCurrentDateChangeToDefault: () -> Unit,
+    onMoveToPreviousWeek: () -> Unit,
+    onMoveToNextWeek: () -> Unit
 ) {
     when (uiState) {
         is TrainingHistoryUiState.Loading -> {
@@ -100,7 +106,10 @@ internal fun TrainingHistoryScreen(
             ) {
                 MonthYearHeader(
                     modifier = Modifier.fillMaxWidth(),
-                    headerTitle = "$currentMonth $currentYear"
+                    headerTitle = "$currentMonth $currentYear",
+                    onHeaderClickHandler = onCurrentDateChangeToDefault,
+                    onIconPreviousClickHandler = onMoveToPreviousWeek,
+                    onIconNextClickHandler = onMoveToNextWeek
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -135,33 +144,29 @@ internal fun TrainingHistoryScreen(
 @Composable
 private fun MonthYearHeader(
     modifier: Modifier = Modifier, headerTitle: String,
-    onHeaderClickHandler: (LocalDate) -> Unit = {
-        // TODO
-    },
-    onIconPreviousClickHandler: (LocalDate) -> Unit = {
-        // TODO
-    },
-    onIconNextClickHandler: (LocalDate) -> Unit = {
-        // TODO
-    }
+    onHeaderClickHandler: () -> Unit,
+    onIconPreviousClickHandler: () -> Unit,
+    onIconNextClickHandler: () -> Unit
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        IconButton(onClick = { /*TODO*/ }) {
+        IconButton(onClick = onIconPreviousClickHandler) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_chevron_left),
                 contentDescription = "Icon arrow left"
             )
         }
         Text(
-            modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.padding_medium)),
+            modifier = Modifier
+                .padding(horizontal = dimensionResource(id = R.dimen.padding_medium))
+                .clickable { onHeaderClickHandler() },
             text = headerTitle,
             style = MaterialTheme.typography.titleMedium
         )
-        IconButton(onClick = { /*TODO*/ }) {
+        IconButton(onClick = onIconNextClickHandler) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_chevron_right),
                 contentDescription = "Icon arrow left"
