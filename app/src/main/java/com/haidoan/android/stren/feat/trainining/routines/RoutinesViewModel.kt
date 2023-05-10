@@ -63,7 +63,7 @@ internal class RoutinesViewModel @Inject constructor(
                         cachedRoutines = it
                         val result = it.filter { routine ->
                             routine.name.contains(
-                                searchQuery
+                                searchQuery, ignoreCase = true
                             )
                         }
                         if (result.isEmpty()) RoutinesUiState.LoadEmpty
@@ -76,7 +76,7 @@ internal class RoutinesViewModel @Inject constructor(
                 if (userId != UNDEFINED_USER_ID) {
                     val result = cachedRoutines.filter { routine ->
                         routine.name.contains(
-                            searchQuery
+                            searchQuery, ignoreCase = true
                         )
                     }
                     if (result.isEmpty()) flowOf(RoutinesUiState.LoadEmpty)
