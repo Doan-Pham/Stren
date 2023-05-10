@@ -19,4 +19,12 @@ class WorkoutsRepositoryImpl @Inject constructor(private val workoutRemoteDataSo
             Timber.e("getWorkoutsByUserIdAndDate() - Exception: ${it.message}")
         }
 
+    override fun getDatesThatHaveWorkoutByUserId(userId: String): Flow<List<LocalDate>> =
+        flow {
+            Timber.d("getDatesThatHaveWorkoutByUserId() has been called - userId: $userId")
+            emit(workoutRemoteDataSource.getDatesThatHaveWorkoutByUserId(userId))
+        }.catch {
+            Timber.e("getDatesThatHaveWorkoutByUserId() - Exception: ${it.message}")
+        }
+
 }

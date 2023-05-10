@@ -32,6 +32,13 @@ class WorkoutFirestoreDataSource @Inject constructor() : WorkoutRemoteDataSource
             .whereLessThanOrEqualTo("date", date.toTimeStampDayEnd())
             .get().await().toWorkoutsList()
 
+    /**
+     * TODO: Implement Pagination to fetch only a certain amount of workouts
+     */
+    override suspend fun getDatesThatHaveWorkoutByUserId(userId: String): List<LocalDate> =
+        firestore.collection(WORKOUT_COLLECTION_PATH)
+            .whereEqualTo("userId", userId).get().await().toWorkoutsList().map { it.date }
+
 
     private fun QuerySnapshot.toWorkoutsList(): List<Workout> =
         this.documents.mapNotNull { document ->

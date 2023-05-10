@@ -21,4 +21,8 @@ class FakeWorkoutsRepository : WorkoutsRepository {
         _workoutsFlow.map {
             it.getOrDefault(userId, listOf()).filter { workout -> workout.date.isEqual(date) }
         }
+
+    override fun getDatesThatHaveWorkoutByUserId(userId: String): Flow<List<LocalDate>> {
+        TODO("Not yet implemented")
+    }
 }
