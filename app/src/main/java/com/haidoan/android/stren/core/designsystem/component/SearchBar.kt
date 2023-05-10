@@ -25,6 +25,7 @@ fun SearchBar(
     modifier: Modifier = Modifier,
     text: String,
     placeholder: String,
+    shouldShowSearchIcon: Boolean = true,
     onTextChange: (String) -> Unit,
     onBackClicked: () -> Unit,
     onSearchClicked: (String) -> Unit,
@@ -114,20 +115,21 @@ fun SearchBar(
                 focusedIndicatorColor = Color.Transparent,
                 cursorColor = Color.Black
             ))
-
-        IconButton(
-            modifier = Modifier
-                .size(dimensionResource(id = R.dimen.icon_size_medium)),
-            onClick = {
-                onSearchClicked(text)
-            }
-        ) {
-            Icon(
+        if (shouldShowSearchIcon) {
+            IconButton(
                 modifier = Modifier
                     .size(dimensionResource(id = R.dimen.icon_size_medium)),
-                painter = painterResource(id = R.drawable.ic_search),
-                contentDescription = "Search Icon",
-            )
+                onClick = {
+                    onSearchClicked(text)
+                }
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .size(dimensionResource(id = R.dimen.icon_size_medium)),
+                    painter = painterResource(id = R.drawable.ic_search),
+                    contentDescription = "Search Icon",
+                )
+            }
         }
     }
 
