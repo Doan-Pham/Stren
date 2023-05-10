@@ -6,11 +6,11 @@ import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
-import com.haidoan.android.stren.core.designsystem.component.DummyBoxWithText
 import com.haidoan.android.stren.feat.trainining.exercises.ExercisesRoute
 import com.haidoan.android.stren.feat.trainining.exercises.navigation.exerciseGraph
 import com.haidoan.android.stren.feat.trainining.exercises.navigation.navigateToExerciseDetail
 import com.haidoan.android.stren.feat.trainining.history.TrainingHistoryRoute
+import com.haidoan.android.stren.feat.trainining.routines.RoutinesRoute
 import timber.log.Timber
 
 internal const val TRAINING_GRAPH_ROUTE = "training_graph_route"
@@ -43,8 +43,11 @@ fun NavGraphBuilder.trainingGraph(
                         )
                     },
                     Pair("Routines") {
-                        DummyBoxWithText(text = "Routines")
-                        appBarConfigurationChangeHandler(AppBarConfiguration.NavigationAppBar())
+                        RoutinesRoute(
+                            appBarConfigurationChangeHandler = {
+                                appBarConfigurationChangeHandler(it)
+                            },
+                        )
                     },
                 )
             )
