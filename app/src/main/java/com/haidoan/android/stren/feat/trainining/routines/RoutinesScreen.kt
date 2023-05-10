@@ -46,7 +46,12 @@ internal fun RoutinesRoute(
                 drawableResourceId = R.drawable.ic_search,
                 description = "Menu Item Search",
                 clickHandler = {
-                    //TODO: Implement "search" menu item
+                    val searchBarConfiguration = AppBarConfiguration.SearchAppBar(
+                        text = viewModel.searchBarText,
+                        placeholder = "Search routine",
+                        onTextChange = { viewModel.searchBarText.value = it },
+                        onSearchClicked = { viewModel.searchRoutineByName(it) })
+                    appBarConfigurationChangeHandler(searchBarConfiguration)
                 })
         )
     )
@@ -55,6 +60,7 @@ internal fun RoutinesRoute(
         appBarConfigurationChangeHandler(trainingHistoryAppBarConfiguration)
         isAppBarConfigured = true
     }
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     RoutinesScreen(
         modifier = modifier,

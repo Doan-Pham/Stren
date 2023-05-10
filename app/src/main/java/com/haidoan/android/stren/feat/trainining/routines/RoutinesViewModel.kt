@@ -1,7 +1,9 @@
 package com.haidoan.android.stren.feat.trainining.routines
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.haidoan.android.stren.core.model.Routine
 import com.haidoan.android.stren.core.repository.RoutinesRepository
 import com.haidoan.android.stren.core.service.AuthenticationService
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,8 +25,17 @@ internal class RoutinesViewModel @Inject constructor(
      * it when it's null and causes NullPointerException
      */
     private val _dataFetchingTriggers: MutableStateFlow<DataFetchingTriggers> = MutableStateFlow(
-        DataFetchingTriggers(userId = UNDEFINED_USER_ID)
+        DataFetchingTriggers(userId = UNDEFINED_USER_ID, searchQuery = "")
     )
+
+    // Since RoutinesViewModel will fetch all the routines right from the start, fetching it again
+    // when searchQuery changes is wasteful. Instead, cache the fetching result and query directly
+    // on that cached list
+    private var cachedUserId = ""
+    private var cachedRoutines = listOf<Routine>()
+
+    // Text to show on search bar
+    var searchBarText = mutableStateOf("")
 
     init {
         authenticationService.addAuthStateListeners(
@@ -43,18 +54,46 @@ internal class RoutinesViewModel @Inject constructor(
     val uiState: StateFlow<RoutinesUiState> =
         _dataFetchingTriggers.flatMapLatest { triggers ->
             val userId = triggers.userId
-            if (userId != UNDEFINED_USER_ID) {
-                routinesRepository.getRoutinesByUserId(userId).map {
-                    if (it.isEmpty()) RoutinesUiState.LoadEmpty
-                    else RoutinesUiState.LoadComplete(it)
+            val searchQuery = triggers.searchQuery
+
+            if (userId != cachedUserId) {
+                cachedUserId = userId
+                if (userId != UNDEFINED_USER_ID) {
+                    routinesRepository.getRoutinesByUserId(userId).map {
+                        cachedRoutines = it
+                        val result = it.filter { routine ->
+                            routine.name.contains(
+                                searchQuery
+                            )
+                        }
+                        if (result.isEmpty()) RoutinesUiState.LoadEmpty
+                        else RoutinesUiState.LoadComplete(result)
+                    }
+                } else {
+                    flowOf(RoutinesUiState.Loading)
                 }
             } else {
-                flowOf(RoutinesUiState.Loading)
+                if (userId != UNDEFINED_USER_ID) {
+                    val result = cachedRoutines.filter { routine ->
+                        routine.name.contains(
+                            searchQuery
+                        )
+                    }
+                    if (result.isEmpty()) flowOf(RoutinesUiState.LoadEmpty)
+                    else flowOf(RoutinesUiState.LoadComplete(result))
+                } else {
+                    flowOf(RoutinesUiState.Loading)
+                }
             }
+
         }.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000), RoutinesUiState.Loading
         )
+
+    fun searchRoutineByName(name: String) {
+        _dataFetchingTriggers.value = _dataFetchingTriggers.value.copy(searchQuery = name)
+    }
 
     /**
      * Kotlin Flow's flatMapLatest() can collect a flow and flatMap it whenever it changes, but
@@ -63,5 +102,5 @@ internal class RoutinesViewModel @Inject constructor(
      * By wrapping inside this class all the different data objects that should triggers flatMapLatest()
      * when they change, developer can indirectly use flatMapLatest() with more than 1 input
      */
-    private data class DataFetchingTriggers(val userId: String)
+    private data class DataFetchingTriggers(val userId: String, val searchQuery: String)
 }
