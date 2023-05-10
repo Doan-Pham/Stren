@@ -49,7 +49,11 @@ internal fun RoutinesRoute(
                     val searchBarConfiguration = AppBarConfiguration.SearchAppBar(
                         text = viewModel.searchBarText,
                         placeholder = "Search routine",
-                        onTextChange = { viewModel.searchBarText.value = it },
+                        onTextChange = {
+                            viewModel.searchBarText.value = it
+                            viewModel.searchRoutineByName(it)
+                        },
+                        shouldShowSearchIcon = false,
                         onSearchClicked = { viewModel.searchRoutineByName(it) })
                     appBarConfigurationChangeHandler(searchBarConfiguration)
                 })
