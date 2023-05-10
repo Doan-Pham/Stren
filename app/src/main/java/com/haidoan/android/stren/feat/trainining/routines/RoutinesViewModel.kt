@@ -1,9 +1,12 @@
 package com.haidoan.android.stren.feat.trainining.routines
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.haidoan.android.stren.core.repository.RoutinesRepository
 import com.haidoan.android.stren.core.service.AuthenticationService
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.*
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -11,7 +14,8 @@ const val UNDEFINED_USER_ID = "Undefined User ID"
 
 @HiltViewModel
 internal class RoutinesViewModel @Inject constructor(
-    authenticationService: AuthenticationService
+    authenticationService: AuthenticationService,
+    routinesRepository: RoutinesRepository
 ) : ViewModel() {
 
     /**
@@ -34,13 +38,30 @@ internal class RoutinesViewModel @Inject constructor(
                 Timber.d("authStateListen - User signed out")
             })
     }
-}
 
-/**
- * Kotlin Flow's flatMapLatest() can collect a flow and flatMap it whenever it changes, but
- * it only works with 1 input flow.
- *
- * By wrapping inside this class all the different data objects that should triggers flatMapLatest()
- * when they change, developer can indirectly use flatMapLatest() with more than 1 input
- */
-private data class DataFetchingTriggers(val userId: String)
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState: StateFlow<RoutinesUiState> =
+        _dataFetchingTriggers.flatMapLatest { triggers ->
+            val userId = triggers.userId
+            if (userId != UNDEFINED_USER_ID) {
+                routinesRepository.getRoutinesByUserId(userId).map {
+                    if (it.isEmpty()) RoutinesUiState.LoadEmpty
+                    else RoutinesUiState.LoadComplete(it)
+                }
+            } else {
+                flowOf(RoutinesUiState.Loading)
+            }
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000), RoutinesUiState.Loading
+        )
+
+    /**
+     * Kotlin Flow's flatMapLatest() can collect a flow and flatMap it whenever it changes, but
+     * it only works with 1 input flow.
+     *
+     * By wrapping inside this class all the different data objects that should triggers flatMapLatest()
+     * when they change, developer can indirectly use flatMapLatest() with more than 1 input
+     */
+    private data class DataFetchingTriggers(val userId: String)
+}
