@@ -23,20 +23,22 @@ internal class TrainingHistoryViewModel @Inject constructor(
 ) : ViewModel() {
 
     /**
-     * Need to initialize this field before init{} block, or the init{} block will access
+     * Need to initialize userId before init{} block, or the init{} block will access
      * it when it's null and causes NullPointerException
      */
-    private val _currentUserId: MutableStateFlow<String> =
-        MutableStateFlow(UNDEFINED_USER_ID)
+    private val _dataFetchingTriggers: MutableStateFlow<DataFetchingTriggers> = MutableStateFlow(
+        DataFetchingTriggers(userId = UNDEFINED_USER_ID, currentDate = DateUtils.getCurrentDate())
+    )
 
     init {
         authenticationService.addAuthStateListeners(
             onUserAuthenticated = {
-                _currentUserId.value = it
+                _dataFetchingTriggers.value = _dataFetchingTriggers.value.copy(userId = it)
                 Timber.d("authStateListen - User signed in - userId: $it")
             },
             onUserNotAuthenticated = {
-                _currentUserId.value = UNDEFINED_USER_ID
+                _dataFetchingTriggers.value =
+                    _dataFetchingTriggers.value.copy(userId = UNDEFINED_USER_ID)
                 Timber.d("authStateListen - User signed out")
             })
     }
@@ -44,19 +46,32 @@ internal class TrainingHistoryViewModel @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<TrainingHistoryUiState> =
-        _currentUserId.flatMapLatest { userId ->
-            if (userId != UNDEFINED_USER_ID)
-                workoutsRepository.getWorkoutsByUserIdAndDate(userId, _currentDate.value).map {
-                    TrainingHistoryUiState.LoadComplete(it, _currentDate.value)
+        _dataFetchingTriggers.flatMapLatest { triggers ->
+            val userId = triggers.userId
+            val currentDate = triggers.currentDate
+
+            if (userId != UNDEFINED_USER_ID) {
+                workoutsRepository.getWorkoutsByUserIdAndDate(userId, currentDate).map {
+                    TrainingHistoryUiState.LoadComplete(it, currentDate)
                 }
-            else flowOf(TrainingHistoryUiState.Loading)
+            } else {
+                flowOf(TrainingHistoryUiState.Loading)
+            }
         }.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000), TrainingHistoryUiState.Loading
         )
 
-    private val _currentDate: MutableStateFlow<LocalDate> =
-        MutableStateFlow(
-            DateUtils.getCurrentDate()
-        )
+    fun setCurrentDate(date: LocalDate) {
+        _dataFetchingTriggers.value = _dataFetchingTriggers.value.copy(currentDate = date)
+    }
 }
+
+/**
+ * Kotlin Flow's flatMapLatest() can collect a flow and flatMap it whenever it changes, but
+ * it only works with 1 input flow.
+ *
+ * By wrapping inside this class all the different data objects that should triggers flatMapLatest()
+ * when they change, developer can indirectly use flatMapLatest() with more than 1 input
+ */
+private data class DataFetchingTriggers(val userId: String, val currentDate: LocalDate)
