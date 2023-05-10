@@ -67,8 +67,8 @@ internal fun TrainingHistoryRoute(
     TrainingHistoryScreen(
         modifier = modifier,
         uiState = uiState,
-        onCurrentDateChange = viewModel::setCurrentDate,
-        onCurrentDateChangeToDefault = viewModel::setCurrentDateToDefault,
+        onSelectDate = viewModel::selectDate,
+        onSelectCurrentDate = viewModel::setCurrentDateToDefault,
         onMoveToNextWeek = viewModel::moveToNextWeek,
         onMoveToPreviousWeek = viewModel::moveToPreviousWeek
     )
@@ -79,8 +79,8 @@ internal fun TrainingHistoryRoute(
 internal fun TrainingHistoryScreen(
     modifier: Modifier = Modifier,
     uiState: TrainingHistoryUiState,
-    onCurrentDateChange: (LocalDate) -> Unit,
-    onCurrentDateChangeToDefault: () -> Unit,
+    onSelectDate: (LocalDate) -> Unit,
+    onSelectCurrentDate: () -> Unit,
     onMoveToPreviousWeek: () -> Unit,
     onMoveToNextWeek: () -> Unit
 ) {
@@ -92,13 +92,13 @@ internal fun TrainingHistoryScreen(
             }
         }
         is TrainingHistoryUiState.LoadComplete -> {
-            Timber.d("currentDate: ${uiState.currentDate}")
+            Timber.d("selectedDate: ${uiState.selectedDate}")
             Timber.d("workouts: ${uiState.workouts}")
 
-            val currentMonth = uiState.currentDate.month.name.toLowerCase(Locale.current)
+            val currentMonth = uiState.selectedDate.month.name.toLowerCase(Locale.current)
                 .capitalize(Locale.current)
-            val currentYear = uiState.currentDate.year
-            val currentDate = uiState.currentDate
+            val currentYear = uiState.selectedDate.year
+            val selectedDate = uiState.selectedDate
             Column(
                 modifier = modifier
                     .fillMaxSize()
@@ -107,7 +107,7 @@ internal fun TrainingHistoryScreen(
                 MonthYearHeader(
                     modifier = Modifier.fillMaxWidth(),
                     headerTitle = "$currentMonth $currentYear",
-                    onHeaderClickHandler = onCurrentDateChangeToDefault,
+                    onHeaderClickHandler = onSelectCurrentDate,
                     onIconPreviousClickHandler = onMoveToPreviousWeek,
                     onIconNextClickHandler = onMoveToNextWeek
                 )
@@ -116,12 +116,12 @@ internal fun TrainingHistoryScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    DateUtils.getAllWeekDays(currentDate).forEach { dateInWeek ->
+                    DateUtils.getAllWeekDays(selectedDate).forEach { dateInWeek ->
                         DateItem(
                             date = dateInWeek,
-                            isSelected = dateInWeek.isEqual(currentDate),
-                            isDateNotInCurrentMonth = dateInWeek.monthValue != currentDate.monthValue,
-                            onClickHandler = onCurrentDateChange
+                            isSelected = dateInWeek.isEqual(selectedDate),
+                            isDateNotInCurrentMonth = dateInWeek.monthValue != selectedDate.monthValue,
+                            onClickHandler = onSelectDate
                         )
                     }
                 }
@@ -130,7 +130,7 @@ internal fun TrainingHistoryScreen(
                     WorkoutList(
                         modifier = modifier,
                         workouts = uiState.workouts,
-                        currentDate = currentDate
+                        selectedDate = selectedDate
                     )
                 } else {
                     EmptyScreen()
@@ -225,7 +225,7 @@ private fun DateItem(
 }
 
 @Composable
-private fun WorkoutList(modifier: Modifier, workouts: List<Workout>, currentDate: LocalDate) {
+private fun WorkoutList(modifier: Modifier, workouts: List<Workout>, selectedDate: LocalDate) {
     workouts.forEach {
         WorkoutItem(workout = it)
     }

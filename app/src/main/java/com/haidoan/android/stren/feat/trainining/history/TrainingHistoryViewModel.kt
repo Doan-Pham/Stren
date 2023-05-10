@@ -29,7 +29,7 @@ internal class TrainingHistoryViewModel @Inject constructor(
      * it when it's null and causes NullPointerException
      */
     private val _dataFetchingTriggers: MutableStateFlow<DataFetchingTriggers> = MutableStateFlow(
-        DataFetchingTriggers(userId = UNDEFINED_USER_ID, currentDate = DateUtils.getCurrentDate())
+        DataFetchingTriggers(userId = UNDEFINED_USER_ID, selectedDate = DateUtils.getCurrentDate())
     )
 
     init {
@@ -50,11 +50,11 @@ internal class TrainingHistoryViewModel @Inject constructor(
     val uiState: StateFlow<TrainingHistoryUiState> =
         _dataFetchingTriggers.flatMapLatest { triggers ->
             val userId = triggers.userId
-            val currentDate = triggers.currentDate
+            val selectedDate = triggers.selectedDate
 
             if (userId != UNDEFINED_USER_ID) {
-                workoutsRepository.getWorkoutsByUserIdAndDate(userId, currentDate).map {
-                    TrainingHistoryUiState.LoadComplete(it, currentDate)
+                workoutsRepository.getWorkoutsByUserIdAndDate(userId, selectedDate).map {
+                    TrainingHistoryUiState.LoadComplete(it, selectedDate)
                 }
             } else {
                 flowOf(TrainingHistoryUiState.Loading)
@@ -64,22 +64,22 @@ internal class TrainingHistoryViewModel @Inject constructor(
             SharingStarted.WhileSubscribed(5000), TrainingHistoryUiState.Loading
         )
 
-    fun setCurrentDate(date: LocalDate) {
-        _dataFetchingTriggers.value = _dataFetchingTriggers.value.copy(currentDate = date)
+    fun selectDate(date: LocalDate) {
+        _dataFetchingTriggers.value = _dataFetchingTriggers.value.copy(selectedDate = date)
     }
 
     fun setCurrentDateToDefault() {
-        setCurrentDate(DateUtils.getCurrentDate())
+        selectDate(DateUtils.getCurrentDate())
     }
 
     fun moveToNextWeek() {
-        val currentDate = _dataFetchingTriggers.value.currentDate
-        setCurrentDate(currentDate.with(TemporalAdjusters.next(DayOfWeek.MONDAY)))
+        val selectedDate = _dataFetchingTriggers.value.selectedDate
+        selectDate(selectedDate.with(TemporalAdjusters.next(DayOfWeek.MONDAY)))
     }
 
     fun moveToPreviousWeek() {
-        val currentDate = _dataFetchingTriggers.value.currentDate
-        setCurrentDate(currentDate.with(TemporalAdjusters.previous(DayOfWeek.MONDAY)))
+        val selectedDate = _dataFetchingTriggers.value.selectedDate
+        selectDate(selectedDate.with(TemporalAdjusters.previous(DayOfWeek.MONDAY)))
     }
 }
 
@@ -90,4 +90,4 @@ internal class TrainingHistoryViewModel @Inject constructor(
  * By wrapping inside this class all the different data objects that should triggers flatMapLatest()
  * when they change, developer can indirectly use flatMapLatest() with more than 1 input
  */
-private data class DataFetchingTriggers(val userId: String, val currentDate: LocalDate)
+private data class DataFetchingTriggers(val userId: String, val selectedDate: LocalDate)

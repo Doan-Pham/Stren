@@ -58,7 +58,7 @@ class TrainingHistoryViewModelTest {
         }
 
         WORKOUTS_TEST_DATA.forEach { workout ->
-            viewModel.setCurrentDate(workout.date)
+            viewModel.selectDate(workout.date)
             Assert.assertEquals(
                 TrainingHistoryUiState.LoadComplete(
                     WORKOUTS_TEST_DATA.filter { it.date.isEqual(workout.date) }, workout.date
