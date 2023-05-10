@@ -1,12 +1,11 @@
 package com.haidoan.android.stren.core.designsystem.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -19,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.haidoan.android.stren.R
+import com.haidoan.android.stren.app.navigation.AppBarConfiguration
+import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.theme.Green70
 import com.haidoan.android.stren.core.designsystem.theme.Red60
 import com.kizitonwose.calendar.compose.VerticalCalendar
@@ -34,9 +35,11 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarDialog(
     onDismissDialog: () -> Unit,
+    onSelectDate: (LocalDate) -> Unit,
     selectedDate: LocalDate,
     datesThatHaveWorkouts: List<LocalDate>
 ) {
@@ -46,7 +49,7 @@ fun CalendarDialog(
             usePlatformDefaultWidth = false // experimental
         )
     ) {
-        Surface(
+        Column(
             modifier = Modifier
                 .background(Color.White)
                 .fillMaxSize()
@@ -62,13 +65,25 @@ fun CalendarDialog(
                 firstVisibleMonth = currentMonth,
                 firstDayOfWeek = daysOfWeek.first()
             )
+            StrenSmallTopAppBar(
+                appBarConfiguration = AppBarConfiguration.NavigationAppBar(
+                    title = "Select Date",
+                    navigationIcon = IconButtonInfo.BACK_ICON.copy(clickHandler = onDismissDialog)
+                )
+            )
             VerticalCalendar(
                 state = state,
                 dayContent = {
                     Day(
                         day = it,
                         isSelected = it.date.isEqual(selectedDate),
-                        haveWorkouts = datesThatHaveWorkouts.any { date -> date.isEqual(it.date) }
+                        haveWorkouts = datesThatHaveWorkouts.any { date -> date.isEqual(it.date) },
+                        onClickHandler = { newlySelectedDate ->
+                            if (!newlySelectedDate.isEqual(selectedDate)) {
+                                onSelectDate(newlySelectedDate)
+                                onDismissDialog()
+                            }
+                        }
                     )
                 },
                 monthHeader = {
@@ -81,18 +96,24 @@ fun CalendarDialog(
 }
 
 @Composable
-private fun Day(day: CalendarDay, isSelected: Boolean, haveWorkouts: Boolean) {
+private fun Day(
+    day: CalendarDay,
+    isSelected: Boolean,
+    haveWorkouts: Boolean,
+    onClickHandler: (LocalDate) -> Unit
+) {
     val backgroundColor = if (isSelected) Red60 else Color.White
     val textColor = if (isSelected) Color.White else Color.Black
-    Box(
-        modifier = Modifier
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(15.dp))
-            .background(backgroundColor)
-            .padding(dimensionResource(id = R.dimen.padding_small)),
-        contentAlignment = Alignment.Center
-    ) {
-        if (day.position == DayPosition.MonthDate) {
+    if (day.position == DayPosition.MonthDate) {
+        Box(
+            modifier = Modifier
+                .aspectRatio(1f)
+                .clip(RoundedCornerShape(15.dp))
+                .clickable { onClickHandler(day.date) }
+                .background(backgroundColor)
+                .padding(dimensionResource(id = R.dimen.padding_small)),
+            contentAlignment = Alignment.Center
+        ) {
             Text(
                 modifier = Modifier,
                 text = day.date.dayOfMonth.toString(),
@@ -110,8 +131,8 @@ private fun Day(day: CalendarDay, isSelected: Boolean, haveWorkouts: Boolean) {
                 )
             }
         }
-
     }
+
 }
 
 @Composable

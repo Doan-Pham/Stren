@@ -152,7 +152,8 @@ internal fun TrainingHistoryScreen(
                 CalendarDialog(
                     onDismissDialog = onDismissCalendarDialog,
                     selectedDate = selectedDate,
-                    datesThatHaveWorkouts = uiState.datesThatHaveWorkouts
+                    datesThatHaveWorkouts = uiState.datesThatHaveWorkouts,
+                    onSelectDate = onSelectDate
                 )
             }
         }
