@@ -16,6 +16,7 @@ sealed interface AppBarConfiguration {
     data class SearchAppBar(
         val text: MutableState<String>,
         val placeholder: String,
+        val shouldShowSearchIcon: Boolean = true,
         val onTextChange: (String) -> Unit,
         val onSearchClicked: (String) -> Unit,
     ) : AppBarConfiguration

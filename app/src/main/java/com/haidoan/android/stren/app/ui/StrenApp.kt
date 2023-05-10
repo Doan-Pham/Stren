@@ -99,6 +99,7 @@ private fun StrenTopAppBar(
                     text = configuration.text.value,
                     placeholder = configuration.placeholder,
                     onTextChange = configuration.onTextChange,
+                    shouldShowSearchIcon = configuration.shouldShowSearchIcon,
                     onBackClicked = { onBackClicked() },
                     onSearchClicked = configuration.onSearchClicked
                 )
