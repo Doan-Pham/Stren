@@ -10,22 +10,28 @@ import com.haidoan.android.stren.core.model.Routine
 import com.haidoan.android.stren.core.repository.RoutinesRepository
 import com.haidoan.android.stren.feat.trainining.routines.AddEditRoutineArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
+import timber.log.Timber
 import javax.inject.Inject
 
+const val SELECTED_EXERCISES_IDS_SAVED_STATE_KEY = "selected_exercises_ids"
 
 @HiltViewModel
 internal class AddEditRoutineViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     routinesRepository: RoutinesRepository
 ) : ViewModel() {
-
     var routineNameTextFieldValue by mutableStateOf("New routine")
-
     private val navArgs: AddEditRoutineArgs = AddEditRoutineArgs(savedStateHandle)
+
+    private var _exercisesIdsToAdd: MutableStateFlow<List<String>> = MutableStateFlow(listOf())
+
+    fun setExercisesIdsToAdd(ids: List<String>) {
+        Timber.d("setExercisesIdsToAdd - ids: $ids")
+        val newList = mutableListOf<String>()
+        newList.addAll(ids)
+        _exercisesIdsToAdd.value = newList
+    }
 
     private val _routines: List<Routine> = listOf()
 
