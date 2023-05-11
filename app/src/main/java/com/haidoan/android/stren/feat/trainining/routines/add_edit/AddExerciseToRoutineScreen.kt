@@ -1,5 +1,6 @@
 package com.haidoan.android.stren.feat.trainining.routines.add_edit
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,6 +14,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
@@ -30,6 +32,7 @@ import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.component.*
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
+import com.haidoan.android.stren.core.designsystem.theme.Red90
 import com.haidoan.android.stren.core.model.Exercise
 import timber.log.Timber
 
@@ -116,6 +119,8 @@ internal fun AddExerciseToRoutineRoute(
         filterStandards = listOf(exerciseCategoryFilter, muscleGroupFilter),
         onResetFilters = viewModel::resetFilters,
         onApplyFilters = viewModel::applyFilters,
+        selectedExercisesIds = viewModel.selectedExercisesIds,
+        onSelectExercise = viewModel::toggleExerciseSelection
     )
 }
 
@@ -129,74 +134,84 @@ internal fun AddExerciseToRoutineRoute(
 internal fun AddExerciseToRoutineScreen(
     modifier: Modifier = Modifier,
     pagedAddExerciseToRoutine: LazyPagingItems<Exercise>,
+    selectedExercisesIds: List<String>,
     filterStandards: List<FilterStandard> = listOf(),
     shouldShowFilterSheet: Boolean = false,
     onHideFilterSheet: () -> Unit = {},
     onResetFilters: () -> Unit,
     onApplyFilters: () -> Unit,
+    onSelectExercise: (exerciseId: String) -> Unit
 ) {
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .testTag(EXERCISES_EXERCISE_LIST_TEST_TAG)
-    )
-    {
-        items(items = pagedAddExerciseToRoutine) { exercise ->
-            exercise?.let {
-                ExerciseItem(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(dimensionResource(id = R.dimen.padding_medium)),
-                    exercise = exercise,
-                    onClickHandler = {
-                        //TODO
-                    }
-                )
-            }
-        }
-        Timber.d("itemCount : ${pagedAddExerciseToRoutine.itemCount}")
-
-        when (pagedAddExerciseToRoutine.loadState.append) {
-            is LoadState.NotLoading -> Unit
-            is LoadState.Loading -> {
-                Timber.d("loadState - append: ${pagedAddExerciseToRoutine.loadState.append}")
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        LoadingAnimation(
-                            modifier = Modifier.testTag(
-                                EXERCISES_LOADING_ANIMATION_TEST_TAG
-                            )
-                        )
-                    }
+    Column(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = modifier
+                .weight(1f)
+                .testTag(EXERCISES_EXERCISE_LIST_TEST_TAG),
+        )
+        {
+            items(items = pagedAddExerciseToRoutine) { exercise ->
+                exercise?.let {
+                    ExerciseItem(
+                        exercise = exercise,
+                        onClickHandler = onSelectExercise,
+                        isSelected = selectedExercisesIds.contains(exercise.id)
+                    )
                 }
             }
-            is LoadState.Error -> TODO()
-        }
+            Timber.d("itemCount : ${pagedAddExerciseToRoutine.itemCount}")
 
-        when (pagedAddExerciseToRoutine.loadState.refresh) {
-            is LoadState.NotLoading -> Unit
-            is LoadState.Loading -> {
-                Timber.d("loadState - refresh: ${pagedAddExerciseToRoutine.loadState.refresh}")
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillParentMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        LoadingAnimation(
-                            modifier = Modifier.testTag(
-                                EXERCISES_LOADING_ANIMATION_TEST_TAG
+            when (pagedAddExerciseToRoutine.loadState.append) {
+                is LoadState.NotLoading -> Unit
+                is LoadState.Loading -> {
+                    Timber.d("loadState - append: ${pagedAddExerciseToRoutine.loadState.append}")
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            LoadingAnimation(
+                                modifier = Modifier.testTag(
+                                    EXERCISES_LOADING_ANIMATION_TEST_TAG
+                                )
                             )
-                        )
+                        }
                     }
                 }
+                is LoadState.Error -> TODO()
             }
-            is LoadState.Error -> TODO()
+
+            when (pagedAddExerciseToRoutine.loadState.refresh) {
+                is LoadState.NotLoading -> Unit
+                is LoadState.Loading -> {
+                    Timber.d("loadState - refresh: ${pagedAddExerciseToRoutine.loadState.refresh}")
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillParentMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            LoadingAnimation(
+                                modifier = Modifier.testTag(
+                                    EXERCISES_LOADING_ANIMATION_TEST_TAG
+                                )
+                            )
+                        }
+                    }
+                }
+                is LoadState.Error -> TODO()
+            }
+        }
+
+        if (selectedExercisesIds.isNotEmpty()) {
+            StrenFilledButton(
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+                text = "Add ${selectedExercisesIds.size} " +
+                        if (selectedExercisesIds.size == 1) "exercise" else "exercises",
+                onClickHandler = { /*TODO*/ },
+                textStyle = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 
@@ -218,10 +233,16 @@ internal fun AddExerciseToRoutineScreen(
 private fun ExerciseItem(
     modifier: Modifier = Modifier,
     exercise: Exercise,
-    onClickHandler: (exerciseId: String) -> Unit
+    onClickHandler: (exerciseId: String) -> Unit,
+    isSelected: Boolean
 ) {
+    val backgroundColor = if (isSelected) Red90 else Color.White
     Row(
-        modifier = modifier.clickable { onClickHandler(exercise.id) },
+        modifier = modifier
+            .background(backgroundColor)
+            .clickable { onClickHandler(exercise.id) }
+            .fillMaxWidth()
+            .padding(dimensionResource(id = R.dimen.padding_medium)),
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(

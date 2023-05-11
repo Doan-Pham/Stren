@@ -1,5 +1,6 @@
 package com.haidoan.android.stren.feat.trainining.routines.add_edit
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -172,6 +173,16 @@ internal class AddExerciseToRoutineViewModel @Inject constructor(exercisesReposi
 
         }
         .cachedIn(viewModelScope)
+
+    val selectedExercisesIds = mutableStateListOf<String>()
+
+    fun toggleExerciseSelection(exerciseId: String) {
+        if (selectedExercisesIds.contains(exerciseId)) {
+            selectedExercisesIds.remove(exerciseId)
+        } else {
+            selectedExercisesIds.add(exerciseId)
+        }
+    }
 }
 
 
