@@ -1,5 +1,8 @@
 package com.haidoan.android.stren.feat.trainining.routines.add_edit
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,6 +22,8 @@ internal class AddEditRoutineViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     routinesRepository: RoutinesRepository
 ) : ViewModel() {
+
+    var routineNameTextFieldValue by mutableStateOf("New routine")
 
     private val navArgs: AddEditRoutineArgs = AddEditRoutineArgs(savedStateHandle)
 
