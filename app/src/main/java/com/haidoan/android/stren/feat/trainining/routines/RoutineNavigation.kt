@@ -1,12 +1,15 @@
 package com.haidoan.android.stren.feat.trainining.routines
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.*
 import com.google.accompanist.navigation.animation.composable
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.feat.trainining.routines.add_edit.ADD_EXERCISE_TO_ROUTINE_SCREEN_ROUTE
 import com.haidoan.android.stren.feat.trainining.routines.add_edit.AddExerciseToRoutineRoute
+import com.haidoan.android.stren.feat.trainining.routines.add_edit.SELECTED_EXERCISES_IDS_SAVED_STATE_KEY
 
 internal fun NavController.navigateToRoutineGraph(
     isAddingRoutine: Boolean,
@@ -41,9 +44,15 @@ internal fun NavGraphBuilder.routineGraph(
         route = "$ADD_EDIT_ROUTINE_SCREEN_ROUTE/{$ROUTINE_ID_NAV_ARG}/{$IS_ADDING_ROUTINE_NAV_ARG}",
         arguments = listOf(
             navArgument(ROUTINE_ID_NAV_ARG) { type = NavType.StringType },
-            navArgument(IS_ADDING_ROUTINE_NAV_ARG) { type = NavType.BoolType }
+            navArgument(IS_ADDING_ROUTINE_NAV_ARG) { type = NavType.BoolType },
         )
+
     ) {
+        val data: List<String> by it
+            .savedStateHandle
+            .getStateFlow(SELECTED_EXERCISES_IDS_SAVED_STATE_KEY, listOf<String>())
+            .collectAsStateWithLifecycle()
+
         AddEditRoutineRoute(
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
             onBackToPreviousScreen = { navController.popBackStack() },
@@ -56,6 +65,14 @@ internal fun NavGraphBuilder.routineGraph(
         route = ADD_EXERCISE_TO_ROUTINE_SCREEN_ROUTE
     ) {
         AddExerciseToRoutineRoute(appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
-            onBackToPreviousScreen = { navController.popBackStack() })
+            onBackToPreviousScreen = { navController.popBackStack() },
+            onAddExercisesToRoutine = { selectedExercisesIds ->
+                // For some reason, app crashes if "selectedExercisesIds" is not wrapped
+                // in listOf() call
+                navController.previousBackStackEntry?.savedStateHandle?.set(
+                    SELECTED_EXERCISES_IDS_SAVED_STATE_KEY, listOf(selectedExercisesIds).flatten()
+                )
+                navController.popBackStack()
+            })
     }
 }
