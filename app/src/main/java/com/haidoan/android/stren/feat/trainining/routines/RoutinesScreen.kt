@@ -33,6 +33,8 @@ internal fun RoutinesRoute(
     modifier: Modifier = Modifier,
     viewModel: RoutinesViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
+    onNavigateToAddRoutineScreen: () -> Unit,
+    onNavigateToEditRoutineScreen: (routineId: String) -> Unit
 ) {
 
     val trainingHistoryAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
@@ -41,6 +43,7 @@ internal fun RoutinesRoute(
                 description = "Menu Item Add",
                 clickHandler = {
                     //TODO: Implement "add" menu item
+                    onNavigateToAddRoutineScreen()
                 }),
             IconButtonInfo(
                 drawableResourceId = R.drawable.ic_search,

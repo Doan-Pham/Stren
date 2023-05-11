@@ -11,6 +11,8 @@ import com.haidoan.android.stren.feat.trainining.exercises.navigation.exerciseGr
 import com.haidoan.android.stren.feat.trainining.exercises.navigation.navigateToExerciseDetail
 import com.haidoan.android.stren.feat.trainining.history.TrainingHistoryRoute
 import com.haidoan.android.stren.feat.trainining.routines.RoutinesRoute
+import com.haidoan.android.stren.feat.trainining.routines.navigateToRoutineGraph
+import com.haidoan.android.stren.feat.trainining.routines.routineGraph
 import timber.log.Timber
 
 internal const val TRAINING_GRAPH_ROUTE = "training_graph_route"
@@ -47,6 +49,12 @@ fun NavGraphBuilder.trainingGraph(
                             appBarConfigurationChangeHandler = {
                                 appBarConfigurationChangeHandler(it)
                             },
+                            onNavigateToAddRoutineScreen = {
+                                navController.navigateToRoutineGraph(
+                                    isAddingRoutine = true
+                                )
+                            },
+                            onNavigateToEditRoutineScreen = {}
                         )
                     },
                 )
@@ -55,5 +63,10 @@ fun NavGraphBuilder.trainingGraph(
         exerciseGraph(
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
             onBackToPreviousScreen = { navController.popBackStack() })
+
+        routineGraph(
+            appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
+            onBackToPreviousScreen = { navController.popBackStack() }
+        )
     }
 }
