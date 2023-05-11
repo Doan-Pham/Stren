@@ -5,6 +5,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.*
 import com.google.accompanist.navigation.animation.composable
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
+import com.haidoan.android.stren.feat.trainining.routines.add_edit.ADD_EXERCISE_TO_ROUTINE_SCREEN_ROUTE
+import com.haidoan.android.stren.feat.trainining.routines.add_edit.AddExerciseToRoutineRoute
 
 internal fun NavController.navigateToRoutineGraph(
     isAddingRoutine: Boolean,
@@ -31,8 +33,8 @@ Reference: https://stackoverflow.com/questions/70404038/jetpack-compose-navigati
  */
 @OptIn(ExperimentalAnimationApi::class)
 internal fun NavGraphBuilder.routineGraph(
-    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
-    onBackToPreviousScreen: () -> Unit
+    navController: NavController,
+    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit
 ) {
 
     composable(
@@ -44,7 +46,16 @@ internal fun NavGraphBuilder.routineGraph(
     ) {
         AddEditRoutineRoute(
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
-            onBackToPreviousScreen = onBackToPreviousScreen
+            onBackToPreviousScreen = { navController.popBackStack() },
+            onNavigateToAddExercise = {
+                navController.navigate(ADD_EXERCISE_TO_ROUTINE_SCREEN_ROUTE)
+            }
         )
+    }
+    composable(
+        route = ADD_EXERCISE_TO_ROUTINE_SCREEN_ROUTE
+    ) {
+        AddExerciseToRoutineRoute(appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
+            onBackToPreviousScreen = { navController.popBackStack() })
     }
 }

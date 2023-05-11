@@ -32,7 +32,8 @@ internal fun AddEditRoutineRoute(
     modifier: Modifier = Modifier,
     viewModel: AddEditRoutineViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
-    onBackToPreviousScreen: () -> Unit
+    onBackToPreviousScreen: () -> Unit,
+    onNavigateToAddExercise: () -> Unit
 ) {
     val addEditRoutineAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         title = "Routine",
@@ -56,7 +57,8 @@ internal fun AddEditRoutineRoute(
         modifier = modifier,
         uiState = uiState,
         routineName = viewModel.routineNameTextFieldValue,
-        onRoutineNameChange = { viewModel.routineNameTextFieldValue = it }
+        onRoutineNameChange = { viewModel.routineNameTextFieldValue = it },
+        onNavigateToAddExercise = onNavigateToAddExercise
     )
 }
 
@@ -67,6 +69,7 @@ internal fun AddEditRoutineScreen(
     uiState: AddEditRoutineUiState,
     routineName: String,
     onRoutineNameChange: (String) -> Unit,
+    onNavigateToAddExercise: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -100,7 +103,7 @@ internal fun AddEditRoutineScreen(
         }
 
         StrenFilledButton(
-            text = "Add exercise", onClickHandler = { /*TODO*/ },
+            text = "Add exercise", onClickHandler = onNavigateToAddExercise,
             textStyle = MaterialTheme.typography.bodyMedium
         )
     }
