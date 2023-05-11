@@ -7,9 +7,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.*
 import com.google.accompanist.navigation.animation.composable
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
-import com.haidoan.android.stren.feat.trainining.routines.add_edit.ADD_EXERCISE_TO_ROUTINE_SCREEN_ROUTE
-import com.haidoan.android.stren.feat.trainining.routines.add_edit.AddExerciseToRoutineRoute
-import com.haidoan.android.stren.feat.trainining.routines.add_edit.SELECTED_EXERCISES_IDS_SAVED_STATE_KEY
+import com.haidoan.android.stren.feat.trainining.routines.add_edit.*
+import timber.log.Timber
 
 internal fun NavController.navigateToRoutineGraph(
     isAddingRoutine: Boolean,
@@ -47,13 +46,19 @@ internal fun NavGraphBuilder.routineGraph(
             navArgument(IS_ADDING_ROUTINE_NAV_ARG) { type = NavType.BoolType },
         )
 
-    ) {
-        val data: List<String> by it
+    ) { navBackStackEntry ->
+        val exercisesIdsToAdd: List<String> by navBackStackEntry
             .savedStateHandle
             .getStateFlow(SELECTED_EXERCISES_IDS_SAVED_STATE_KEY, listOf<String>())
             .collectAsStateWithLifecycle()
+        Timber.d("exercisesIdsToAdd: $exercisesIdsToAdd")
 
         AddEditRoutineRoute(
+            exercisesIdsToAdd = exercisesIdsToAdd,
+            onAddExercisesCompleted = {
+                navBackStackEntry.savedStateHandle[SELECTED_EXERCISES_IDS_SAVED_STATE_KEY] =
+                    listOf<String>()
+            },
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
             onBackToPreviousScreen = { navController.popBackStack() },
             onNavigateToAddExercise = {

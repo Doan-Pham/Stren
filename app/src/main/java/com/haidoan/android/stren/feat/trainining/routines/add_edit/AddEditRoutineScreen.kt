@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.feat.trainining.routines
+package com.haidoan.android.stren.feat.trainining.routines.add_edit
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
@@ -19,8 +19,6 @@ import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.component.LoadingAnimation
 import com.haidoan.android.stren.core.designsystem.component.StrenFilledButton
 import com.haidoan.android.stren.core.designsystem.component.StrenOutlinedTextField
-import com.haidoan.android.stren.feat.trainining.routines.add_edit.AddEditRoutineUiState
-import com.haidoan.android.stren.feat.trainining.routines.add_edit.AddEditRoutineViewModel
 import timber.log.Timber
 
 internal const val ADD_EDIT_ROUTINE_SCREEN_ROUTE = "add_edit_routine_screen_route"
@@ -30,11 +28,18 @@ internal const val IS_ADDING_ROUTINE_NAV_ARG = "is_adding_arg"
 @Composable
 internal fun AddEditRoutineRoute(
     modifier: Modifier = Modifier,
+    exercisesIdsToAdd: List<String>,
     viewModel: AddEditRoutineViewModel = hiltViewModel(),
+    onAddExercisesCompleted: () -> Unit,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onBackToPreviousScreen: () -> Unit,
     onNavigateToAddExercise: () -> Unit
 ) {
+    if (exercisesIdsToAdd.isNotEmpty()) {
+        viewModel.setExercisesIdsToAdd(exercisesIdsToAdd)
+        onAddExercisesCompleted()
+    }
+
     val addEditRoutineAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         title = "Routine",
         navigationIcon = IconButtonInfo.BACK_ICON.copy(clickHandler = onBackToPreviousScreen),
