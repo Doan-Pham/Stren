@@ -1,17 +1,24 @@
 package com.haidoan.android.stren.feat.trainining.routines
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.component.LoadingAnimation
+import com.haidoan.android.stren.core.designsystem.component.StrenFilledButton
+import com.haidoan.android.stren.core.designsystem.component.StrenOutlinedTextField
 import com.haidoan.android.stren.feat.trainining.routines.add_edit.AddEditRoutineUiState
 import com.haidoan.android.stren.feat.trainining.routines.add_edit.AddEditRoutineViewModel
 import timber.log.Timber
@@ -47,7 +54,9 @@ internal fun AddEditRoutineRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     AddEditRoutineScreen(
         modifier = modifier,
-        uiState = uiState
+        uiState = uiState,
+        routineName = viewModel.routineNameTextFieldValue,
+        onRoutineNameChange = { viewModel.routineNameTextFieldValue = it }
     )
 }
 
@@ -55,21 +64,71 @@ internal fun AddEditRoutineRoute(
 @Composable
 internal fun AddEditRoutineScreen(
     modifier: Modifier = Modifier,
-    uiState: AddEditRoutineUiState
+    uiState: AddEditRoutineUiState,
+    routineName: String,
+    onRoutineNameChange: (String) -> Unit,
 ) {
-    when (uiState) {
-        is AddEditRoutineUiState.Loading -> {
-            Timber.d("Loading")
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                LoadingAnimation()
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = dimensionResource(id = R.dimen.padding_medium)),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        StrenOutlinedTextField(
+            text = routineName,
+            onTextChange = onRoutineNameChange,
+            label = "Routine name",
+            isError = routineName.isBlank() || routineName.isEmpty(),
+            errorText = "Routine name can't be empty"
+        )
+        when (uiState) {
+            is AddEditRoutineUiState.Loading -> {
+                Timber.d("Loading")
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    LoadingAnimation()
+                }
+            }
+            is AddEditRoutineUiState.EmptyRoutine -> {
+                Timber.d("Empty")
+                EmptyScreen()
+            }
+            is AddEditRoutineUiState.IsAdding -> {
+                Timber.d("IsAdding")
+                Timber.d("routines: ${uiState.routines}")
             }
         }
-        is AddEditRoutineUiState.EmptyRoutine -> {
-            Timber.d("Empty")
-        }
-        is AddEditRoutineUiState.IsAdding -> {
-            Timber.d("IsAdding")
-            Timber.d("routines: ${uiState.routines}")
-        }
+
+        StrenFilledButton(
+            text = "Add exercise", onClickHandler = { /*TODO*/ },
+            textStyle = MaterialTheme.typography.bodyMedium
+        )
+    }
+
+}
+
+@Composable
+private fun ColumnScope.EmptyScreen() {
+
+    Column(
+        modifier = Modifier
+            .weight(1f),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_edit),
+            contentDescription = "Icon edit"
+        )
+        Text(
+            text = "Empty routine",
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = TextAlign.Center
+        )
+        Text(
+            text = "Get started by adding exercises",
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center
+        )
     }
 }
