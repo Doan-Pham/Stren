@@ -65,8 +65,8 @@ fun NavGraphBuilder.trainingGraph(
             onBackToPreviousScreen = { navController.popBackStack() })
 
         routineGraph(
-            appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
-            onBackToPreviousScreen = { navController.popBackStack() }
+            navController = navController,
+            appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
         )
     }
 }
