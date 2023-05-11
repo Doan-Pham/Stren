@@ -73,7 +73,10 @@ fun FilterModalBottomSheet(
             )
             StrenFilledButton(
                 modifier = Modifier.weight(1f),
-                onClickHandler = onApplyFilters,
+                onClickHandler = {
+                    onApplyFilters()
+                    onDismissRequest()
+                },
                 text = "Apply",
                 textStyle = MaterialTheme.typography.bodyMedium
             )
