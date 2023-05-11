@@ -48,6 +48,7 @@ internal fun AddExerciseToRoutineRoute(
     viewModel: AddExerciseToRoutineViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {},
     onBackToPreviousScreen: () -> Unit,
+    onAddExercisesToRoutine: (selectedExercisesIds: List<String>) -> Unit,
 ) {
     var shouldShowFilterSheet by rememberSaveable { mutableStateOf(false) }
     val pagedAddExerciseToRoutine = viewModel.exercises.collectAsLazyPagingItems()
@@ -120,7 +121,8 @@ internal fun AddExerciseToRoutineRoute(
         onResetFilters = viewModel::resetFilters,
         onApplyFilters = viewModel::applyFilters,
         selectedExercisesIds = viewModel.selectedExercisesIds,
-        onSelectExercise = viewModel::toggleExerciseSelection
+        onSelectExercise = viewModel::toggleExerciseSelection,
+        onButtonAddExerciseClick = { onAddExercisesToRoutine(viewModel.selectedExercisesIds.toList()) }
     )
 }
 
@@ -140,7 +142,8 @@ internal fun AddExerciseToRoutineScreen(
     onHideFilterSheet: () -> Unit = {},
     onResetFilters: () -> Unit,
     onApplyFilters: () -> Unit,
-    onSelectExercise: (exerciseId: String) -> Unit
+    onSelectExercise: (exerciseId: String) -> Unit,
+    onButtonAddExerciseClick: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -209,7 +212,7 @@ internal fun AddExerciseToRoutineScreen(
                 modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
                 text = "Add ${selectedExercisesIds.size} " +
                         if (selectedExercisesIds.size == 1) "exercise" else "exercises",
-                onClickHandler = { /*TODO*/ },
+                onClickHandler = onButtonAddExerciseClick,
                 textStyle = MaterialTheme.typography.bodyMedium
             )
         }
