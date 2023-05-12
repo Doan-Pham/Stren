@@ -82,28 +82,32 @@ internal fun AddEditRoutineScreen(
             .padding(horizontal = dimensionResource(id = R.dimen.padding_medium)),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        StrenOutlinedTextField(
-            text = routineName,
-            onTextChange = onRoutineNameChange,
-            label = "Routine name",
-            isError = routineName.isBlank() || routineName.isEmpty(),
-            errorText = "Routine name can't be empty"
-        )
-        when (uiState) {
-            is AddEditRoutineUiState.Loading -> {
-                Timber.d("Loading")
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    LoadingAnimation()
+        Column(
+            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            StrenOutlinedTextField(
+                text = routineName,
+                onTextChange = onRoutineNameChange,
+                label = "Routine name",
+                isError = routineName.isBlank() || routineName.isEmpty(),
+                errorText = "Routine name can't be empty"
+            )
+            when (uiState) {
+                is AddEditRoutineUiState.Loading -> {
+                    Timber.d("Loading")
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        LoadingAnimation()
+                    }
                 }
-            }
-            is AddEditRoutineUiState.EmptyRoutine -> {
-                Timber.d("Empty")
-                EmptyScreen()
-            }
-            is AddEditRoutineUiState.IsAdding -> {
-                Timber.d("IsAdding")
-                Timber.d("trainedExercises: ${uiState.trainedExercises}")
+                is AddEditRoutineUiState.EmptyRoutine -> {
+                    Timber.d("Empty")
+                    EmptyScreen()
+                }
+                is AddEditRoutineUiState.IsAdding -> {
+                    Timber.d("IsAdding")
+                    Timber.d("trainedExercises: ${uiState.trainedExercises}")
+                }
             }
         }
 
