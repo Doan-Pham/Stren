@@ -4,9 +4,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
-import com.haidoan.android.stren.core.model.Exercise
-import com.haidoan.android.stren.core.model.TrainedExercise
-import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics
+import com.haidoan.android.stren.core.datasource.model.FirestoreTrainedExercise
 import com.haidoan.android.stren.core.model.Workout
 import com.haidoan.android.stren.core.utils.DateUtils.toLocalDate
 import com.haidoan.android.stren.core.utils.DateUtils.toTimeStampDayEnd
@@ -47,83 +45,34 @@ class WorkoutFirestoreDataSource @Inject constructor() : WorkoutRemoteDataSource
             Timber.d("toFirestoreWorkout() - : $workoutData")
             workoutData?.asWorkout()
         }
-}
 
-/**
- * Firestore representation of [Workout] class
- */
-private data class FirestoreWorkout(
-    @DocumentId
-    val id: String = "Undefined",
-    val date: Timestamp = Timestamp.now(),
-    val name: String = "Undefined",
-    val note: String = "Undefined",
-    val trainedExercises: List<FirestoreTrainedExercise> = listOf(),
-    val userId: String = "Undefined",
-) {
 
-    fun asWorkout(): Workout {
-        val trainedExercises = this.trainedExercises.map { firestoreTrainedExercise ->
-            firestoreTrainedExercise.asTrainedExercise()
-        }
-        Timber.d("trainedExercises: $trainedExercises")
-        return Workout(
-            id = this.id,
-            name = this.name,
-            note = this.note,
-            date = this.date.toLocalDate(),
-            trainedExercises = trainedExercises
-        )
-    }
-}
+    /**
+     * Firestore representation of [Workout] class
+     */
+    private data class FirestoreWorkout(
+        @DocumentId
+        val id: String = "Undefined",
+        val date: Timestamp = Timestamp.now(),
+        val name: String = "Undefined",
+        val note: String = "Undefined",
+        val trainedExercises: List<FirestoreTrainedExercise> = listOf(),
+        val userId: String = "Undefined",
+    ) {
 
-/**
- * Firestore representation of [TrainedExercise] class
- */
-private data class FirestoreTrainedExercise(
-    val exerciseCategory: String = "Undefined",
-    val exerciseId: String = "Undefined",
-    val name: String = "Undefined",
-    val note: String = "Undefined",
-    val trainingSets: Map<String, Long> = mapOf(),
-) {
-    fun asTrainedExercise(): TrainedExercise {
-        val firestoreTrainingSets = this.trainingSets
-        val trainingSets: MutableList<TrainingMeasurementMetrics> = mutableListOf()
-
-        when (this.exerciseCategory) {
-            ExerciseCategoryWithSpecialMetrics.CARDIO.fieldValue -> {
-                firestoreTrainingSets.forEach {
-                    trainingSets.add(
-                        TrainingMeasurementMetrics.DistanceAndDuration(
-                            it.key.toLong(),
-                            it.value.toDouble()
-                        )
-                    )
-                }
+        fun asWorkout(): Workout {
+            val trainedExercises = this.trainedExercises.map { firestoreTrainedExercise ->
+                firestoreTrainedExercise.asTrainedExercise()
             }
-            ExerciseCategoryWithSpecialMetrics.STRETCHING.fieldValue -> {
-                firestoreTrainingSets.forEach {
-                    trainingSets.add(TrainingMeasurementMetrics.DurationOnly(it.value))
-                }
-            }
-            else -> {
-                firestoreTrainingSets.forEach {
-                    trainingSets.add(TrainingMeasurementMetrics.WeightAndRep(it.key, it.value))
-                }
-            }
-        }
-        Timber.d("trainingSets: $trainingSets")
-        return TrainedExercise(
-            exercise = Exercise(
-                id = this.exerciseId,
+            Timber.d("trainedExercises: $trainedExercises")
+            return Workout(
+                id = this.id,
                 name = this.name,
-                belongedCategory = this.exerciseCategory
-            ), trainingSets = trainingSets.toList()
-        )
+                note = this.note,
+                date = this.date.toLocalDate(),
+                trainedExercises = trainedExercises
+            )
+        }
     }
 }
 
-private enum class ExerciseCategoryWithSpecialMetrics(val fieldValue: String) {
-    CARDIO("Cardio"), STRETCHING("Stretching"),
-}
