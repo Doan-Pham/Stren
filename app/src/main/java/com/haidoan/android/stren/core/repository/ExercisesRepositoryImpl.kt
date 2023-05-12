@@ -71,4 +71,7 @@ class ExercisesRepositoryImpl @Inject constructor(
         Timber.e("getExerciseById() - Exception: ${it.message}")
     }
 
+    override suspend fun getExercisesByIds(exerciseIds: List<String>): List<Exercise> =
+        dataSource.getExercisesByIds(exerciseIds)
+
 }
