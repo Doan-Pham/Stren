@@ -103,7 +103,7 @@ internal fun AddEditRoutineScreen(
             }
             is AddEditRoutineUiState.IsAdding -> {
                 Timber.d("IsAdding")
-                Timber.d("routines: ${uiState.routines}")
+                Timber.d("trainedExercises: ${uiState.trainedExercises}")
             }
         }
 
