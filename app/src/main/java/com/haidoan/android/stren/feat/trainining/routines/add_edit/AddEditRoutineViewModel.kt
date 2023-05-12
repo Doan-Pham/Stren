@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.haidoan.android.stren.core.model.Routine
+import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.repository.RoutinesRepository
 import com.haidoan.android.stren.feat.trainining.routines.AddEditRoutineArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,16 +28,15 @@ internal class AddEditRoutineViewModel @Inject constructor(
 
     fun setExercisesIdsToAdd(ids: List<String>) {
         Timber.d("setExercisesIdsToAdd - ids: $ids")
-        val newList = mutableListOf<String>()
-        newList.addAll(ids)
-        _exercisesIdsToAdd.value = newList
+
     }
 
-    private val _routines: List<Routine> = listOf()
+    private val _trainedExercises: MutableList<TrainedExercise> = mutableListOf()
+
 
     val uiState: StateFlow<AddEditRoutineUiState> = if (navArgs.isAddingRoutine) {
-        if (_routines.isEmpty()) flowOf(AddEditRoutineUiState.EmptyRoutine)
-        else flowOf(AddEditRoutineUiState.IsAdding(_routines))
+        if (_trainedExercises.isEmpty()) flowOf(AddEditRoutineUiState.EmptyRoutine)
+        else flowOf(AddEditRoutineUiState.IsAdding(_trainedExercises))
     } else {
         flowOf(AddEditRoutineUiState.Loading)
     }.stateIn(
