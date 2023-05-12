@@ -1,9 +1,6 @@
 package com.haidoan.android.stren.core.datasource
 
-import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestoreSettings
-import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.*
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.haidoan.android.stren.core.model.Exercise
@@ -116,6 +113,17 @@ class ExercisesFirestoreDataSource @Inject constructor() : ExercisesRemoteDataSo
 
     override suspend fun getExerciseById(exerciseId: String): Exercise =
         exerciseCollection.document(exerciseId).get().await().toExercise()
+
+    /**
+     * Due to Firestore's limitation, this query can only be used with "exercisesIds" parameter that has at most 30 values
+     *
+     * @param exerciseIds List of exercise ids to query against. Should only
+     * have at most 30 values
+     */
+    override suspend fun getExercisesByIds(exerciseIds: List<String>): List<Exercise> =
+        exerciseCollection.whereIn(
+            FieldPath.documentId(), exerciseIds
+        ).get().await().mapNotNull { document -> document.toExercise() }
 
     private fun DocumentSnapshot.toExercise(): Exercise {
         Timber.d("document: $this")

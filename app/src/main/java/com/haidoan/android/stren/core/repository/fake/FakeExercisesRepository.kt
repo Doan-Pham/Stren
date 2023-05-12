@@ -65,4 +65,8 @@ class FakeExercisesRepository(testScope: CoroutineScope) : ExercisesRepository {
             Timber.d("exercises: $exercises;exerciseId: $exerciseId ")
             exercises.first { it.id == exerciseId }
         }
+
+    override suspend fun getExercisesByIds(exerciseIds: List<String>): List<Exercise> {
+        TODO("Not yet implemented")
+    }
 }

@@ -28,4 +28,6 @@ interface ExercisesRemoteDataSource {
     ): QueryWrapper
 
     suspend fun getExerciseById(exerciseId: String): Exercise
+
+    suspend fun getExercisesByIds(exerciseIds: List<String>): List<Exercise>
 }

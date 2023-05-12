@@ -25,4 +25,6 @@ interface ExercisesRepository {
     ): Flow<PagingData<Exercise>>
 
     fun getExerciseById(exerciseId: String): Flow<Exercise>
+
+    suspend fun getExercisesByIds(exerciseIds: List<String>): List<Exercise>
 }
