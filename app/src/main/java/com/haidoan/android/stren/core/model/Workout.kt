@@ -16,7 +16,39 @@ data class Workout(
 data class TrainedExercise(
     val exercise: Exercise,
     val trainingSets: List<TrainingMeasurementMetrics>
-)
+) {
+    override fun toString(): String =
+        "TrainedExercise(exerciseName: ${exercise.name}; trainingSets: $trainingSets"
+}
+
+fun Exercise.asTrainedExerciseWithOneSet(): TrainedExercise {
+    val trainingSets: MutableList<TrainingMeasurementMetrics> = mutableListOf()
+
+    when (this.belongedCategory) {
+        ExerciseCategoryWithSpecialMetrics.CARDIO.fieldValue -> {
+            trainingSets.add(
+                TrainingMeasurementMetrics.DistanceAndDuration(
+                    0L,
+                    0.0
+                )
+            )
+
+        }
+        ExerciseCategoryWithSpecialMetrics.STRETCHING.fieldValue -> {
+            trainingSets.add(TrainingMeasurementMetrics.DurationOnly(0L))
+        }
+        else -> {
+            trainingSets.add(TrainingMeasurementMetrics.WeightAndRep("", 0L))
+        }
+    }
+    return TrainedExercise(
+        exercise = Exercise(
+            id = this.id,
+            name = this.name,
+            belongedCategory = this.belongedCategory
+        ), trainingSets = trainingSets.toList()
+    )
+}
 
 sealed interface TrainingMeasurementMetrics {
     override fun toString(): String
@@ -49,4 +81,8 @@ sealed interface TrainingMeasurementMetrics {
             return "$distance x $duration"
         }
     }
+}
+
+enum class ExerciseCategoryWithSpecialMetrics(val fieldValue: String) {
+    CARDIO("Cardio"), STRETCHING("Stretching"),
 }
