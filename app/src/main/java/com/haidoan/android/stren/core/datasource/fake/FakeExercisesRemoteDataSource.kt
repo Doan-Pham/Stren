@@ -40,4 +40,8 @@ class FakeExercisesRemoteDataSource : ExercisesRemoteDataSource {
     override suspend fun getExerciseById(exerciseId: String): Exercise {
         TODO("Not yet implemented")
     }
+
+    override suspend fun getExercisesByIds(exerciseIds: List<String>): List<Exercise> {
+        TODO("Not yet implemented")
+    }
 }
