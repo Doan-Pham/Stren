@@ -165,96 +165,24 @@ private fun TrainedExerciseRegion(
     onUpdateExercise: (exerciseToUpdate: TrainedExercise, oldMetric: TrainingMeasurementMetrics, newMetric: TrainingMeasurementMetrics) -> Unit
 ) {
     val headerTitles = mutableListOf<String>()
-    val measurementMetricsTextFields =
-        mutableListOf<@Composable (Modifier, TrainingMeasurementMetrics) -> Unit>()
-
     when (trainedExercise.trainingSets.first()) {
-        is TrainingMeasurementMetrics.DistanceAndDuration -> {
-            headerTitles.addAll(listOf("Kilometers", "Hours"))
-            measurementMetricsTextFields.addAll(
-                listOf(
-                    { modifierParam, oldMetrics ->
-                        SimpleTextField(
-                            modifier = modifierParam,
-                            value = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).kilometers.toString(),
-                            onValueChange = {
-                                onUpdateExercise(
-                                    trainedExercise,
-                                    oldMetrics,
-                                    oldMetrics.copy(
-                                        kilometers = it.toLong()
-                                    )
-                                )
-                            })
-                    },
-                    { modifierParam, oldMetrics ->
-                        SimpleTextField(
-                            modifier = modifierParam,
-                            value = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).hours.toString(),
-                            onValueChange = {
-                                onUpdateExercise(
-                                    trainedExercise,
-                                    oldMetrics,
-                                    oldMetrics.copy(
-                                        hours = it.toDouble()
-                                    )
-                                )
-                            })
-                    })
+        is TrainingMeasurementMetrics.DistanceAndDuration -> headerTitles.addAll(
+            listOf(
+                "Kilometers",
+                "Hours"
             )
-        }
-        is TrainingMeasurementMetrics.DurationOnly -> {
-            headerTitles.addAll(listOf("Seconds"))
-            measurementMetricsTextFields.addAll(listOf { modifierParam, oldMetrics ->
-                SimpleTextField(modifier = modifierParam,
-                    value = (oldMetrics as TrainingMeasurementMetrics.DurationOnly).seconds.toString(),
-                    onValueChange = {
-                        onUpdateExercise(
-                            trainedExercise,
-                            oldMetrics,
-                            oldMetrics.copy(
-                                seconds = it.toLong()
-                            )
-                        )
-                    })
-            })
-        }
-        is TrainingMeasurementMetrics.WeightAndRep -> {
-            headerTitles.addAll(listOf("Kg", "Reps"))
-            measurementMetricsTextFields.addAll(
-                listOf(
-                    { modifierParam, oldMetrics ->
-                        SimpleTextField(
-                            modifier = modifierParam,
-                            value = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).weight,
-                            onValueChange = {
-                                onUpdateExercise(
-                                    trainedExercise,
-                                    oldMetrics,
-                                    oldMetrics.copy(
-                                        weight = it
-                                    )
-                                )
-                            })
-                    },
-                    { modifierParam, oldMetrics ->
-                        SimpleTextField(
-                            modifier = modifierParam,
-                            value = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).repAmount.toString(),
-                            onValueChange = {
-                                onUpdateExercise(
-                                    trainedExercise,
-                                    oldMetrics,
-                                    oldMetrics.copy(
-                                        repAmount = it.toLong()
-                                    )
-                                )
-                            })
-                    })
-            )
-        }
+        )
+        is TrainingMeasurementMetrics.DurationOnly -> headerTitles.addAll(listOf("Seconds"))
+
+        is TrainingMeasurementMetrics.WeightAndRep -> headerTitles.addAll(listOf("Kg", "Reps"))
+
     }
 
+    val measurementMetricsTextFields = createTrainingSetTextFields(
+        trainedExercise.trainingSets.first(),
+        trainedExercise,
+        onUpdateExercise
+    )
     Column(modifier = modifier) {
         Row(
             modifier = Modifier
@@ -332,6 +260,95 @@ private fun TrainedExerciseRegion(
     }
 }
 
+/**
+ * A simple method to encapsulate the complex logic for creating TextField for a training set's
+ * measurement metrics
+ */
+private fun createTrainingSetTextFields(
+    trainingSet: TrainingMeasurementMetrics, trainedExercise: TrainedExercise,
+    onUpdateExercise: (exerciseToUpdate: TrainedExercise, oldMetric: TrainingMeasurementMetrics, newMetric: TrainingMeasurementMetrics) -> Unit
+): List<@Composable (Modifier, TrainingMeasurementMetrics) -> Unit> {
+    when (trainingSet) {
+        is TrainingMeasurementMetrics.DistanceAndDuration -> {
+            return listOf(
+                { modifierParam, oldMetrics ->
+                    SimpleTextField(
+                        modifier = modifierParam,
+                        value = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).kilometers.toString(),
+                        onValueChange = {
+                            onUpdateExercise(
+                                trainedExercise,
+                                oldMetrics,
+                                oldMetrics.copy(
+                                    kilometers = it.toLong()
+                                )
+                            )
+                        })
+                },
+                { modifierParam, oldMetrics ->
+                    SimpleTextField(
+                        modifier = modifierParam,
+                        value = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).hours.toString(),
+                        onValueChange = {
+                            onUpdateExercise(
+                                trainedExercise,
+                                oldMetrics,
+                                oldMetrics.copy(
+                                    hours = it.toDouble()
+                                )
+                            )
+                        })
+                })
+        }
+        is TrainingMeasurementMetrics.DurationOnly -> {
+            return listOf { modifierParam, oldMetrics ->
+                SimpleTextField(modifier = modifierParam,
+                    value = (oldMetrics as TrainingMeasurementMetrics.DurationOnly).seconds.toString(),
+                    onValueChange = {
+                        onUpdateExercise(
+                            trainedExercise,
+                            oldMetrics,
+                            oldMetrics.copy(
+                                seconds = it.toLong()
+                            )
+                        )
+                    })
+            }
+        }
+        is TrainingMeasurementMetrics.WeightAndRep -> {
+            return listOf(
+                { modifierParam, oldMetrics ->
+                    SimpleTextField(
+                        modifier = modifierParam,
+                        value = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).weight,
+                        onValueChange = {
+                            onUpdateExercise(
+                                trainedExercise,
+                                oldMetrics,
+                                oldMetrics.copy(
+                                    weight = it
+                                )
+                            )
+                        })
+                },
+                { modifierParam, oldMetrics ->
+                    SimpleTextField(
+                        modifier = modifierParam,
+                        value = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).repAmount.toString(),
+                        onValueChange = {
+                            onUpdateExercise(
+                                trainedExercise,
+                                oldMetrics,
+                                oldMetrics.copy(
+                                    repAmount = it.toLong()
+                                )
+                            )
+                        })
+                })
+
+        }
+    }
+}
 
 /**
  * Used together with an outer Column to create a table layout, this function can draw a row with the first columns having the same width, while the remaining columns divide the remaining width between
