@@ -67,7 +67,8 @@ internal fun AddEditRoutineRoute(
         uiState = uiState,
         routineName = viewModel.routineNameTextFieldValue,
         onRoutineNameChange = { viewModel.routineNameTextFieldValue = it },
-        onNavigateToAddExercise = onNavigateToAddExercise
+        onNavigateToAddExercise = onNavigateToAddExercise,
+        onUpdateExercise = viewModel::updateExerciseTrainingSet
     )
 }
 
@@ -78,7 +79,8 @@ internal fun AddEditRoutineScreen(
     uiState: AddEditRoutineUiState,
     routineName: String,
     onRoutineNameChange: (String) -> Unit,
-    onNavigateToAddExercise: () -> Unit
+    onNavigateToAddExercise: () -> Unit,
+    onUpdateExercise: (exerciseToUpdate: TrainedExercise, oldMetric: TrainingMeasurementMetrics, newMetric: TrainingMeasurementMetrics) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -114,7 +116,10 @@ internal fun AddEditRoutineScreen(
                         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_large))
                     ) {
                         items(uiState.trainedExercises) { trainedExercise ->
-                            TrainedExerciseRegion(trainedExercise = trainedExercise)
+                            TrainedExerciseRegion(
+                                trainedExercise = trainedExercise,
+                                onUpdateExercise = onUpdateExercise
+                            )
                         }
                     }
                 }
@@ -155,53 +160,96 @@ private fun ColumnScope.EmptyScreen() {
 
 @Composable
 private fun TrainedExerciseRegion(
-    modifier: Modifier = Modifier, trainedExercise: TrainedExercise
+    modifier: Modifier = Modifier,
+    trainedExercise: TrainedExercise,
+    onUpdateExercise: (exerciseToUpdate: TrainedExercise, oldMetric: TrainingMeasurementMetrics, newMetric: TrainingMeasurementMetrics) -> Unit
 ) {
     val headerTitles = mutableListOf<String>()
-    val measurementMetricsTextFields = mutableListOf<@Composable (Modifier) -> Unit>()
+    val measurementMetricsTextFields =
+        mutableListOf<@Composable (Modifier, TrainingMeasurementMetrics) -> Unit>()
 
     when (trainedExercise.trainingSets.first()) {
         is TrainingMeasurementMetrics.DistanceAndDuration -> {
             headerTitles.addAll(listOf("Kilometers", "Hours"))
             measurementMetricsTextFields.addAll(
                 listOf(
-                    { modifierParam ->
+                    { modifierParam, oldMetrics ->
                         SimpleTextField(
                             modifier = modifierParam,
-                            value = "Kilometers",
-                            onValueChange = {})
+                            value = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).kilometers.toString(),
+                            onValueChange = {
+                                onUpdateExercise(
+                                    trainedExercise,
+                                    oldMetrics,
+                                    oldMetrics.copy(
+                                        kilometers = it.toLong()
+                                    )
+                                )
+                            })
                     },
-                    { modifierParam ->
+                    { modifierParam, oldMetrics ->
                         SimpleTextField(
                             modifier = modifierParam,
-                            value = "Hours",
-                            onValueChange = {})
+                            value = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).hours.toString(),
+                            onValueChange = {
+                                onUpdateExercise(
+                                    trainedExercise,
+                                    oldMetrics,
+                                    oldMetrics.copy(
+                                        hours = it.toDouble()
+                                    )
+                                )
+                            })
                     })
             )
         }
         is TrainingMeasurementMetrics.DurationOnly -> {
             headerTitles.addAll(listOf("Seconds"))
-            measurementMetricsTextFields.addAll(listOf { modifierParam ->
+            measurementMetricsTextFields.addAll(listOf { modifierParam, oldMetrics ->
                 SimpleTextField(modifier = modifierParam,
-                    value = "Secs",
-                    onValueChange = {})
+                    value = (oldMetrics as TrainingMeasurementMetrics.DurationOnly).seconds.toString(),
+                    onValueChange = {
+                        onUpdateExercise(
+                            trainedExercise,
+                            oldMetrics,
+                            oldMetrics.copy(
+                                seconds = it.toLong()
+                            )
+                        )
+                    })
             })
         }
         is TrainingMeasurementMetrics.WeightAndRep -> {
             headerTitles.addAll(listOf("Kg", "Reps"))
             measurementMetricsTextFields.addAll(
                 listOf(
-                    { modifierParam ->
+                    { modifierParam, oldMetrics ->
                         SimpleTextField(
                             modifier = modifierParam,
-                            value = "Kg",
-                            onValueChange = {})
+                            value = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).weight,
+                            onValueChange = {
+                                onUpdateExercise(
+                                    trainedExercise,
+                                    oldMetrics,
+                                    oldMetrics.copy(
+                                        weight = it
+                                    )
+                                )
+                            })
                     },
-                    { modifierParam ->
+                    { modifierParam, oldMetrics ->
                         SimpleTextField(
                             modifier = modifierParam,
-                            value = "Reps",
-                            onValueChange = {})
+                            value = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).repAmount.toString(),
+                            onValueChange = {
+                                onUpdateExercise(
+                                    trainedExercise,
+                                    oldMetrics,
+                                    oldMetrics.copy(
+                                        repAmount = it.toLong()
+                                    )
+                                )
+                            })
                     })
             )
         }
@@ -245,8 +293,8 @@ private fun TrainedExerciseRegion(
                         firstColumnWidth = it
                     }
                 },
-                remainingCells = headerTitles.map<String, @Composable (Modifier) -> Unit> { title ->
-                    { modifier ->
+                remainingCells = headerTitles.map<String, @Composable (Modifier, TrainingMeasurementMetrics) -> Unit> { title ->
+                    { modifier, _ ->
                         Text(
                             modifier = modifier,
                             text = title,
@@ -254,7 +302,7 @@ private fun TrainedExerciseRegion(
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
-                }
+                },
             )
 
             trainedExercise.trainingSets.forEachIndexed { index, trainingSet ->
@@ -266,7 +314,8 @@ private fun TrainedExerciseRegion(
                             firstColumnWidth = it
                         }
                     },
-                    remainingCells = measurementMetricsTextFields
+                    remainingCells = measurementMetricsTextFields,
+                    trainingSet = trainingSet
                 )
             }
 
@@ -318,7 +367,8 @@ private fun TrainingSetRow(
     firstColumnText: String,
     firstColumnWidth: Int,
     onFirstColumnWidthChange: (Int) -> Unit,
-    remainingCells: List<@Composable (Modifier) -> Unit>
+    trainingSet: TrainingMeasurementMetrics = TrainingMeasurementMetrics.DurationOnly(-1),
+    remainingCells: List<@Composable (Modifier, TrainingMeasurementMetrics) -> Unit>
 ) {
 
     val widthInDp = with(LocalDensity.current) {
@@ -355,7 +405,8 @@ private fun TrainingSetRow(
             it(
                 Modifier
                     .weight(1f)
-                    .padding(horizontal = dimensionResource(id = R.dimen.padding_small))
+                    .padding(horizontal = dimensionResource(id = R.dimen.padding_small)),
+                trainingSet
             )
         }
     }
