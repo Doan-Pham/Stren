@@ -1,17 +1,14 @@
 package com.haidoan.android.stren.feat.trainining.routines.add_edit
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
@@ -23,9 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
-import com.haidoan.android.stren.core.designsystem.component.LoadingAnimation
-import com.haidoan.android.stren.core.designsystem.component.StrenFilledButton
-import com.haidoan.android.stren.core.designsystem.component.StrenOutlinedTextField
+import com.haidoan.android.stren.core.designsystem.component.*
 import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics
 import timber.log.Timber
@@ -115,7 +110,9 @@ internal fun AddEditRoutineScreen(
                 is AddEditRoutineUiState.IsAdding -> {
                     Timber.d("IsAdding")
                     Timber.d("trainedExercises: ${uiState.trainedExercises}")
-                    LazyColumn {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_large))
+                    ) {
                         items(uiState.trainedExercises) { trainedExercise ->
                             TrainedExerciseRegion(trainedExercise = trainedExercise)
                         }
@@ -161,15 +158,52 @@ private fun TrainedExerciseRegion(
     modifier: Modifier = Modifier, trainedExercise: TrainedExercise
 ) {
     val headerTitles = mutableListOf<String>()
+    val measurementMetricsTextFields = mutableListOf<@Composable (Modifier) -> Unit>()
+
     when (trainedExercise.trainingSets.first()) {
         is TrainingMeasurementMetrics.DistanceAndDuration -> {
             headerTitles.addAll(listOf("Kilometers", "Hours"))
+            measurementMetricsTextFields.addAll(
+                listOf(
+                    { modifierParam ->
+                        SimpleTextField(
+                            modifier = modifierParam,
+                            value = "Kilometers",
+                            onValueChange = {})
+                    },
+                    { modifierParam ->
+                        SimpleTextField(
+                            modifier = modifierParam,
+                            value = "Hours",
+                            onValueChange = {})
+                    })
+            )
         }
         is TrainingMeasurementMetrics.DurationOnly -> {
-            headerTitles.addAll(listOf("Secs"))
+            headerTitles.addAll(listOf("Seconds"))
+            measurementMetricsTextFields.addAll(listOf { modifierParam ->
+                SimpleTextField(modifier = modifierParam,
+                    value = "Secs",
+                    onValueChange = {})
+            })
         }
         is TrainingMeasurementMetrics.WeightAndRep -> {
             headerTitles.addAll(listOf("Kg", "Reps"))
+            measurementMetricsTextFields.addAll(
+                listOf(
+                    { modifierParam ->
+                        SimpleTextField(
+                            modifier = modifierParam,
+                            value = "Kg",
+                            onValueChange = {})
+                    },
+                    { modifierParam ->
+                        SimpleTextField(
+                            modifier = modifierParam,
+                            value = "Reps",
+                            onValueChange = {})
+                    })
+            )
         }
     }
 
@@ -199,9 +233,8 @@ private fun TrainedExerciseRegion(
 
         Column(
             modifier = Modifier
-                .background(Color.Gray)
                 .fillMaxSize()
-                .padding(start = 8.dp, end = 8.dp), verticalArrangement = Arrangement.Center
+                .padding(start = 8.dp, end = 8.dp),
         ) {
             var firstColumnWidth by remember { mutableStateOf(0) }
             TrainingSetRow(
@@ -217,27 +250,36 @@ private fun TrainedExerciseRegion(
                         Text(
                             modifier = modifier,
                             text = title,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     }
                 }
             )
+
+            trainedExercise.trainingSets.forEachIndexed { index, trainingSet ->
+                TrainingSetRow(
+                    firstColumnText = (index + 1).toString(),
+                    firstColumnWidth = firstColumnWidth,
+                    onFirstColumnWidthChange = {
+                        if (it > firstColumnWidth) {
+                            firstColumnWidth = it
+                        }
+                    },
+                    remainingCells = measurementMetricsTextFields
+                )
+            }
+
         }
 
-
-        Button(modifier = Modifier.align(Alignment.CenterHorizontally),
-            shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-            contentPadding = PaddingValues(
-                vertical = dimensionResource(id = R.dimen.padding_small), horizontal = 0.dp
-            ),
-            onClick = { /*TODO*/ }) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_chevron_right),
-                contentDescription = "Icon arrow right",
-                tint = Color.White
-            )
-        }
+        StrenOutlinedButton(
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(top = dimensionResource(id = R.dimen.padding_medium)),
+            onClick = { /*TODO*/ },
+            text = "Add set",
+            leadingIconResId = R.drawable.ic_add
+        )
     }
 }
 
@@ -292,20 +334,20 @@ private fun TrainingSetRow(
                 text = firstColumnText,
                 modifier = Modifier
                     .padding(horizontal = dimensionResource(id = R.dimen.padding_medium))
-                    .background(Color.Green)
                     .onGloballyPositioned {
                         onFirstColumnWidthChange(it.size.width)
                     },
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyMedium
             )
         } else {
             Text(
                 text = firstColumnText,
                 modifier = Modifier
                     .padding(horizontal = dimensionResource(id = R.dimen.padding_medium))
-                    .background(Color.Green)
                     .width(width = widthInDp),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyMedium
             )
         }
 
@@ -314,7 +356,6 @@ private fun TrainingSetRow(
                 Modifier
                     .weight(1f)
                     .padding(horizontal = dimensionResource(id = R.dimen.padding_small))
-                    .background(Color.Blue),
             )
         }
     }
