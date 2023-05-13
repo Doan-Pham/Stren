@@ -1,10 +1,8 @@
 package com.haidoan.android.stren.core.designsystem.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -13,8 +11,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import com.haidoan.android.stren.R
 import com.haidoan.android.stren.core.designsystem.theme.Red40
 import com.haidoan.android.stren.core.designsystem.theme.Red50
 
@@ -71,3 +72,28 @@ fun StrenFilledButton(
     }
 }
 
+@Composable
+fun StrenOutlinedButton(
+    modifier: Modifier = Modifier,
+    text: String,
+    leadingIconResId: Int,
+    color: Color = MaterialTheme.colorScheme.primary,
+    onClick: () -> Unit,
+    textStyle: TextStyle = MaterialTheme.typography.bodySmall
+) {
+    OutlinedButton(
+        modifier = modifier,
+        shape = RoundedCornerShape(40),
+        onClick = onClick,
+        border = BorderStroke(width = (1.5).dp, color = color),
+        contentPadding = PaddingValues(horizontal = dimensionResource(id = R.dimen.padding_small))
+    ) {
+        Icon(
+            painter = painterResource(id = leadingIconResId),
+            contentDescription = "",
+            tint = color
+        )
+        Spacer(modifier = Modifier.size(4.dp))
+        Text(text = text, style = textStyle, color = color)
+    }
+}
