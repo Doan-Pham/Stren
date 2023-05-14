@@ -55,6 +55,26 @@ fun Exercise.asTrainedExerciseWithOneSet(): TrainedExercise {
     )
 }
 
+fun MutableList<TrainingMeasurementMetrics>.addEmptyTrainingSet() {
+    when (this.first()) {
+        is TrainingMeasurementMetrics.DistanceAndDuration -> {
+            this.add(
+                TrainingMeasurementMetrics.DistanceAndDuration(
+                    0.0,
+                    0.0
+                )
+            )
+
+        }
+        is TrainingMeasurementMetrics.DurationOnly -> {
+            this.add(TrainingMeasurementMetrics.DurationOnly(0L))
+        }
+        is TrainingMeasurementMetrics.WeightAndRep -> {
+            this.add(TrainingMeasurementMetrics.WeightAndRep(0.0, 0L))
+        }
+    }
+}
+
 sealed class TrainingMeasurementMetrics {
     val id: UUID = UUID.randomUUID()
 
