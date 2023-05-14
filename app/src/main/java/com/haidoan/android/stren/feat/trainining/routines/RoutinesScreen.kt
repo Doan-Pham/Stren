@@ -33,7 +33,7 @@ internal fun RoutinesRoute(
     modifier: Modifier = Modifier,
     viewModel: RoutinesViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
-    onNavigateToAddRoutineScreen: () -> Unit,
+    onNavigateToAddRoutineScreen: (userId: String) -> Unit,
     onNavigateToEditRoutineScreen: (routineId: String) -> Unit
 ) {
 
@@ -42,8 +42,7 @@ internal fun RoutinesRoute(
             IconButtonInfo(drawableResourceId = R.drawable.ic_add,
                 description = "Menu Item Add",
                 clickHandler = {
-                    //TODO: Implement "add" menu item
-                    onNavigateToAddRoutineScreen()
+                    onNavigateToAddRoutineScreen(viewModel.cachedUserId)
                 }),
             IconButtonInfo(
                 drawableResourceId = R.drawable.ic_search,
