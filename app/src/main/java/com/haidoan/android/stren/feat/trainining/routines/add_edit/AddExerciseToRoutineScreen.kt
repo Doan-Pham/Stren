@@ -5,10 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -30,6 +27,7 @@ import coil.compose.AsyncImage
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
+import com.haidoan.android.stren.app.ui.LocalSnackbarHostState
 import com.haidoan.android.stren.core.designsystem.component.*
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.designsystem.theme.Red90
@@ -51,6 +49,19 @@ internal fun AddExerciseToRoutineRoute(
     onAddExercisesToRoutine: (selectedExercisesIds: List<String>) -> Unit,
 ) {
     var shouldShowFilterSheet by rememberSaveable { mutableStateOf(false) }
+    val snackbarHostState = LocalSnackbarHostState.current
+
+    if (viewModel.shouldShowSnackBar) {
+        LaunchedEffect(Unit) {
+            snackbarHostState.showSnackbar(
+                message = viewModel.snackBarErrorMessage,
+                duration = SnackbarDuration.Short,
+                withDismissAction = true
+            )
+            viewModel.shouldShowSnackBar = false
+        }
+    }
+
     val pagedAddExerciseToRoutine = viewModel.exercises.collectAsLazyPagingItems()
 
     val exerciseCategories by viewModel.exerciseCategories.collectAsStateWithLifecycle()
