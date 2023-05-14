@@ -126,6 +126,39 @@ internal class AddEditRoutineViewModel @Inject constructor(
         Timber.d("_trainedExercises: ${_trainedExercises.value}")
     }
 
+    fun deleteTrainingSet(
+        exerciseToUpdate: TrainedExercise,
+        trainingSetToDelete: TrainingMeasurementMetrics,
+    ) {
+        Timber.d("exerciseToUpdate - unique identifier: ${exerciseToUpdate.id}; content: $exerciseToUpdate")
+        Timber.d(
+            "trainingSetToUpdate - unique identifier: ${
+                trainingSetToDelete.id
+            }; content: $trainingSetToDelete"
+        )
+
+        val updatedTrainingSets = _trainedExercises.value.first { trainedExercise ->
+            Timber.d("Finding exercise - id: ${trainedExercise.id}")
+            trainedExercise.id == exerciseToUpdate.id
+        }.trainingSets.toMutableList()
+        updatedTrainingSets.removeIf { it.id == trainingSetToDelete.id }
+
+        Timber.d("updatedTrainingSets: $updatedTrainingSets")
+
+        val updatedExercise = _trainedExercises.value.first {
+            Timber.d("Finding exercise - id: ${it.id}")
+            it.id == exerciseToUpdate.id
+        }.copy(trainingSets = updatedTrainingSets)
+        Timber.d("updatedExercise: $updatedExercise")
+
+        val updatedTrainedExercises = mutableListOf<TrainedExercise>()
+        updatedTrainedExercises.addAll(_trainedExercises.value.replace(updatedExercise) { it.id == exerciseToUpdate.id })
+        Timber.d("updatedTrainedExercises: $updatedTrainedExercises")
+
+        _trainedExercises.value = updatedTrainedExercises
+        Timber.d("_trainedExercises: ${_trainedExercises.value}")
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<AddEditRoutineUiState> =
         _trainedExercises.flatMapLatest { _trainedExercises ->
