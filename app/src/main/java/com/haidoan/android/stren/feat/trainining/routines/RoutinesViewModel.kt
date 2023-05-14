@@ -9,6 +9,7 @@ import com.haidoan.android.stren.core.service.AuthenticationService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -40,9 +41,14 @@ internal class RoutinesViewModel @Inject constructor(
 
     init {
         authenticationService.addAuthStateListeners(
-            onUserAuthenticated = {
-                _dataFetchingTriggers.value = _dataFetchingTriggers.value.copy(userId = it)
-                Timber.d("authStateListen - User signed in - userId: $it")
+            onUserAuthenticated = { userId ->
+                _dataFetchingTriggers.value = _dataFetchingTriggers.value.copy(userId = userId)
+                viewModelScope.launch {
+                    routinesRepository.getRoutinesByUserId(userId).collect {
+                        cachedRoutines = it
+                    }
+                }
+                Timber.d("authStateListen - User signed in - userId: $userId")
             },
             onUserNotAuthenticated = {
                 _dataFetchingTriggers.value =
