@@ -69,7 +69,8 @@ internal fun AddEditRoutineRoute(
         routineName = viewModel.routineNameTextFieldValue,
         onRoutineNameChange = { viewModel.routineNameTextFieldValue = it },
         onNavigateToAddExercise = onNavigateToAddExercise,
-        onUpdateExercise = viewModel::updateExerciseTrainingSet
+        onUpdateExercise = viewModel::updateExerciseTrainingSet,
+        onAddSetToExercise = viewModel::addEmptyTrainingSet
     )
 }
 
@@ -81,7 +82,12 @@ internal fun AddEditRoutineScreen(
     routineName: String,
     onRoutineNameChange: (String) -> Unit,
     onNavigateToAddExercise: () -> Unit,
-    onUpdateExercise: (exerciseToUpdate: TrainedExercise, oldMetric: TrainingMeasurementMetrics, newMetric: TrainingMeasurementMetrics) -> Unit
+    onUpdateExercise: (
+        exerciseToUpdate: TrainedExercise,
+        oldMetric: TrainingMeasurementMetrics,
+        newMetric: TrainingMeasurementMetrics
+    ) -> Unit,
+    onAddSetToExercise: (TrainedExercise) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -119,7 +125,8 @@ internal fun AddEditRoutineScreen(
                         items(uiState.trainedExercises) { trainedExercise ->
                             TrainedExerciseRegion(
                                 trainedExercise = trainedExercise,
-                                onUpdateExercise = onUpdateExercise
+                                onUpdateExercise = onUpdateExercise,
+                                onAddSetButtonClick = onAddSetToExercise
                             )
                         }
                     }
@@ -163,7 +170,12 @@ private fun ColumnScope.EmptyScreen() {
 private fun TrainedExerciseRegion(
     modifier: Modifier = Modifier,
     trainedExercise: TrainedExercise,
-    onUpdateExercise: (exerciseToUpdate: TrainedExercise, oldMetric: TrainingMeasurementMetrics, newMetric: TrainingMeasurementMetrics) -> Unit
+    onUpdateExercise: (
+        exerciseToUpdate: TrainedExercise,
+        oldMetric: TrainingMeasurementMetrics,
+        newMetric: TrainingMeasurementMetrics
+    ) -> Unit,
+    onAddSetButtonClick: (TrainedExercise) -> Unit
 ) {
     val headerTitles = mutableListOf<String>()
     when (trainedExercise.trainingSets.first()) {
@@ -206,9 +218,8 @@ private fun TrainedExerciseRegion(
         }
 
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(start = 8.dp, end = 8.dp),
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
         ) {
             var firstColumnWidth by remember { mutableStateOf(0) }
             TrainingSetRow(
@@ -251,7 +262,9 @@ private fun TrainedExerciseRegion(
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(top = dimensionResource(id = R.dimen.padding_medium)),
-            onClick = { /*TODO*/ },
+            onClick = {
+                onAddSetButtonClick(trainedExercise)
+            },
             text = "Add set",
             leadingIconResId = R.drawable.ic_add
         )
