@@ -13,8 +13,8 @@ val WORKOUTS_TEST_DATA: List<Workout> = listOf(
         LocalDate.of(1111, 11, 11),
         trainedExercises = EXERCISES_TEST_DATA.map {
             TrainedExercise(
-                it,
-                listOf(TrainingMeasurementMetrics.WeightAndRep(11.5, 4))
+                exercise = it,
+                trainingSets = listOf(TrainingMeasurementMetrics.WeightAndRep(11.5, 4))
             )
         }),
     Workout(
@@ -24,8 +24,9 @@ val WORKOUTS_TEST_DATA: List<Workout> = listOf(
         LocalDate.of(2222, 12, 22),
         trainedExercises = EXERCISES_TEST_DATA.map {
             TrainedExercise(
+                exercise =
                 it,
-                listOf(TrainingMeasurementMetrics.WeightAndRep(22.0, 3))
+                trainingSets = listOf(TrainingMeasurementMetrics.WeightAndRep(22.0, 3))
             )
         }),
     Workout(
@@ -35,8 +36,8 @@ val WORKOUTS_TEST_DATA: List<Workout> = listOf(
         LocalDate.of(3333, 3, 13),
         trainedExercises = EXERCISES_TEST_DATA.map {
             TrainedExercise(
-                it,
-                listOf(TrainingMeasurementMetrics.WeightAndRep(33.0, 4))
+                exercise = it,
+                trainingSets = listOf(TrainingMeasurementMetrics.WeightAndRep(33.0, 4))
             )
         })
 

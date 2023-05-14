@@ -53,40 +53,36 @@ internal class AddEditRoutineViewModel @Inject constructor(
         trainingSetToUpdate: TrainingMeasurementMetrics,
         updatedTrainingSetData: TrainingMeasurementMetrics
     ) {
-        Timber.d("exerciseToUpdate - unique identifier: ${System.identityHashCode(exerciseToUpdate)}; content: $exerciseToUpdate")
+        Timber.d("exerciseToUpdate - unique identifier: ${exerciseToUpdate.id}; content: $exerciseToUpdate")
         Timber.d(
             "trainingSetToUpdate - unique identifier: ${
-                System.identityHashCode(
-                    trainingSetToUpdate
-                )
+                trainingSetToUpdate.id
             }; content: $trainingSetToUpdate"
         )
         Timber.d(
             "updatedTrainingSetData - unique identifier: ${
-                System.identityHashCode(
-                    updatedTrainingSetData
-                )
+                updatedTrainingSetData.id
             }; content: $updatedTrainingSetData"
         )
 
         val updatedTrainedExercises = mutableListOf<TrainedExercise>()
 
         val updatedTrainingSets = _trainedExercises.value.first { trainedExercise ->
-            Timber.d("Finding exercise - id: ${System.identityHashCode(trainedExercise)}")
-            trainedExercise === exerciseToUpdate
+            Timber.d("Finding exercise - id: ${trainedExercise.id}")
+            trainedExercise.id == exerciseToUpdate.id
         }.trainingSets.replace(updatedTrainingSetData) { trainingSet ->
-            Timber.d("Replacing training set - id: ${System.identityHashCode(trainingSet)}")
-            trainingSet === trainingSetToUpdate
+            Timber.d("Replacing training set - id: ${trainingSet.id}")
+            trainingSet.id == trainingSetToUpdate.id
         }
         Timber.d("updatedTrainingSets: $updatedTrainingSets")
 
         val updatedExercise = _trainedExercises.value.first {
-            Timber.d("Finding exercise - id: ${System.identityHashCode(it)}")
-            it === exerciseToUpdate
+            Timber.d("Finding exercise - id: ${it.id}")
+            it.id == exerciseToUpdate.id
         }.copy(trainingSets = updatedTrainingSets)
         Timber.d("updatedExercise: $updatedExercise")
 
-        updatedTrainedExercises.addAll(_trainedExercises.value.replace(updatedExercise) { it === exerciseToUpdate })
+        updatedTrainedExercises.addAll(_trainedExercises.value.replace(updatedExercise) { it.id == exerciseToUpdate.id })
         Timber.d("updatedTrainedExercises: $updatedTrainedExercises")
 
         _trainedExercises.value = updatedTrainedExercises
