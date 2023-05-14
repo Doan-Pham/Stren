@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -89,16 +91,15 @@ internal fun RoutinesScreen(
         }
         is RoutinesUiState.LoadComplete -> {
             Timber.d("routines: ${uiState.routines}")
-            Column(
+            LazyColumn(
                 modifier = modifier
                     .fillMaxSize()
                     .padding(horizontal = dimensionResource(id = R.dimen.padding_medium))
             ) {
-                uiState.routines.forEach {
-                    RoutineItem(routine = it)
+                items(uiState.routines) { routine ->
+                    RoutineItem(routine = routine)
                 }
             }
-
         }
         RoutinesUiState.LoadEmpty -> {
             Timber.d("LoadEmpty")
