@@ -1,7 +1,9 @@
 package com.haidoan.android.stren.feat.trainining.routines.add_edit
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
@@ -13,9 +15,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
+
+// This is due to Firestore's limitation
+private const val MAX_SELECTED_EXERCISES_COUNT = 30
 
 /**
  * This class is basically [ExercisesViewModel] with some modifications
@@ -26,7 +30,11 @@ import javax.inject.Inject
 @HiltViewModel
 internal class AddExerciseToRoutineViewModel @Inject constructor(exercisesRepository: ExercisesRepository) :
     ViewModel() {
+
     var searchBarText = mutableStateOf("")
+    var shouldShowSnackBar by mutableStateOf(false)
+
+    val snackBarErrorMessage = "Max 30 selected exercises at a time"
 
     private val _selectedCategoriesIds: MutableStateFlow<List<String>> =
         MutableStateFlow(listOf())
@@ -163,26 +171,25 @@ internal class AddExerciseToRoutineViewModel @Inject constructor(exercisesReposi
 //        Timber.d( "applyFilters() - _exercisesFilterStandards: ${_exercisesFilterStandards.value}")
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val exercises = _exercisesFilterStandards
-        .flatMapLatest { filterStandards ->
-            Timber.d("val exercises - filterStandards: $filterStandards")
-            withContext(viewModelScope.coroutineContext) {
-                exercisesRepository.filterExercises(filterStandards = filterStandards)
-            }
-
-        }
-        .cachedIn(viewModelScope)
-
     val selectedExercisesIds = mutableStateListOf<String>()
 
     fun toggleExerciseSelection(exerciseId: String) {
         if (selectedExercisesIds.contains(exerciseId)) {
             selectedExercisesIds.remove(exerciseId)
-        } else {
+        } else if (selectedExercisesIds.size < MAX_SELECTED_EXERCISES_COUNT) {
             selectedExercisesIds.add(exerciseId)
+        } else {
+            shouldShowSnackBar = true
         }
     }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val exercises = _exercisesFilterStandards
+        .flatMapLatest { filterStandards ->
+            Timber.d("val exercises - filterStandards: $filterStandards")
+            exercisesRepository.filterExercises(filterStandards = filterStandards)
+        }
+        .cachedIn(viewModelScope)
 }
 
 
