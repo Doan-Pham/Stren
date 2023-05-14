@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics
+import com.haidoan.android.stren.core.model.addEmptyTrainingSet
 import com.haidoan.android.stren.core.model.asTrainedExerciseWithOneSet
 import com.haidoan.android.stren.core.repository.ExercisesRepository
 import com.haidoan.android.stren.core.repository.RoutinesRepository
@@ -65,8 +66,6 @@ internal class AddEditRoutineViewModel @Inject constructor(
             }; content: $updatedTrainingSetData"
         )
 
-        val updatedTrainedExercises = mutableListOf<TrainedExercise>()
-
         val updatedTrainingSets = _trainedExercises.value.first { trainedExercise ->
             Timber.d("Finding exercise - id: ${trainedExercise.id}")
             trainedExercise.id == exerciseToUpdate.id
@@ -82,11 +81,37 @@ internal class AddEditRoutineViewModel @Inject constructor(
         }.copy(trainingSets = updatedTrainingSets)
         Timber.d("updatedExercise: $updatedExercise")
 
+        val updatedTrainedExercises = mutableListOf<TrainedExercise>()
         updatedTrainedExercises.addAll(_trainedExercises.value.replace(updatedExercise) { it.id == exerciseToUpdate.id })
         Timber.d("updatedTrainedExercises: $updatedTrainedExercises")
 
         _trainedExercises.value = updatedTrainedExercises
         Timber.d("_trainedExercises: ${_trainedExercises.value}")
+    }
+
+    fun addEmptyTrainingSet(
+        exerciseToUpdate: TrainedExercise,
+    ) {
+
+//        Timber.d("addTrainingSet - exerciseToUpdate: unique identifier: ${exerciseToUpdate.id}; content: $exerciseToUpdate")
+
+        val updatedTrainingSets = _trainedExercises.value.first { trainedExercise ->
+            Timber.d("Finding exercise - id: ${trainedExercise.id}")
+            trainedExercise.id == exerciseToUpdate.id
+        }.trainingSets.toMutableList()
+        updatedTrainingSets.addEmptyTrainingSet()
+
+        val updatedExercise = _trainedExercises.value.first {
+//            Timber.d("Finding exercise - id: ${it.id}")
+            it.id == exerciseToUpdate.id
+        }.copy(trainingSets = updatedTrainingSets)
+
+        val updatedTrainedExercises = mutableListOf<TrainedExercise>()
+        updatedTrainedExercises.addAll(_trainedExercises.value.replace(updatedExercise) { it.id == exerciseToUpdate.id })
+//        Timber.d("updatedTrainedExercises: $updatedTrainedExercises")
+
+        _trainedExercises.value = updatedTrainedExercises
+//        Timber.d("_trainedExercises: ${_trainedExercises.value}")
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
