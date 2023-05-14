@@ -3,6 +3,7 @@ package com.haidoan.android.stren.core.model
 import com.google.firebase.firestore.DocumentId
 import java.text.DecimalFormat
 import java.time.LocalDate
+import java.util.*
 
 data class Workout(
     @DocumentId
@@ -13,7 +14,11 @@ data class Workout(
     val trainedExercises: List<TrainedExercise>
 )
 
+/**
+ * [id] property: An id solely for differentiating TrainedExercise objects for update purposes
+ */
 data class TrainedExercise(
+    val id: UUID = UUID.randomUUID(),
     val exercise: Exercise,
     val trainingSets: List<TrainingMeasurementMetrics>
 ) {
@@ -50,15 +55,21 @@ fun Exercise.asTrainedExerciseWithOneSet(): TrainedExercise {
     )
 }
 
-sealed interface TrainingMeasurementMetrics {
-    override fun toString(): String
-    data class WeightAndRep(val weight: Double, val repAmount: Long) : TrainingMeasurementMetrics {
+sealed class TrainingMeasurementMetrics {
+    val id: UUID = UUID.randomUUID()
+
+    abstract override fun toString(): String
+    data class WeightAndRep(
+        val weight: Double,
+        val repAmount: Long
+    ) : TrainingMeasurementMetrics() {
         override fun toString(): String {
             return "$weight kg x $repAmount"
         }
     }
 
-    data class DurationOnly(val seconds: Long) : TrainingMeasurementMetrics {
+    data class DurationOnly(val seconds: Long) :
+        TrainingMeasurementMetrics() {
         override fun toString(): String {
             if (seconds > 3600) return "${seconds / 3600} hrs"
             if (seconds > 60) return "${seconds / 60} mins"
@@ -67,7 +78,7 @@ sealed interface TrainingMeasurementMetrics {
     }
 
     data class DistanceAndDuration(val kilometers: Double, val hours: Double) :
-        TrainingMeasurementMetrics {
+        TrainingMeasurementMetrics() {
         override fun toString(): String {
             val distance = if (kilometers < 1) "${kilometers * 1000}m" else "${kilometers}km"
             val duration =
