@@ -4,8 +4,7 @@ import com.google.firebase.firestore.DocumentId
 
 data class Routine(
     @DocumentId
-    val id: String,
+    val id: String = "Undefined Routine ID",
     val name: String,
-    val note: String,
     val trainedExercises: List<TrainedExercise>
 )

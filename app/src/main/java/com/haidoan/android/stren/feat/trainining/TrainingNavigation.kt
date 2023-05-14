@@ -51,6 +51,7 @@ fun NavGraphBuilder.trainingGraph(
                             },
                             onNavigateToAddRoutineScreen = {
                                 navController.navigateToRoutineGraph(
+                                    userId = it,
                                     isAddingRoutine = true
                                 )
                             },
