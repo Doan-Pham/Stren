@@ -6,10 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.haidoan.android.stren.core.model.TrainedExercise
-import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics
-import com.haidoan.android.stren.core.model.addEmptyTrainingSet
-import com.haidoan.android.stren.core.model.asTrainedExerciseWithOneSet
+import com.haidoan.android.stren.core.model.*
 import com.haidoan.android.stren.core.repository.ExercisesRepository
 import com.haidoan.android.stren.core.repository.RoutinesRepository
 import com.haidoan.android.stren.feat.trainining.routines.AddEditRoutineArgs
@@ -25,11 +22,12 @@ const val SELECTED_EXERCISES_IDS_SAVED_STATE_KEY = "selected_exercises_ids"
 @HiltViewModel
 internal class AddEditRoutineViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    routinesRepository: RoutinesRepository,
+    private val routinesRepository: RoutinesRepository,
     private val exercisesRepository: ExercisesRepository
 ) : ViewModel() {
     var routineNameTextFieldValue by mutableStateOf("New routine")
     private val navArgs: AddEditRoutineArgs = AddEditRoutineArgs(savedStateHandle)
+
 
     fun setExercisesIdsToAdd(ids: List<String>) {
         //Timber.d("setExercisesIdsToAdd - ids: $ids")
@@ -157,6 +155,19 @@ internal class AddEditRoutineViewModel @Inject constructor(
 
         _trainedExercises.value = updatedTrainedExercises
         Timber.d("_trainedExercises: ${_trainedExercises.value}")
+    }
+
+    fun addRoutine() {
+        Timber.d("addRoutine() - userId: ${navArgs.userId};  _trainedExercises.value: ${_trainedExercises.value}")
+        viewModelScope.launch {
+            routinesRepository.addRoutine(
+                userId = navArgs.userId,
+                routine = Routine(
+                    name = routineNameTextFieldValue,
+                    trainedExercises = _trainedExercises.value
+                )
+            )
+        }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
