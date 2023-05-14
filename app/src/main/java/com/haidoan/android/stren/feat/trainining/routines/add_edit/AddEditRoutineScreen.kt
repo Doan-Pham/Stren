@@ -70,7 +70,8 @@ internal fun AddEditRoutineRoute(
         onRoutineNameChange = { viewModel.routineNameTextFieldValue = it },
         onNavigateToAddExercise = onNavigateToAddExercise,
         onUpdateExercise = viewModel::updateExerciseTrainingSet,
-        onAddSetToExercise = viewModel::addEmptyTrainingSet
+        onAddSetToExercise = viewModel::addEmptyTrainingSet,
+        onDeleteExercise = viewModel::deleteExercise
     )
 }
 
@@ -87,7 +88,8 @@ internal fun AddEditRoutineScreen(
         oldMetric: TrainingMeasurementMetrics,
         newMetric: TrainingMeasurementMetrics
     ) -> Unit,
-    onAddSetToExercise: (TrainedExercise) -> Unit
+    onAddSetToExercise: (TrainedExercise) -> Unit,
+    onDeleteExercise: (TrainedExercise) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -126,7 +128,8 @@ internal fun AddEditRoutineScreen(
                             TrainedExerciseRegion(
                                 trainedExercise = trainedExercise,
                                 onUpdateExercise = onUpdateExercise,
-                                onAddSetButtonClick = onAddSetToExercise
+                                onAddSetButtonClick = onAddSetToExercise,
+                                onDeleteExerciseClick = onDeleteExercise
                             )
                         }
                     }
@@ -175,7 +178,8 @@ private fun TrainedExerciseRegion(
         oldMetric: TrainingMeasurementMetrics,
         newMetric: TrainingMeasurementMetrics
     ) -> Unit,
-    onAddSetButtonClick: (TrainedExercise) -> Unit
+    onAddSetButtonClick: (TrainedExercise) -> Unit,
+    onDeleteExerciseClick: (TrainedExercise) -> Unit
 ) {
     val headerTitles = mutableListOf<String>()
     when (trainedExercise.trainingSets.first()) {
@@ -206,15 +210,19 @@ private fun TrainedExerciseRegion(
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(Modifier.weight(1f))
+            DropDownMenuScaffold(menuItemsTextAndClickHandler = mapOf("Delete" to {
+                onDeleteExerciseClick(trainedExercise)
+            })) { onExpandMenu ->
+                Icon(modifier = Modifier
+                    .clickable {
+                        onExpandMenu()
+                    }
+                    .size(dimensionResource(id = R.dimen.icon_size_medium)),
+                    painter = painterResource(id = R.drawable.ic_more_horizontal),
+                    contentDescription = "Icon more",
+                    tint = MaterialTheme.colorScheme.primary)
+            }
 
-            Icon(modifier = Modifier
-                .clickable {
-                    //TODO
-                }
-                .size(dimensionResource(id = R.dimen.icon_size_medium)),
-                painter = painterResource(id = R.drawable.ic_more_horizontal),
-                contentDescription = "Icon more",
-                tint = MaterialTheme.colorScheme.primary)
         }
 
         Column(

@@ -114,6 +114,18 @@ internal class AddEditRoutineViewModel @Inject constructor(
 //        Timber.d("_trainedExercises: ${_trainedExercises.value}")
     }
 
+    fun deleteExercise(
+        exerciseToDelete: TrainedExercise,
+    ) {
+        val updatedTrainedExercises = _trainedExercises.value.toMutableList()
+        updatedTrainedExercises.removeIf { it.id == exerciseToDelete.id }
+
+        Timber.d("updatedTrainedExercises: $updatedTrainedExercises")
+
+        _trainedExercises.value = updatedTrainedExercises
+        Timber.d("_trainedExercises: ${_trainedExercises.value}")
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<AddEditRoutineUiState> =
         _trainedExercises.flatMapLatest { _trainedExercises ->
