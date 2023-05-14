@@ -25,7 +25,7 @@ internal data class FirestoreTrainedExercise(
                 firestoreTrainingSets.forEach {
                     trainingSets.add(
                         TrainingMeasurementMetrics.DistanceAndDuration(
-                            it.key.toLong(),
+                            it.key.toDouble(),
                             it.value.toDouble()
                         )
                     )
@@ -38,7 +38,12 @@ internal data class FirestoreTrainedExercise(
             }
             else -> {
                 firestoreTrainingSets.forEach {
-                    trainingSets.add(TrainingMeasurementMetrics.WeightAndRep(it.key, it.value))
+                    trainingSets.add(
+                        TrainingMeasurementMetrics.WeightAndRep(
+                            it.key.toDouble(),
+                            it.value
+                        )
+                    )
                 }
             }
         }
