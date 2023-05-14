@@ -31,7 +31,8 @@ internal class RoutinesViewModel @Inject constructor(
     // Since RoutinesViewModel will fetch all the routines right from the start, fetching it again
     // when searchQuery changes is wasteful. Instead, cache the fetching result and query directly
     // on that cached list
-    private var cachedUserId = ""
+    var cachedUserId = ""
+        private set
     private var cachedRoutines = listOf<Routine>()
 
     // Text to show on search bar

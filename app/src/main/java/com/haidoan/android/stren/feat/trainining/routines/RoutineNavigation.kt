@@ -12,18 +12,24 @@ import timber.log.Timber
 
 internal fun NavController.navigateToRoutineGraph(
     isAddingRoutine: Boolean,
+    userId: String,
     routineId: String = "UNDEFINED_ROUTINE_ID"
 ) {
-    this.navigate("$ADD_EDIT_ROUTINE_SCREEN_ROUTE/$routineId/$isAddingRoutine")
+    this.navigate("$ADD_EDIT_ROUTINE_SCREEN_ROUTE/$userId/$routineId/$isAddingRoutine")
 }
 
 // This encapsulate the SavedStateHandle access to allow AddEditRoutineViewModel
 // to easily grabs nav args. Or else, it has to know all the nav args' names
-internal class AddEditRoutineArgs(val routineId: String, val isAddingRoutine: Boolean) {
+internal class AddEditRoutineArgs(
+    val userId: String,
+    val routineId: String,
+    val isAddingRoutine: Boolean
+) {
     constructor(savedStateHandle: SavedStateHandle) :
             this(
+                checkNotNull(savedStateHandle[USER_ID_ROUTINE_NAV_ARG]),
                 checkNotNull(savedStateHandle[ROUTINE_ID_NAV_ARG]),
-                checkNotNull(savedStateHandle[IS_ADDING_ROUTINE_NAV_ARG])
+                checkNotNull(savedStateHandle[IS_ADDING_ROUTINE_NAV_ARG]),
             )
 }
 
@@ -40,8 +46,9 @@ internal fun NavGraphBuilder.routineGraph(
 ) {
 
     composable(
-        route = "$ADD_EDIT_ROUTINE_SCREEN_ROUTE/{$ROUTINE_ID_NAV_ARG}/{$IS_ADDING_ROUTINE_NAV_ARG}",
+        route = "$ADD_EDIT_ROUTINE_SCREEN_ROUTE/{$USER_ID_ROUTINE_NAV_ARG}/{$ROUTINE_ID_NAV_ARG}/{$IS_ADDING_ROUTINE_NAV_ARG}",
         arguments = listOf(
+            navArgument(USER_ID_ROUTINE_NAV_ARG) { type = NavType.StringType },
             navArgument(ROUTINE_ID_NAV_ARG) { type = NavType.StringType },
             navArgument(IS_ADDING_ROUTINE_NAV_ARG) { type = NavType.BoolType },
         )
