@@ -23,6 +23,7 @@ import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.component.*
 import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics
+import com.haidoan.android.stren.core.utils.ValidationUtils
 import timber.log.Timber
 
 internal const val ADD_EDIT_ROUTINE_SCREEN_ROUTE = "add_edit_routine_screen_route"
@@ -168,8 +169,7 @@ private fun TrainedExerciseRegion(
     when (trainedExercise.trainingSets.first()) {
         is TrainingMeasurementMetrics.DistanceAndDuration -> headerTitles.addAll(
             listOf(
-                "Kilometers",
-                "Hours"
+                "Kilometers", "Hours"
             )
         )
         is TrainingMeasurementMetrics.DurationOnly -> headerTitles.addAll(listOf("Seconds"))
@@ -179,9 +179,7 @@ private fun TrainedExerciseRegion(
     }
 
     val measurementMetricsTextFields = createTrainingSetTextFields(
-        trainedExercise.trainingSets.first(),
-        trainedExercise,
-        onUpdateExercise
+        trainedExercise.trainingSets.first(), trainedExercise, onUpdateExercise
     )
     Column(modifier = modifier) {
         Row(
@@ -265,7 +263,8 @@ private fun TrainedExerciseRegion(
  * measurement metrics
  */
 private fun createTrainingSetTextFields(
-    trainingSet: TrainingMeasurementMetrics, trainedExercise: TrainedExercise,
+    trainingSet: TrainingMeasurementMetrics,
+    trainedExercise: TrainedExercise,
     onUpdateExercise: (
         exerciseToUpdate: TrainedExercise,
         oldMetric: TrainingMeasurementMetrics,
@@ -274,49 +273,38 @@ private fun createTrainingSetTextFields(
 ): List<@Composable (Modifier, TrainingMeasurementMetrics) -> Unit> {
     when (trainingSet) {
         is TrainingMeasurementMetrics.DistanceAndDuration -> {
-            return listOf(
-                { modifierParam, oldMetrics ->
-                    TextFieldByNumberType(
-                        modifier = modifierParam,
-                        numberType = NumberType.DOUBLE,
-                        number = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).kilometers,
-                        onValueChange = {
-                            onUpdateExercise(
-                                trainedExercise,
-                                oldMetrics,
-                                oldMetrics.copy(
-                                    kilometers = it.toString().toDouble()
-                                )
+            return listOf({ modifierParam, oldMetrics ->
+                TextFieldByNumberType(modifier = modifierParam,
+                    numberType = NumberType.DOUBLE,
+                    number = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).kilometers,
+                    onValueChange = {
+                        onUpdateExercise(
+                            trainedExercise, oldMetrics, oldMetrics.copy(
+                                kilometers = it.toString().toDouble()
                             )
-                        })
-                },
-                { modifierParam, oldMetrics ->
-                    TextFieldByNumberType(
-                        modifier = modifierParam,
-                        numberType = NumberType.DOUBLE,
-                        number = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).hours,
-                        onValueChange = {
-                            onUpdateExercise(
-                                trainedExercise,
-                                oldMetrics,
-                                oldMetrics.copy(
-                                    hours = it.toString().toDouble()
-                                )
+                        )
+                    })
+            }, { modifierParam, oldMetrics ->
+                TextFieldByNumberType(modifier = modifierParam,
+                    numberType = NumberType.DOUBLE,
+                    number = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).hours,
+                    onValueChange = {
+                        onUpdateExercise(
+                            trainedExercise, oldMetrics, oldMetrics.copy(
+                                hours = it.toString().toDouble()
                             )
-                        })
-                })
+                        )
+                    })
+            })
         }
         is TrainingMeasurementMetrics.DurationOnly -> {
             return listOf { modifierParam, oldMetrics ->
-                TextFieldByNumberType(
-                    modifier = modifierParam,
+                TextFieldByNumberType(modifier = modifierParam,
                     numberType = NumberType.LONG,
                     number = (oldMetrics as TrainingMeasurementMetrics.DurationOnly).seconds,
                     onValueChange = {
                         onUpdateExercise(
-                            trainedExercise,
-                            oldMetrics,
-                            oldMetrics.copy(
+                            trainedExercise, oldMetrics, oldMetrics.copy(
                                 seconds = it.toString().toLong()
                             )
                         )
@@ -324,37 +312,29 @@ private fun createTrainingSetTextFields(
             }
         }
         is TrainingMeasurementMetrics.WeightAndRep -> {
-            return listOf(
-                { modifierParam, oldMetrics ->
-                    TextFieldByNumberType(
-                        modifier = modifierParam,
-                        numberType = NumberType.DOUBLE,
-                        number = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).weight,
-                        onValueChange = {
-                            onUpdateExercise(
-                                trainedExercise,
-                                oldMetrics,
-                                oldMetrics.copy(
-                                    weight = it.toString().toDouble()
-                                )
+            return listOf({ modifierParam, oldMetrics ->
+                TextFieldByNumberType(modifier = modifierParam,
+                    numberType = NumberType.DOUBLE,
+                    number = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).weight,
+                    onValueChange = {
+                        onUpdateExercise(
+                            trainedExercise, oldMetrics, oldMetrics.copy(
+                                weight = it.toString().toDouble()
                             )
-                        })
-                },
-                { modifierParam, oldMetrics ->
-                    TextFieldByNumberType(
-                        modifier = modifierParam,
-                        numberType = NumberType.LONG,
-                        number = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).repAmount,
-                        onValueChange = {
-                            onUpdateExercise(
-                                trainedExercise,
-                                oldMetrics,
-                                oldMetrics.copy(
-                                    repAmount = it.toString().toLong()
-                                )
+                        )
+                    })
+            }, { modifierParam, oldMetrics ->
+                TextFieldByNumberType(modifier = modifierParam,
+                    numberType = NumberType.LONG,
+                    number = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).repAmount,
+                    onValueChange = {
+                        onUpdateExercise(
+                            trainedExercise, oldMetrics, oldMetrics.copy(
+                                repAmount = it.toString().toLong()
                             )
-                        })
-                })
+                        )
+                    })
+            })
 
         }
     }
@@ -365,36 +345,75 @@ private fun createTrainingSetTextFields(
  */
 @Composable
 private fun TextFieldByNumberType(
-    modifier: Modifier,
-    numberType: NumberType,
-    number: Any,
-    onValueChange: (Any) -> Unit
+    modifier: Modifier, numberType: NumberType, number: Number, onValueChange: (Number) -> Unit
 ) {
     when (numberType) {
         NumberType.LONG -> {
             val numberInput = number as Long
             val textFieldValue = if (numberInput == 0L) "" else numberInput.toString()
 
-            SimpleTextField(
-                modifier = modifier,
-                value = textFieldValue,
-                onValueChange = {
-                    val newNumberValue =
-                        if (it.isEmpty() || it.isBlank()) 0L
-                        else it.filter { char -> char.isDigit() }.toLong()
-                    onValueChange(newNumberValue)
-                })
+            SimpleTextField(modifier = modifier, value = textFieldValue, onValueChange = {
+                val newTextFieldValue = it.filter { char -> char.isDigit() }
+                val newNumberValue =
+                    if (newTextFieldValue.isEmpty() || newTextFieldValue.isBlank()) 0L
+                    else newTextFieldValue.toLong()
+                onValueChange(newNumberValue)
+            })
         }
         NumberType.DOUBLE -> {
-            val numberInput = number as Double
-            val textFieldValue = if (numberInput == 0.0) "" else numberInput.toString()
+            /**
+             * TextField should only show decimal point in 2 cases:
+             * - The value behind decimal point is not 0.0
+             * - That decimal point is input from user
+             *
+             * So "hasDecimalPoint" var solves the 2nd case and "previousTextFieldValue" helps
+            when user deletes the decimal point and reset "hasDecimalPoint"
+             */
+            var hasDecimalPoint by remember { mutableStateOf(false) }
+            var previousTextFieldValue by remember { mutableStateOf("") }
 
-            SimpleTextField(
-                modifier = modifier,
+            val numberInput = number as Double
+            val textFieldValue =
+                if (numberInput == 0.0) ""
+                else if (numberInput.rem(1) == 0.0) {
+                    if (hasDecimalPoint) numberInput.toLong().toString() + "."
+                    else numberInput.toLong().toString()
+                } else numberInput.toString()
+
+            SimpleTextField(modifier = modifier,
                 value = textFieldValue,
-                onValueChange = {
+                onValueChange = { newTextFieldValue ->
+
+                    // This block solves the decimal point input problem:
+                    // - When user adds decimal point, it should be shown,
+                    // - When user deletes decimal point, it should be gone and the value become
+                    // the digits before decimal point
+                    // Without this block, a "40" value will be shown as "40.0" automatically
+                    // which is confusing, and a "40.0" value when deleting the decimal point
+                    // will become "400" not "40", since the zero behind decimal point is not deleted
+                    val decimalSanitizedTextFieldValue: String
+                    if (newTextFieldValue.contains('.')) {
+                        hasDecimalPoint = true
+                        previousTextFieldValue = newTextFieldValue
+                        decimalSanitizedTextFieldValue = newTextFieldValue
+                    } else {
+                        if (hasDecimalPoint) {
+                            decimalSanitizedTextFieldValue =
+                                previousTextFieldValue.substringBefore('.')
+                            hasDecimalPoint = false
+                        } else {
+                            decimalSanitizedTextFieldValue = newTextFieldValue
+                        }
+                    }
+
+                    Timber.d("newTextFieldValue: $newTextFieldValue")
+                    Timber.d("decimalSanitizedTextFieldValue: $decimalSanitizedTextFieldValue")
+
+                    val sanitizedTextFieldValue =
+                        ValidationUtils.validateDouble(decimalSanitizedTextFieldValue)
+                    Timber.d("sanitizedTextFieldValue: $sanitizedTextFieldValue")
                     val newNumberValue =
-                        if (it.isEmpty() || it.isBlank()) 0.0 else it.toDouble()
+                        if (sanitizedTextFieldValue.isEmpty() || sanitizedTextFieldValue.isBlank()) 0.0 else sanitizedTextFieldValue.toDouble()
                     onValueChange(newNumberValue)
                 })
         }
@@ -402,6 +421,7 @@ private fun TextFieldByNumberType(
 }
 
 private enum class NumberType { LONG, DOUBLE }
+
 
 /**
  * Used together with an outer Column to create a table layout, this function can draw a row with the first columns having the same width, while the remaining columns divide the remaining width between
