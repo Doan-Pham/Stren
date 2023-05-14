@@ -22,15 +22,18 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
+import com.haidoan.android.stren.app.ui.LocalSnackbarHostState
 import com.haidoan.android.stren.core.designsystem.component.*
 import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics
 import com.haidoan.android.stren.core.utils.ValidationUtils
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 internal const val ADD_EDIT_ROUTINE_SCREEN_ROUTE = "add_edit_routine_screen_route"
 internal const val ROUTINE_ID_NAV_ARG = "routine_id_arg"
 internal const val IS_ADDING_ROUTINE_NAV_ARG = "is_adding_arg"
+internal const val USER_ID_ROUTINE_NAV_ARG = "user_id_routine_arg"
 
 @Composable
 internal fun AddEditRoutineRoute(
@@ -46,6 +49,7 @@ internal fun AddEditRoutineRoute(
         viewModel.setExercisesIdsToAdd(exercisesIdsToAdd)
         onAddExercisesCompleted()
     }
+
     var shouldShowBackConfirmDialog by remember {
         mutableStateOf(false)
     }
@@ -67,11 +71,12 @@ internal fun AddEditRoutineRoute(
             onBackToPreviousScreen()
         }
     }
-
     BackHandler {
         onBackClickHandler()
     }
 
+    val snackbarHostState = LocalSnackbarHostState.current
+    val coroutineScope = rememberCoroutineScope()
     val addEditRoutineAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         title = "Routine",
         navigationIcon = IconButtonInfo.BACK_ICON.copy(clickHandler = onBackClickHandler),
@@ -80,7 +85,31 @@ internal fun AddEditRoutineRoute(
                 drawableResourceId = R.drawable.ic_save,
                 description = "Menu Item Save",
                 clickHandler = {
-                    //TODO
+                    if (uiState is AddEditRoutineUiState.EmptyRoutine) {
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = "Empty routine",
+                                duration = SnackbarDuration.Short,
+                                withDismissAction = true
+                            )
+                        }
+                    } else if (uiState is AddEditRoutineUiState.IsAdding) {
+                        val routineName = viewModel.routineNameTextFieldValue
+                        Timber.d("Save clicked - routineName: $routineName")
+
+                        if (routineName.isBlank() || routineName.isEmpty()) {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "Please input routine name",
+                                    duration = SnackbarDuration.Short,
+                                    withDismissAction = true
+                                )
+                            }
+                        } else {
+                            viewModel.addRoutine()
+                            onBackToPreviousScreen()
+                        }
+                    }
                 }
             ),
         )
