@@ -14,7 +14,7 @@ val WORKOUTS_TEST_DATA: List<Workout> = listOf(
         trainedExercises = EXERCISES_TEST_DATA.map {
             TrainedExercise(
                 it,
-                listOf(TrainingMeasurementMetrics.WeightAndRep("11kg", 4))
+                listOf(TrainingMeasurementMetrics.WeightAndRep(11.5, 4))
             )
         }),
     Workout(
@@ -25,7 +25,7 @@ val WORKOUTS_TEST_DATA: List<Workout> = listOf(
         trainedExercises = EXERCISES_TEST_DATA.map {
             TrainedExercise(
                 it,
-                listOf(TrainingMeasurementMetrics.WeightAndRep("22kg", 3))
+                listOf(TrainingMeasurementMetrics.WeightAndRep(22.0, 3))
             )
         }),
     Workout(
@@ -36,7 +36,7 @@ val WORKOUTS_TEST_DATA: List<Workout> = listOf(
         trainedExercises = EXERCISES_TEST_DATA.map {
             TrainedExercise(
                 it,
-                listOf(TrainingMeasurementMetrics.WeightAndRep("33kg", 4))
+                listOf(TrainingMeasurementMetrics.WeightAndRep(33.0, 4))
             )
         })
 

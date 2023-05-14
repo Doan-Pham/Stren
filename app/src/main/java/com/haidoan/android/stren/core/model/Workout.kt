@@ -28,7 +28,7 @@ fun Exercise.asTrainedExerciseWithOneSet(): TrainedExercise {
         ExerciseCategoryWithSpecialMetrics.CARDIO.fieldValue -> {
             trainingSets.add(
                 TrainingMeasurementMetrics.DistanceAndDuration(
-                    0L,
+                    0.0,
                     0.0
                 )
             )
@@ -38,7 +38,7 @@ fun Exercise.asTrainedExerciseWithOneSet(): TrainedExercise {
             trainingSets.add(TrainingMeasurementMetrics.DurationOnly(0L))
         }
         else -> {
-            trainingSets.add(TrainingMeasurementMetrics.WeightAndRep("", 0L))
+            trainingSets.add(TrainingMeasurementMetrics.WeightAndRep(0.0, 0L))
         }
     }
     return TrainedExercise(
@@ -52,9 +52,9 @@ fun Exercise.asTrainedExerciseWithOneSet(): TrainedExercise {
 
 sealed interface TrainingMeasurementMetrics {
     override fun toString(): String
-    data class WeightAndRep(val weight: String, val repAmount: Long) : TrainingMeasurementMetrics {
+    data class WeightAndRep(val weight: Double, val repAmount: Long) : TrainingMeasurementMetrics {
         override fun toString(): String {
-            return "$weight x $repAmount"
+            return "$weight kg x $repAmount"
         }
     }
 
@@ -66,7 +66,7 @@ sealed interface TrainingMeasurementMetrics {
         }
     }
 
-    data class DistanceAndDuration(val kilometers: Long, val hours: Double) :
+    data class DistanceAndDuration(val kilometers: Double, val hours: Double) :
         TrainingMeasurementMetrics {
         override fun toString(): String {
             val distance = if (kilometers < 1) "${kilometers * 1000}m" else "${kilometers}km"
