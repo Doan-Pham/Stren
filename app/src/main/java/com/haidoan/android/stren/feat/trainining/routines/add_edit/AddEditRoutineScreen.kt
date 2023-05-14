@@ -1,6 +1,7 @@
 package com.haidoan.android.stren.feat.trainining.routines.add_edit
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -45,16 +46,43 @@ internal fun AddEditRoutineRoute(
         viewModel.setExercisesIdsToAdd(exercisesIdsToAdd)
         onAddExercisesCompleted()
     }
+    var shouldShowBackConfirmDialog by remember {
+        mutableStateOf(false)
+    }
+    if (shouldShowBackConfirmDialog) {
+        SimpleConfirmationDialog(
+            onDismissDialog = { shouldShowBackConfirmDialog = false },
+            title = "Delete routine",
+            body = "This action can't be undone. Are you sure you want to delete this routine ?"
+        ) {
+            onBackToPreviousScreen()
+        }
+    }
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val onBackClickHandler = {
+        if (uiState is AddEditRoutineUiState.IsAdding && (uiState as AddEditRoutineUiState.IsAdding).trainedExercises.isNotEmpty()) {
+            shouldShowBackConfirmDialog = true
+        } else {
+            onBackToPreviousScreen()
+        }
+    }
+
+    BackHandler {
+        onBackClickHandler()
+    }
 
     val addEditRoutineAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         title = "Routine",
-        navigationIcon = IconButtonInfo.BACK_ICON.copy(clickHandler = onBackToPreviousScreen),
+        navigationIcon = IconButtonInfo.BACK_ICON.copy(clickHandler = onBackClickHandler),
         actionIcons = listOf(
-            IconButtonInfo(drawableResourceId = R.drawable.ic_save,
+            IconButtonInfo(
+                drawableResourceId = R.drawable.ic_save,
                 description = "Menu Item Save",
                 clickHandler = {
-                    //TODO: Implement "save" menu item
-                }),
+                    //TODO
+                }
+            ),
         )
     )
     var isAppBarConfigured by remember { mutableStateOf(false) }
@@ -63,7 +91,6 @@ internal fun AddEditRoutineRoute(
         isAppBarConfigured = true
     }
 
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     AddEditRoutineScreen(
         modifier = modifier,
         uiState = uiState,
