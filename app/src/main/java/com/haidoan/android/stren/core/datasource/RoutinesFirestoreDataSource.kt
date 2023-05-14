@@ -3,8 +3,11 @@ package com.haidoan.android.stren.core.datasource
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.ktx.snapshots
 import com.haidoan.android.stren.core.datasource.model.FirestoreTrainedExercise
 import com.haidoan.android.stren.core.model.Routine
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import javax.inject.Inject
@@ -15,9 +18,9 @@ private const val USER_COLLECTION_PATH = "User"
 class RoutinesFirestoreDataSource @Inject constructor() : RoutinesRemoteDataSource {
     private val firestore = FirebaseFirestore.getInstance()
 
-    override suspend fun getRoutinesByUserId(userId: String): List<Routine> =
-        firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH").get()
-            .await().toRoutines()
+    override suspend fun getRoutinesStreamByUserId(userId: String): Flow<List<Routine>> =
+        firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH").snapshots()
+            .mapNotNull { it.toRoutines() }
 
     override suspend fun addRoutine(userId: String, routine: Routine): String =
         firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH")
