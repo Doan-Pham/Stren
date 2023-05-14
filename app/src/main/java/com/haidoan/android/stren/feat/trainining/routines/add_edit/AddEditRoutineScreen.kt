@@ -314,6 +314,7 @@ private fun TrainedExerciseRegion(
 
             trainedExercise.trainingSets.forEachIndexed { index, trainingSet ->
                 TrainingSetRow(
+                    isFirstRow = index == 0,
                     firstColumnText = (index + 1).toString(),
                     firstColumnWidth = firstColumnWidth,
                     onFirstColumnWidthChange = {
@@ -543,6 +544,7 @@ private enum class NumberType { LONG, DOUBLE }
 @Suppress("SameParameterValue")
 @Composable
 private fun TrainingSetRow(
+    isFirstRow: Boolean = true,
     firstColumnText: String,
     firstColumnWidth: Int,
     onFirstColumnWidthChange: (Int) -> Unit,
@@ -558,7 +560,6 @@ private fun TrainingSetRow(
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val isFirstColumn = remember { widthInDp == 0.dp }
         if (widthInDp == 0.dp) {
             Text(
                 text = firstColumnText,
@@ -590,14 +591,13 @@ private fun TrainingSetRow(
             )
         }
 
-        IconButton(modifier = if (isFirstColumn) Modifier.alpha(0f) else Modifier.alpha(1f),
-            enabled = !isFirstColumn,
+        IconButton(modifier = if (isFirstRow) Modifier.alpha(0f) else Modifier.alpha(1f),
+            enabled = !isFirstRow,
             onClick = { onDeleteTrainingSetClick() }) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_delete),
                 contentDescription = "Delete icon"
             )
         }
-
     }
 }
