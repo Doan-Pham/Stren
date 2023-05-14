@@ -266,35 +266,41 @@ private fun TrainedExerciseRegion(
  */
 private fun createTrainingSetTextFields(
     trainingSet: TrainingMeasurementMetrics, trainedExercise: TrainedExercise,
-    onUpdateExercise: (exerciseToUpdate: TrainedExercise, oldMetric: TrainingMeasurementMetrics, newMetric: TrainingMeasurementMetrics) -> Unit
+    onUpdateExercise: (
+        exerciseToUpdate: TrainedExercise,
+        oldMetric: TrainingMeasurementMetrics,
+        newMetric: TrainingMeasurementMetrics
+    ) -> Unit
 ): List<@Composable (Modifier, TrainingMeasurementMetrics) -> Unit> {
     when (trainingSet) {
         is TrainingMeasurementMetrics.DistanceAndDuration -> {
             return listOf(
                 { modifierParam, oldMetrics ->
-                    SimpleTextField(
+                    TextFieldByNumberType(
                         modifier = modifierParam,
-                        value = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).kilometers.toString(),
+                        numberType = NumberType.DOUBLE,
+                        number = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).kilometers,
                         onValueChange = {
                             onUpdateExercise(
                                 trainedExercise,
                                 oldMetrics,
                                 oldMetrics.copy(
-                                    kilometers = it.toLong()
+                                    kilometers = it.toString().toDouble()
                                 )
                             )
                         })
                 },
                 { modifierParam, oldMetrics ->
-                    SimpleTextField(
+                    TextFieldByNumberType(
                         modifier = modifierParam,
-                        value = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).hours.toString(),
+                        numberType = NumberType.DOUBLE,
+                        number = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).hours,
                         onValueChange = {
                             onUpdateExercise(
                                 trainedExercise,
                                 oldMetrics,
                                 oldMetrics.copy(
-                                    hours = it.toDouble()
+                                    hours = it.toString().toDouble()
                                 )
                             )
                         })
@@ -302,14 +308,16 @@ private fun createTrainingSetTextFields(
         }
         is TrainingMeasurementMetrics.DurationOnly -> {
             return listOf { modifierParam, oldMetrics ->
-                SimpleTextField(modifier = modifierParam,
-                    value = (oldMetrics as TrainingMeasurementMetrics.DurationOnly).seconds.toString(),
+                TextFieldByNumberType(
+                    modifier = modifierParam,
+                    numberType = NumberType.LONG,
+                    number = (oldMetrics as TrainingMeasurementMetrics.DurationOnly).seconds,
                     onValueChange = {
                         onUpdateExercise(
                             trainedExercise,
                             oldMetrics,
                             oldMetrics.copy(
-                                seconds = it.toLong()
+                                seconds = it.toString().toLong()
                             )
                         )
                     })
@@ -318,29 +326,31 @@ private fun createTrainingSetTextFields(
         is TrainingMeasurementMetrics.WeightAndRep -> {
             return listOf(
                 { modifierParam, oldMetrics ->
-                    SimpleTextField(
+                    TextFieldByNumberType(
                         modifier = modifierParam,
-                        value = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).weight,
+                        numberType = NumberType.DOUBLE,
+                        number = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).weight,
                         onValueChange = {
                             onUpdateExercise(
                                 trainedExercise,
                                 oldMetrics,
                                 oldMetrics.copy(
-                                    weight = it
+                                    weight = it.toString().toDouble()
                                 )
                             )
                         })
                 },
                 { modifierParam, oldMetrics ->
-                    SimpleTextField(
+                    TextFieldByNumberType(
                         modifier = modifierParam,
-                        value = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).repAmount.toString(),
+                        numberType = NumberType.LONG,
+                        number = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).repAmount,
                         onValueChange = {
                             onUpdateExercise(
                                 trainedExercise,
                                 oldMetrics,
                                 oldMetrics.copy(
-                                    repAmount = it.toLong()
+                                    repAmount = it.toString().toLong()
                                 )
                             )
                         })
@@ -349,6 +359,49 @@ private fun createTrainingSetTextFields(
         }
     }
 }
+
+/**
+ * Encapsulate the bulky logic for creating and sanitizing trainingSet TextField
+ */
+@Composable
+private fun TextFieldByNumberType(
+    modifier: Modifier,
+    numberType: NumberType,
+    number: Any,
+    onValueChange: (Any) -> Unit
+) {
+    when (numberType) {
+        NumberType.LONG -> {
+            val numberInput = number as Long
+            val textFieldValue = if (numberInput == 0L) "" else numberInput.toString()
+
+            SimpleTextField(
+                modifier = modifier,
+                value = textFieldValue,
+                onValueChange = {
+                    val newNumberValue =
+                        if (it.isEmpty() || it.isBlank()) 0L
+                        else it.filter { char -> char.isDigit() }.toLong()
+                    onValueChange(newNumberValue)
+                })
+        }
+        NumberType.DOUBLE -> {
+            val numberInput = number as Double
+            val textFieldValue = if (numberInput == 0.0) "" else numberInput.toString()
+
+            SimpleTextField(
+                modifier = modifier,
+                value = textFieldValue,
+                onValueChange = {
+                    val newNumberValue =
+                        if (it.isEmpty() || it.isBlank()) 0.0 else it.toDouble()
+                    onValueChange(newNumberValue)
+                })
+        }
+    }
+}
+
+private enum class NumberType { LONG, DOUBLE }
 
 /**
  * Used together with an outer Column to create a table layout, this function can draw a row with the first columns having the same width, while the remaining columns divide the remaining width between
