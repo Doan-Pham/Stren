@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
@@ -71,7 +72,8 @@ internal fun AddEditRoutineRoute(
         onNavigateToAddExercise = onNavigateToAddExercise,
         onUpdateExercise = viewModel::updateExerciseTrainingSet,
         onAddSetToExercise = viewModel::addEmptyTrainingSet,
-        onDeleteExercise = viewModel::deleteExercise
+        onDeleteExercise = viewModel::deleteExercise,
+        onDeleteTrainingSet = viewModel::deleteTrainingSet
     )
 }
 
@@ -89,7 +91,8 @@ internal fun AddEditRoutineScreen(
         newMetric: TrainingMeasurementMetrics
     ) -> Unit,
     onAddSetToExercise: (TrainedExercise) -> Unit,
-    onDeleteExercise: (TrainedExercise) -> Unit
+    onDeleteExercise: (TrainedExercise) -> Unit,
+    onDeleteTrainingSet: (TrainedExercise, TrainingMeasurementMetrics) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -129,7 +132,8 @@ internal fun AddEditRoutineScreen(
                                 trainedExercise = trainedExercise,
                                 onUpdateExercise = onUpdateExercise,
                                 onAddSetButtonClick = onAddSetToExercise,
-                                onDeleteExerciseClick = onDeleteExercise
+                                onDeleteExerciseClick = onDeleteExercise,
+                                onDeleteTrainingSetClick = onDeleteTrainingSet
                             )
                         }
                     }
@@ -179,7 +183,8 @@ private fun TrainedExerciseRegion(
         newMetric: TrainingMeasurementMetrics
     ) -> Unit,
     onAddSetButtonClick: (TrainedExercise) -> Unit,
-    onDeleteExerciseClick: (TrainedExercise) -> Unit
+    onDeleteExerciseClick: (TrainedExercise) -> Unit,
+    onDeleteTrainingSetClick: (TrainedExercise, TrainingMeasurementMetrics) -> Unit
 ) {
     val headerTitles = mutableListOf<String>()
     when (trainedExercise.trainingSets.first()) {
@@ -248,6 +253,7 @@ private fun TrainedExerciseRegion(
                         )
                     }
                 },
+                onDeleteTrainingSetClick = { }
             )
 
             trainedExercise.trainingSets.forEachIndexed { index, trainingSet ->
@@ -260,7 +266,13 @@ private fun TrainedExerciseRegion(
                         }
                     },
                     remainingCells = measurementMetricsTextFields,
-                    trainingSet = trainingSet
+                    trainingSet = trainingSet,
+                    onDeleteTrainingSetClick = {
+                        onDeleteTrainingSetClick(
+                            trainedExercise,
+                            trainingSet
+                        )
+                    }
                 )
             }
 
@@ -479,7 +491,8 @@ private fun TrainingSetRow(
     firstColumnWidth: Int,
     onFirstColumnWidthChange: (Int) -> Unit,
     trainingSet: TrainingMeasurementMetrics = TrainingMeasurementMetrics.DurationOnly(-1),
-    remainingCells: List<@Composable (Modifier, TrainingMeasurementMetrics) -> Unit>
+    remainingCells: List<@Composable (Modifier, TrainingMeasurementMetrics) -> Unit>,
+    onDeleteTrainingSetClick: () -> Unit
 ) {
 
     val widthInDp = with(LocalDensity.current) {
@@ -489,7 +502,7 @@ private fun TrainingSetRow(
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
-
+        val isFirstColumn = remember { widthInDp == 0.dp }
         if (widthInDp == 0.dp) {
             Text(
                 text = firstColumnText,
@@ -520,5 +533,15 @@ private fun TrainingSetRow(
                 trainingSet
             )
         }
+
+        IconButton(modifier = if (isFirstColumn) Modifier.alpha(0f) else Modifier.alpha(1f),
+            enabled = !isFirstColumn,
+            onClick = { onDeleteTrainingSetClick() }) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_delete),
+                contentDescription = "Delete icon"
+            )
+        }
+
     }
 }
