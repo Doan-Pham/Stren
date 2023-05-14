@@ -19,4 +19,15 @@ class RoutinesRepositoryImpl @Inject constructor(
         }.catch {
             Timber.e("getRoutinesByUserId() - Exception: ${it.message}")
         }
+
+    override suspend fun addRoutine(userId: String, routine: Routine): String {
+        return try {
+            val newRoutineId = routinesRemoteDataSource.addRoutine(userId, routine)
+            Timber.d("addRoutine() - Success, new routine id: $newRoutineId")
+            newRoutineId
+        } catch (exception: Exception) {
+            Timber.e("addRoutine() - Exception: ${exception.message}")
+            "Undefined Routine ID"
+        }
+    }
 }

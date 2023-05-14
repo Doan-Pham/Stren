@@ -19,6 +19,11 @@ class RoutinesFirestoreDataSource @Inject constructor() : RoutinesRemoteDataSour
         firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH").get()
             .await().toRoutines()
 
+    override suspend fun addRoutine(userId: String, routine: Routine): String =
+        firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH")
+            .add(FirestoreRoutine.from(routine))
+            .await().id
+
 
     private fun QuerySnapshot.toRoutines(): List<Routine> =
         this.documents.mapNotNull { document ->
@@ -38,7 +43,6 @@ class RoutinesFirestoreDataSource @Inject constructor() : RoutinesRemoteDataSour
         val note: String = "Undefined",
         val trainedExercises: List<FirestoreTrainedExercise> = listOf(),
     ) {
-
         fun asRoutine(): Routine {
             val trainedExercises = this.trainedExercises.map { firestoreTrainedExercise ->
                 firestoreTrainedExercise.asTrainedExercise()
@@ -47,9 +51,22 @@ class RoutinesFirestoreDataSource @Inject constructor() : RoutinesRemoteDataSour
             return Routine(
                 id = this.id,
                 name = this.name,
-                note = this.note,
                 trainedExercises = trainedExercises
             )
+        }
+
+        companion object {
+            fun from(routine: Routine): FirestoreRoutine {
+                return FirestoreRoutine(
+                    id = routine.id,
+                    name = routine.name,
+                    trainedExercises = routine.trainedExercises.map {
+                        FirestoreTrainedExercise.from(
+                            it
+                        )
+                    }
+                )
+            }
         }
     }
 }
