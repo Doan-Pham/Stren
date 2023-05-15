@@ -27,7 +27,21 @@ internal class AddEditRoutineViewModel @Inject constructor(
 ) : ViewModel() {
     var routineNameTextFieldValue by mutableStateOf("New routine")
     private val navArgs: AddEditRoutineArgs = AddEditRoutineArgs(savedStateHandle)
+    private val _trainedExercises: MutableStateFlow<List<TrainedExercise>> =
+        MutableStateFlow(listOf())
 
+    init {
+        if (!navArgs.isAddingRoutine) {
+            viewModelScope.launch {
+                val routine = routinesRepository.getRoutineById(navArgs.userId, navArgs.routineId)
+                routineNameTextFieldValue = routine.name
+                _trainedExercises.value = routine.trainedExercises
+
+                Timber.d("routine: $routine")
+                Timber.d(" _trainedExercises.value: ${_trainedExercises.value}")
+            }
+        }
+    }
 
     fun setExercisesIdsToAdd(ids: List<String>) {
         //Timber.d("setExercisesIdsToAdd - ids: $ids")
@@ -44,8 +58,6 @@ internal class AddEditRoutineViewModel @Inject constructor(
         }
     }
 
-    private val _trainedExercises: MutableStateFlow<List<TrainedExercise>> =
-        MutableStateFlow(listOf())
 
     fun updateExerciseTrainingSet(
         exerciseToUpdate: TrainedExercise,
@@ -157,28 +169,26 @@ internal class AddEditRoutineViewModel @Inject constructor(
         Timber.d("_trainedExercises: ${_trainedExercises.value}")
     }
 
-    fun addRoutine() {
-        Timber.d("addRoutine() - userId: ${navArgs.userId};  _trainedExercises.value: ${_trainedExercises.value}")
-        viewModelScope.launch {
-            routinesRepository.addRoutine(
-                userId = navArgs.userId,
-                routine = Routine(
-                    name = routineNameTextFieldValue,
-                    trainedExercises = _trainedExercises.value
+    fun addEditRoutine() {
+        Timber.d("addEditRoutine() - userId: ${navArgs.userId};  _trainedExercises.value: ${_trainedExercises.value}")
+        if (navArgs.isAddingRoutine) {
+            viewModelScope.launch {
+                routinesRepository.addRoutine(
+                    userId = navArgs.userId,
+                    routine = Routine(
+                        name = routineNameTextFieldValue,
+                        trainedExercises = _trainedExercises.value
+                    )
                 )
-            )
+            }
         }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<AddEditRoutineUiState> =
         _trainedExercises.flatMapLatest { _trainedExercises ->
-            if (navArgs.isAddingRoutine) {
-                if (_trainedExercises.isEmpty()) flowOf(AddEditRoutineUiState.EmptyRoutine)
-                else flowOf(AddEditRoutineUiState.IsAdding(_trainedExercises))
-            } else {
-                flowOf(AddEditRoutineUiState.Loading)
-            }
+            if (_trainedExercises.isEmpty()) flowOf(AddEditRoutineUiState.EmptyRoutine) else
+                flowOf(AddEditRoutineUiState.IsEditing(_trainedExercises))
         }.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000), AddEditRoutineUiState.Loading

@@ -49,13 +49,19 @@ fun NavGraphBuilder.trainingGraph(
                             appBarConfigurationChangeHandler = {
                                 appBarConfigurationChangeHandler(it)
                             },
-                            onNavigateToAddRoutineScreen = {
+                            onNavigateToAddRoutineScreen = { userId ->
                                 navController.navigateToRoutineGraph(
-                                    userId = it,
+                                    userId = userId,
                                     isAddingRoutine = true
                                 )
                             },
-                            onNavigateToEditRoutineScreen = {}
+                            onNavigateToEditRoutineScreen = { userId, routineId ->
+                                navController.navigateToRoutineGraph(
+                                    isAddingRoutine = false,
+                                    userId = userId,
+                                    routineId = routineId
+                                )
+                            }
                         )
                     },
                 )

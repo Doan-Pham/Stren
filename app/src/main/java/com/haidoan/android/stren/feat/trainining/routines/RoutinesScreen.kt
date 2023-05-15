@@ -36,7 +36,7 @@ internal fun RoutinesRoute(
     viewModel: RoutinesViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onNavigateToAddRoutineScreen: (userId: String) -> Unit,
-    onNavigateToEditRoutineScreen: (routineId: String) -> Unit
+    onNavigateToEditRoutineScreen: (userId: String, routineId: String) -> Unit
 ) {
 
     val trainingHistoryAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
@@ -72,7 +72,11 @@ internal fun RoutinesRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     RoutinesScreen(
         modifier = modifier,
-        uiState = uiState
+        uiState = uiState,
+        onNavigateToAddRoutineScreen = { onNavigateToAddRoutineScreen(viewModel.cachedUserId) },
+        onNavigateToEditRoutineScreen = { routineId ->
+            onNavigateToEditRoutineScreen(viewModel.cachedUserId, routineId)
+        }
     )
 }
 
@@ -80,7 +84,9 @@ internal fun RoutinesRoute(
 @Composable
 internal fun RoutinesScreen(
     modifier: Modifier = Modifier,
-    uiState: RoutinesUiState
+    uiState: RoutinesUiState,
+    onNavigateToAddRoutineScreen: () -> Unit,
+    onNavigateToEditRoutineScreen: (routineId: String) -> Unit
 ) {
     when (uiState) {
         is RoutinesUiState.Loading -> {
@@ -97,24 +103,27 @@ internal fun RoutinesScreen(
                     .padding(horizontal = dimensionResource(id = R.dimen.padding_medium))
             ) {
                 items(uiState.routines) { routine ->
-                    RoutineItem(routine = routine)
+                    RoutineItem(
+                        routine = routine,
+                        onEditRoutineClickHandler = onNavigateToEditRoutineScreen
+                    )
                 }
             }
         }
         RoutinesUiState.LoadEmpty -> {
             Timber.d("LoadEmpty")
-            EmptyScreen()
+            EmptyScreen(onCreateRoutineButtonClick = onNavigateToAddRoutineScreen)
         }
     }
 }
 
 @Composable
 private fun RoutineItem(
-    routine: Routine, onItemClickHandler: (Workout) -> Unit = {
+    routine: Routine,
+    onItemClickHandler: (Workout) -> Unit = {
         //TODO
-    }, onIconMoreClickHandler: () -> Unit = {
-        // TODO
-    }
+    },
+    onEditRoutineClickHandler: (routineId: String) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -136,16 +145,22 @@ private fun RoutineItem(
                 style = MaterialTheme.typography.titleMedium,
             )
             Spacer(Modifier.weight(1f))
-
-            Icon(
-                modifier = Modifier
-                    .clickable {
-                        //TODO
-                    }
-                    .size(dimensionResource(id = R.dimen.icon_size_medium)),
-                painter = painterResource(id = R.drawable.ic_more_horizontal),
-                contentDescription = "Icon more"
+            DropDownMenuScaffold(
+                menuItemsTextAndClickHandler = mapOf(
+                    "Edit" to { onEditRoutineClickHandler(routine.id) })
             )
+            { onExpandMenu ->
+                Icon(
+                    modifier = Modifier
+                        .clickable {
+                            onExpandMenu()
+                        }
+                        .size(dimensionResource(id = R.dimen.icon_size_medium)),
+                    painter = painterResource(id = R.drawable.ic_more_horizontal),
+                    contentDescription = "Icon more"
+                )
+            }
+
         }
 
         routine.trainedExercises.subList(0, minOf(routine.trainedExercises.size, 3))
@@ -177,9 +192,7 @@ private fun RoutineItem(
 
 @Composable
 private fun EmptyScreen(
-    onCreateRoutineButtonClick: () -> Unit = {
-        //TODO
-    },
+    onCreateRoutineButtonClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -215,7 +228,7 @@ private fun EmptyScreen(
             StrenFilledButton(
                 modifier = Modifier.fillMaxWidth(),
                 text = "Create routine",
-                onClickHandler = { /*TODO*/ },
+                onClickHandler = onCreateRoutineButtonClick,
                 textStyle = MaterialTheme.typography.bodyMedium
             )
         }
