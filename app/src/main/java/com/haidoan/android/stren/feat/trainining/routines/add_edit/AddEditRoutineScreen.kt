@@ -56,8 +56,8 @@ internal fun AddEditRoutineRoute(
     if (shouldShowBackConfirmDialog) {
         SimpleConfirmationDialog(
             onDismissDialog = { shouldShowBackConfirmDialog = false },
-            title = "Delete routine",
-            body = "This action can't be undone. Are you sure you want to delete this routine ?"
+            title = "Your changes are not saved",
+            body = "This action can't be undone. Are you sure don't want to save your changes?"
         ) {
             onBackToPreviousScreen()
         }

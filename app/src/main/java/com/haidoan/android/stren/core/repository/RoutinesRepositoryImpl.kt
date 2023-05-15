@@ -37,4 +37,13 @@ class RoutinesRepositoryImpl @Inject constructor(
             "Undefined Routine ID"
         }
     }
+
+    override suspend fun updateRoutine(userId: String, routine: Routine) {
+        try {
+            Timber.d("updateRoutine() - userId:$userId ; routineId: ${routine.id}")
+            routinesRemoteDataSource.updateRoutine(userId, routine)
+        } catch (exception: Exception) {
+            Timber.e("updateRoutine() - Exception: ${exception.message}")
+        }
+    }
 }

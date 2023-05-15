@@ -32,6 +32,12 @@ class RoutinesFirestoreDataSource @Inject constructor() : RoutinesRemoteDataSour
             .add(FirestoreRoutine.from(routine))
             .await().id
 
+    override suspend fun updateRoutine(userId: String, routine: Routine) {
+        firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH")
+            .document(routine.id)
+            .set(FirestoreRoutine.from(routine))
+            .await()
+    }
 
     private fun DocumentSnapshot.toRoutine(): Routine {
         Timber.d("document: $this")

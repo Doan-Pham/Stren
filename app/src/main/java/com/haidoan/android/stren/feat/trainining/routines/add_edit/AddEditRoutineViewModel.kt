@@ -170,12 +170,23 @@ internal class AddEditRoutineViewModel @Inject constructor(
     }
 
     fun addEditRoutine() {
-        Timber.d("addEditRoutine() - userId: ${navArgs.userId};  _trainedExercises.value: ${_trainedExercises.value}")
+        Timber.d("addEditRoutine() - userId: ${navArgs.userId}; routineId: ${navArgs.routineId}")
         if (navArgs.isAddingRoutine) {
             viewModelScope.launch {
                 routinesRepository.addRoutine(
                     userId = navArgs.userId,
                     routine = Routine(
+                        name = routineNameTextFieldValue,
+                        trainedExercises = _trainedExercises.value
+                    )
+                )
+            }
+        } else {
+            viewModelScope.launch {
+                routinesRepository.updateRoutine(
+                    userId = navArgs.userId,
+                    routine = Routine(
+                        id = navArgs.routineId,
                         name = routineNameTextFieldValue,
                         trainedExercises = _trainedExercises.value
                     )
