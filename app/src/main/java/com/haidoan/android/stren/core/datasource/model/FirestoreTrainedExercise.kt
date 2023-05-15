@@ -7,6 +7,20 @@ import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics
 import timber.log.Timber
 
 /**
+ * "trainingSet" field in Firestore is of type Map, which doesn't allow duplicated keys, but
+ * this entity should domain-wise. To solve this, the "trainingSet" field from application's model classes
+ * will have their key attached with this separator char and an index to differentiate among each
+ * other (The separator is also for parsing purposes)
+ */
+private const val DEFAULT_SEPARATOR_CHAR = '_'
+
+/**
+ * This is for the case where application doesn't have any need for the Firestore's "trainingSet" field's
+ * key, but still need to differentiate between fields with duplicated keys
+ */
+private const val UNDEFINED_KEY = "Undefined"
+
+/**
  * Firestore representation of [TrainedExercise] class
  */
 internal data class FirestoreTrainedExercise(
@@ -25,8 +39,8 @@ internal data class FirestoreTrainedExercise(
                 firestoreTrainingSets.forEach {
                     trainingSets.add(
                         TrainingMeasurementMetrics.DistanceAndDuration(
-                            it.key.toDouble(),
-                            it.value.toDouble()
+                            it.key.substringBefore(DEFAULT_SEPARATOR_CHAR).toDouble(),
+                            it.value
                         )
                     )
                 }
@@ -40,7 +54,7 @@ internal data class FirestoreTrainedExercise(
                 firestoreTrainingSets.forEach {
                     trainingSets.add(
                         TrainingMeasurementMetrics.WeightAndRep(
-                            it.key.toDouble(),
+                            it.key.substringBefore(DEFAULT_SEPARATOR_CHAR).toDouble(),
                             it.value.toLong()
                         )
                     )
@@ -60,26 +74,51 @@ internal data class FirestoreTrainedExercise(
     companion object {
         fun from(trainedExercise: TrainedExercise): FirestoreTrainedExercise {
             val trainingSets = trainedExercise.trainingSets
+            val iteratedMetricsFrequency = mutableMapOf<String, Int>()
             val firestoreTrainingSets: MutableMap<String, Double> = mutableMapOf()
 
             when (trainedExercise.exercise.belongedCategory) {
                 ExerciseCategoryWithSpecialMetrics.CARDIO.fieldValue -> {
+                    iteratedMetricsFrequency.clear()
+
                     trainingSets.forEach {
                         val metrics = it as TrainingMeasurementMetrics.DistanceAndDuration
-                        firestoreTrainingSets[metrics.kilometers.toString()] = metrics.hours
+                        val kilometers = metrics.kilometers.toString()
+                        val hours = metrics.hours
+
+                        iteratedMetricsFrequency[kilometers] =
+                            (iteratedMetricsFrequency[kilometers] ?: 0) + 1
+
+                        val metricsKeyWithIndex =
+                            kilometers + "_" + iteratedMetricsFrequency[kilometers]
+                        firestoreTrainingSets[metricsKeyWithIndex] = hours
+
+                        Timber.d("from(trainedExercise: TrainedExercise) - CARDIO - metricsKeyWithIndex:$metricsKeyWithIndex")
                     }
                 }
                 ExerciseCategoryWithSpecialMetrics.STRETCHING.fieldValue -> {
                     trainingSets.forEachIndexed { index, metrics ->
                         val metricsValue = metrics as TrainingMeasurementMetrics.DurationOnly
-                        firestoreTrainingSets["set ${index + 1}"] = metricsValue.seconds.toDouble()
+                        firestoreTrainingSets[UNDEFINED_KEY + DEFAULT_SEPARATOR_CHAR + (index + 1).toString()] =
+                            metricsValue.seconds.toDouble()
                     }
                 }
                 else -> {
+                    iteratedMetricsFrequency.clear()
                     trainingSets.forEach {
                         val metrics = it as TrainingMeasurementMetrics.WeightAndRep
-                        firestoreTrainingSets[metrics.weight.toString()] =
-                            metrics.repAmount.toDouble()
+                        val weight = metrics.weight.toString()
+                        val repAmount = metrics.repAmount
+
+                        iteratedMetricsFrequency[weight] =
+                            (iteratedMetricsFrequency[weight] ?: 0) + 1
+
+                        val metricsKeyWithIndex =
+                            weight + "_" + iteratedMetricsFrequency[weight]
+                        firestoreTrainingSets[metricsKeyWithIndex] = repAmount.toDouble()
+
+                        Timber.d("from(trainedExercise: TrainedExercise) - WEIGHT AND REP - metrics:$metrics")
+                        Timber.d("from(trainedExercise: TrainedExercise) - WEIGHT AND REP - metricsKeyWithIndex:$metricsKeyWithIndex")
                     }
                 }
             }
