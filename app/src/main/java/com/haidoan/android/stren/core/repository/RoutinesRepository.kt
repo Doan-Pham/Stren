@@ -7,4 +7,5 @@ interface RoutinesRepository {
     suspend fun getRoutinesByUserId(userId: String): Flow<List<Routine>>
     suspend fun getRoutineById(userId: String, routineId: String): Routine
     suspend fun addRoutine(userId: String, routine: Routine): String
+    suspend fun updateRoutine(userId: String, routine: Routine)
 }
