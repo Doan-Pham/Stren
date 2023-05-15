@@ -10,6 +10,8 @@ import com.haidoan.android.stren.feat.trainining.exercises.ExercisesRoute
 import com.haidoan.android.stren.feat.trainining.exercises.navigation.exerciseGraph
 import com.haidoan.android.stren.feat.trainining.exercises.navigation.navigateToExerciseDetail
 import com.haidoan.android.stren.feat.trainining.history.TrainingHistoryRoute
+import com.haidoan.android.stren.feat.trainining.history.log_workout.navigateToLogWorkoutScreen
+import com.haidoan.android.stren.feat.trainining.history.log_workout.workoutGraph
 import com.haidoan.android.stren.feat.trainining.routines.RoutinesRoute
 import com.haidoan.android.stren.feat.trainining.routines.navigateToRoutineGraph
 import com.haidoan.android.stren.feat.trainining.routines.routineGraph
@@ -42,6 +44,9 @@ fun NavGraphBuilder.trainingGraph(
                             appBarConfigurationChangeHandler = {
                                 appBarConfigurationChangeHandler(it)
                             },
+                            onLogWorkoutButtonClick = { userId, selectedDate ->
+                                navController.navigateToLogWorkoutScreen(userId, selectedDate)
+                            }
                         )
                     },
                     Pair("Routines") {
@@ -72,6 +77,11 @@ fun NavGraphBuilder.trainingGraph(
             onBackToPreviousScreen = { navController.popBackStack() })
 
         routineGraph(
+            navController = navController,
+            appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
+        )
+
+        workoutGraph(
             navController = navController,
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
         )

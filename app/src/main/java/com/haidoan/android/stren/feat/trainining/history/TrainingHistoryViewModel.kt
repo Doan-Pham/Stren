@@ -58,6 +58,7 @@ internal class TrainingHistoryViewModel @Inject constructor(
                     workoutsRepository.getDatesThatHaveWorkoutByUserId(userId)
                 ) { workouts, datesThatHaveWorkouts ->
                     TrainingHistoryUiState.LoadComplete(
+                        userId,
                         workouts,
                         selectedDate,
                         datesThatHaveWorkouts
