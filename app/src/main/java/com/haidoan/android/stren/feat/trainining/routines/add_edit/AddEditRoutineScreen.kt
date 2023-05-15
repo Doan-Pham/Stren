@@ -65,7 +65,7 @@ internal fun AddEditRoutineRoute(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val onBackClickHandler = {
-        if (uiState is AddEditRoutineUiState.IsAdding && (uiState as AddEditRoutineUiState.IsAdding).trainedExercises.isNotEmpty()) {
+        if (uiState is AddEditRoutineUiState.IsEditing && (uiState as AddEditRoutineUiState.IsEditing).trainedExercises.isNotEmpty()) {
             shouldShowBackConfirmDialog = true
         } else {
             onBackToPreviousScreen()
@@ -93,7 +93,7 @@ internal fun AddEditRoutineRoute(
                                 withDismissAction = true
                             )
                         }
-                    } else if (uiState is AddEditRoutineUiState.IsAdding) {
+                    } else if (uiState is AddEditRoutineUiState.IsEditing) {
                         val routineName = viewModel.routineNameTextFieldValue
                         Timber.d("Save clicked - routineName: $routineName")
 
@@ -106,7 +106,7 @@ internal fun AddEditRoutineRoute(
                                 )
                             }
                         } else {
-                            viewModel.addRoutine()
+                            viewModel.addEditRoutine()
                             onBackToPreviousScreen()
                         }
                     }
@@ -177,7 +177,7 @@ internal fun AddEditRoutineScreen(
                     Timber.d("Empty")
                     EmptyScreen()
                 }
-                is AddEditRoutineUiState.IsAdding -> {
+                is AddEditRoutineUiState.IsEditing -> {
                     Timber.d("IsAdding")
                     Timber.d("trainedExercises: ${uiState.trainedExercises}")
                     LazyColumn(

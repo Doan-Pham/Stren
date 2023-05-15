@@ -1,6 +1,7 @@
 package com.haidoan.android.stren.core.datasource
 
 import com.google.firebase.firestore.DocumentId
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.snapshots
@@ -22,11 +23,22 @@ class RoutinesFirestoreDataSource @Inject constructor() : RoutinesRemoteDataSour
         firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH").snapshots()
             .mapNotNull { it.toRoutines() }
 
+    override suspend fun getRoutineById(userId: String, routineId: String): Routine =
+        firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH")
+            .document(routineId).get().await().toRoutine()
+
     override suspend fun addRoutine(userId: String, routine: Routine): String =
         firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH")
             .add(FirestoreRoutine.from(routine))
             .await().id
 
+
+    private fun DocumentSnapshot.toRoutine(): Routine {
+        Timber.d("document: $this")
+        val routinesData = this.toObject(FirestoreRoutine::class.java)
+        Timber.d("toFirestoreRoutine() - : $routinesData")
+        return routinesData?.asRoutine() ?: Routine(name = "Undefined", trainedExercises = listOf())
+    }
 
     private fun QuerySnapshot.toRoutines(): List<Routine> =
         this.documents.mapNotNull { document ->
