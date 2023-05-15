@@ -42,6 +42,7 @@ internal fun TrainingHistoryRoute(
     modifier: Modifier = Modifier,
     viewModel: TrainingHistoryViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
+    onLogWorkoutButtonClick: (userId: String, selectedDate: LocalDate) -> Unit
 ) {
     var shouldShowCalendarDialog by remember {
         mutableStateOf(false)
@@ -52,7 +53,9 @@ internal fun TrainingHistoryRoute(
             IconButtonInfo(drawableResourceId = R.drawable.ic_add,
                 description = "MenuItem-Add",
                 clickHandler = {
-                    //TODO: Implement "add" menu item
+                    val uiStateValue =
+                        viewModel.uiState.value as TrainingHistoryUiState.LoadComplete
+                    onLogWorkoutButtonClick(uiStateValue.userId, uiStateValue.selectedDate)
                 }),
             IconButtonInfo(
                 drawableResourceId = R.drawable.ic_calendar,
@@ -78,7 +81,11 @@ internal fun TrainingHistoryRoute(
         onMoveToNextWeek = viewModel::moveToNextWeek,
         onMoveToPreviousWeek = viewModel::moveToPreviousWeek,
         shouldShowCalendarDialog = shouldShowCalendarDialog,
-        onDismissCalendarDialog = { shouldShowCalendarDialog = false }
+        onDismissCalendarDialog = { shouldShowCalendarDialog = false },
+        onLogWorkoutButtonClick = {
+            val uiStateValue = viewModel.uiState.value as TrainingHistoryUiState.LoadComplete
+            onLogWorkoutButtonClick(uiStateValue.userId, uiStateValue.selectedDate)
+        }
     )
 }
 
@@ -92,7 +99,8 @@ internal fun TrainingHistoryScreen(
     onSelectDate: (LocalDate) -> Unit,
     onSelectCurrentDate: () -> Unit,
     onMoveToPreviousWeek: () -> Unit,
-    onMoveToNextWeek: () -> Unit
+    onMoveToNextWeek: () -> Unit,
+    onLogWorkoutButtonClick: () -> Unit
 ) {
     when (uiState) {
         is TrainingHistoryUiState.Loading -> {
@@ -139,12 +147,11 @@ internal fun TrainingHistoryScreen(
 
                 if (uiState.workouts.isNotEmpty()) {
                     WorkoutList(
-                        modifier = modifier,
                         workouts = uiState.workouts,
                         selectedDate = selectedDate
                     )
                 } else {
-                    EmptyScreen()
+                    EmptyScreen(onLogWorkoutButtonClick = onLogWorkoutButtonClick)
                 }
             }
 
@@ -244,7 +251,7 @@ private fun DateItem(
 }
 
 @Composable
-private fun WorkoutList(modifier: Modifier, workouts: List<Workout>, selectedDate: LocalDate) {
+private fun WorkoutList(workouts: List<Workout>, selectedDate: LocalDate) {
     workouts.forEach {
         WorkoutItem(workout = it)
     }
@@ -303,9 +310,7 @@ private fun WorkoutItem(
 
 @Composable
 private fun EmptyScreen(
-    onLogWorkoutButtonClick: () -> Unit = {
-        //TODO
-    },
+    onLogWorkoutButtonClick: () -> Unit,
     onCopyPreviousButtonClick: () -> Unit = {
         //TODO
     }
@@ -344,7 +349,7 @@ private fun EmptyScreen(
             StrenFilledButton(
                 modifier = Modifier.fillMaxWidth(),
                 text = "Log workout",
-                onClickHandler = { /*TODO*/ },
+                onClickHandler = onLogWorkoutButtonClick,
                 textStyle = MaterialTheme.typography.bodyMedium
             )
             StrenTextButton(
