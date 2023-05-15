@@ -5,5 +5,5 @@ import com.haidoan.android.stren.core.model.TrainedExercise
 internal sealed interface AddEditRoutineUiState {
     object Loading : AddEditRoutineUiState
     object EmptyRoutine : AddEditRoutineUiState
-    data class IsAdding(val trainedExercises: List<TrainedExercise>) : AddEditRoutineUiState
+    data class IsEditing(val trainedExercises: List<TrainedExercise>) : AddEditRoutineUiState
 }
