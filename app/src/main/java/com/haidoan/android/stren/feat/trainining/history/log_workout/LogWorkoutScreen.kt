@@ -114,6 +114,7 @@ internal fun LogWorkoutRoute(
                                 )
                             }
                         } else {
+                            viewModel.addEditWorkout()
                             onBackToPreviousScreen()
                         }
                     }

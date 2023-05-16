@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.model.*
 import com.haidoan.android.stren.core.repository.ExercisesRepository
 import com.haidoan.android.stren.core.repository.RoutinesRepository
+import com.haidoan.android.stren.core.repository.WorkoutsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -24,7 +25,8 @@ internal const val NO_SELECTION_ROUTINE_NAME = "None"
 internal class LogWorkoutViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val routinesRepository: RoutinesRepository,
-    private val exercisesRepository: ExercisesRepository
+    private val exercisesRepository: ExercisesRepository,
+    private val workoutsRepository: WorkoutsRepository
 ) : ViewModel() {
     var workoutNameTextFieldValue by mutableStateOf("New workout")
 
@@ -229,31 +231,19 @@ internal class LogWorkoutViewModel @Inject constructor(
         Timber.d("_trainedExercises: ${_trainedExercises.value}")
     }
 
-//    fun addEditRoutine() {
-//        Timber.d("addEditRoutine() - userId: ${navArgs.userId}; routineId: ${navArgs.routineId}")
-//        if (navArgs.isAddingRoutine) {
-//            viewModelScope.launch {
-//                routinesRepository.addRoutine(
-//                    userId = navArgs.userId,
-//                    routine = Routine(
-//                        name = routineNameTextFieldValue,
-//                        trainedExercises = _trainedExercises.value
-//                    )
-//                )
-//            }
-//        } else {
-//            viewModelScope.launch {
-//                routinesRepository.updateRoutine(
-//                    userId = navArgs.userId,
-//                    routine = Routine(
-//                        id = navArgs.routineId,
-//                        name = routineNameTextFieldValue,
-//                        trainedExercises = _trainedExercises.value
-//                    )
-//                )
-//            }
-//        }
-//    }
+    fun addEditWorkout() {
+        Timber.d("addEditWorkout() - userId: ${navArgs.userId}")
+        viewModelScope.launch {
+            workoutsRepository.addWorkout(
+                userId = navArgs.userId,
+                workout = Workout(
+                    name = workoutNameTextFieldValue,
+                    date = navArgs.selectedDate,
+                    trainedExercises = _trainedExercises.value
+                )
+            )
+        }
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<LogWorkoutUiState> =

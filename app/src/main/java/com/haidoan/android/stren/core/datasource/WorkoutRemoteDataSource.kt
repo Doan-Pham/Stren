@@ -6,4 +6,6 @@ import java.time.LocalDate
 interface WorkoutRemoteDataSource {
     suspend fun getWorkoutsByUserIdAndDate(userId: String, date: LocalDate): List<Workout>
     suspend fun getDatesThatHaveWorkoutByUserId(userId: String): List<LocalDate>
+
+    suspend fun addWorkout(userId: String, workout: Workout): String
 }

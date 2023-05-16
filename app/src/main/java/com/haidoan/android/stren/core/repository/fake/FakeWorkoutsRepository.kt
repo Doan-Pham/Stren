@@ -25,4 +25,8 @@ class FakeWorkoutsRepository : WorkoutsRepository {
     override fun getDatesThatHaveWorkoutByUserId(userId: String): Flow<List<LocalDate>> {
         TODO("Not yet implemented")
     }
+
+    override suspend fun addWorkout(userId: String, workout: Workout): String {
+        TODO("Not yet implemented")
+    }
 }
