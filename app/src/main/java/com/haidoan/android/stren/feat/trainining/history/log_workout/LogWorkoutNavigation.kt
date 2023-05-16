@@ -8,6 +8,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.*
 import com.google.accompanist.navigation.animation.composable
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
+import com.haidoan.android.stren.core.utils.DateUtils
 import com.haidoan.android.stren.feat.trainining.routines.add_edit.*
 import timber.log.Timber
 import java.time.LocalDate
@@ -28,6 +29,23 @@ internal fun NavController.navigateToAddWorkoutScreen(
                 "?" + "$SELECTED_DATE_WORKOUT_NAV_ARG=${selectedDate.toEpochDay()}"
     )
 }
+
+internal fun NavController.navigateToAddWorkoutWithRoutine(
+    userId: String,
+    routineId: String
+) {
+    Timber.d(
+        "$LOG_WORKOUT_SCREEN_ROUTE/$userId/true" +
+                "?" + "$SELECTED_DATE_WORKOUT_NAV_ARG=${DateUtils.getCurrentDate().toEpochDay()}" +
+                "&" + "$SELECTED_ROUTINE_ID_NAV_ARG=$routineId"
+    )
+    this.navigate(
+        "$LOG_WORKOUT_SCREEN_ROUTE/$userId/true" +
+                "?" + "$SELECTED_DATE_WORKOUT_NAV_ARG=${DateUtils.getCurrentDate().toEpochDay()}" +
+                "&" + "$SELECTED_ROUTINE_ID_NAV_ARG=$routineId"
+    )
+}
+
 
 internal fun NavController.navigateToEditWorkoutScreen(
     userId: String,
@@ -50,6 +68,7 @@ internal class LogWorkoutArgs(
     val isAddingWorkout: Boolean,
     val workoutId: String,
     val selectedDate: LocalDate,
+    val selectedRoutineId: String
 ) {
     constructor(savedStateHandle: SavedStateHandle) :
             this(
@@ -61,6 +80,7 @@ internal class LogWorkoutArgs(
                         savedStateHandle[SELECTED_DATE_WORKOUT_NAV_ARG] ?: 0L
                     )
                 ),
+                checkNotNull(savedStateHandle[SELECTED_ROUTINE_ID_NAV_ARG]),
             )
 }
 
@@ -80,7 +100,9 @@ internal fun NavGraphBuilder.workoutGraph(
                 "/" + "{$USER_ID_WORKOUT_NAV_ARG}" +
                 "/" + "{$IS_ADDING_WORKOUT_NAV_ARG}" +
                 "?" + "$WORKOUT_ID_NAV_ARG={$WORKOUT_ID_NAV_ARG}" +
-                "&" + "$SELECTED_DATE_WORKOUT_NAV_ARG={$SELECTED_DATE_WORKOUT_NAV_ARG}",
+                "&" + "$SELECTED_DATE_WORKOUT_NAV_ARG={$SELECTED_DATE_WORKOUT_NAV_ARG}" +
+                "&" + "$SELECTED_ROUTINE_ID_NAV_ARG={$SELECTED_ROUTINE_ID_NAV_ARG}",
+
         arguments = listOf(
             navArgument(USER_ID_WORKOUT_NAV_ARG) { type = NavType.StringType },
             navArgument(IS_ADDING_WORKOUT_NAV_ARG) { type = NavType.BoolType },
@@ -91,6 +113,10 @@ internal fun NavGraphBuilder.workoutGraph(
             navArgument(SELECTED_DATE_WORKOUT_NAV_ARG) {
                 type = NavType.LongType
                 defaultValue = UNDEFINED_SELECTED_DATE_NAV_ARG
+            },
+            navArgument(SELECTED_ROUTINE_ID_NAV_ARG) {
+                type = NavType.StringType
+                defaultValue = NO_SELECTION_ROUTINE_ID
             },
         )
 
