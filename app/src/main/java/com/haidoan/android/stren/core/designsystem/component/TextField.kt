@@ -109,11 +109,10 @@ fun SimpleTextField(
 @Composable
 fun ExposedDropDownMenuTextField(
     textFieldLabel: String,
-    defaultSelectedText: String,
+    selectedText: String,
     menuItemsTextAndClickHandler: Map<String, () -> Unit>,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var selectedText by remember { mutableStateOf(defaultSelectedText) }
     Box(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -148,7 +147,6 @@ fun ExposedDropDownMenuTextField(
                         modifier = Modifier.background(White),
                         text = { Text(it.key) },
                         onClick = {
-                            selectedText = it.key
                             it.value()
                             expanded = false
                         }
