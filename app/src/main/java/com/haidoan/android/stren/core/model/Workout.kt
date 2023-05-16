@@ -7,9 +7,9 @@ import java.util.*
 
 data class Workout(
     @DocumentId
-    val id: String,
+    val id: String = "Undefined Routine ID",
     val name: String,
-    val note: String,
+    val note: String = "",
     val date: LocalDate,
     val trainedExercises: List<TrainedExercise>
 )

@@ -27,4 +27,15 @@ class WorkoutsRepositoryImpl @Inject constructor(private val workoutRemoteDataSo
             Timber.e("getDatesThatHaveWorkoutByUserId() - Exception: ${it.message}")
         }
 
+    override suspend fun addWorkout(userId: String, workout: Workout): String {
+        return try {
+            val newWorkoutId = workoutRemoteDataSource.addWorkout(userId, workout)
+            Timber.d("addWorkout() - Success, new workout id: $newWorkoutId")
+            newWorkoutId
+        } catch (exception: Exception) {
+            Timber.e("addWorkout() - Exception: ${exception.message}")
+            "Undefined Workout ID"
+        }
+    }
+
 }

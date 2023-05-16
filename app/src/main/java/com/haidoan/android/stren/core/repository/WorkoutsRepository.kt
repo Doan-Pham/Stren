@@ -6,6 +6,7 @@ import java.time.LocalDate
 
 interface WorkoutsRepository {
     fun getWorkoutsByUserIdAndDate(userId: String, date: LocalDate): Flow<List<Workout>>
-
     fun getDatesThatHaveWorkoutByUserId(userId: String): Flow<List<LocalDate>>
+
+    suspend fun addWorkout(userId: String, workout: Workout): String
 }

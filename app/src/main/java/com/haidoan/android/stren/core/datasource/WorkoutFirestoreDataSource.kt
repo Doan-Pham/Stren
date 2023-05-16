@@ -37,6 +37,11 @@ class WorkoutFirestoreDataSource @Inject constructor() : WorkoutRemoteDataSource
         firestore.collection(WORKOUT_COLLECTION_PATH)
             .whereEqualTo("userId", userId).get().await().toWorkoutsList().map { it.date }
 
+    override suspend fun addWorkout(userId: String, workout: Workout): String =
+        firestore.collection(WORKOUT_COLLECTION_PATH)
+            .add(FirestoreWorkout.from(userId, workout))
+            .await().id
+
 
     private fun QuerySnapshot.toWorkoutsList(): List<Workout> =
         this.documents.mapNotNull { document ->
@@ -59,7 +64,6 @@ class WorkoutFirestoreDataSource @Inject constructor() : WorkoutRemoteDataSource
         val trainedExercises: List<FirestoreTrainedExercise> = listOf(),
         val userId: String = "Undefined",
     ) {
-
         fun asWorkout(): Workout {
             val trainedExercises = this.trainedExercises.map { firestoreTrainedExercise ->
                 firestoreTrainedExercise.asTrainedExercise()
@@ -72,6 +76,22 @@ class WorkoutFirestoreDataSource @Inject constructor() : WorkoutRemoteDataSource
                 date = this.date.toLocalDate(),
                 trainedExercises = trainedExercises
             )
+        }
+
+        companion object {
+            fun from(userId: String, workout: Workout): FirestoreWorkout {
+                return FirestoreWorkout(
+                    id = workout.id,
+                    name = workout.name,
+                    trainedExercises = workout.trainedExercises.map {
+                        FirestoreTrainedExercise.from(
+                            it
+                        )
+                    },
+                    userId = userId,
+                    date = workout.date.toTimeStampDayStart()
+                )
+            }
         }
     }
 }
