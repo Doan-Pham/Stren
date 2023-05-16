@@ -42,7 +42,8 @@ internal fun TrainingHistoryRoute(
     modifier: Modifier = Modifier,
     viewModel: TrainingHistoryViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
-    onLogWorkoutButtonClick: (userId: String, selectedDate: LocalDate) -> Unit
+    onNavigateToAddWorkoutScreen: (userId: String, selectedDate: LocalDate) -> Unit,
+    onNavigateToEditWorkoutScreen: (userId: String, workoutId: String) -> Unit
 ) {
     var shouldShowCalendarDialog by remember {
         mutableStateOf(false)
@@ -55,7 +56,7 @@ internal fun TrainingHistoryRoute(
                 clickHandler = {
                     val uiStateValue =
                         viewModel.uiState.value as TrainingHistoryUiState.LoadComplete
-                    onLogWorkoutButtonClick(uiStateValue.userId, uiStateValue.selectedDate)
+                    onNavigateToAddWorkoutScreen(uiStateValue.userId, uiStateValue.selectedDate)
                 }),
             IconButtonInfo(
                 drawableResourceId = R.drawable.ic_calendar,
@@ -84,7 +85,11 @@ internal fun TrainingHistoryRoute(
         onDismissCalendarDialog = { shouldShowCalendarDialog = false },
         onLogWorkoutButtonClick = {
             val uiStateValue = viewModel.uiState.value as TrainingHistoryUiState.LoadComplete
-            onLogWorkoutButtonClick(uiStateValue.userId, uiStateValue.selectedDate)
+            onNavigateToAddWorkoutScreen(uiStateValue.userId, uiStateValue.selectedDate)
+        },
+        onNavigateToEditWorkoutScreen = { workoutId ->
+            val uiStateValue = viewModel.uiState.value as TrainingHistoryUiState.LoadComplete
+            onNavigateToEditWorkoutScreen(uiStateValue.userId, workoutId)
         }
     )
 }
@@ -100,7 +105,8 @@ internal fun TrainingHistoryScreen(
     onSelectCurrentDate: () -> Unit,
     onMoveToPreviousWeek: () -> Unit,
     onMoveToNextWeek: () -> Unit,
-    onLogWorkoutButtonClick: () -> Unit
+    onLogWorkoutButtonClick: () -> Unit,
+    onNavigateToEditWorkoutScreen: (String) -> Unit,
 ) {
     when (uiState) {
         is TrainingHistoryUiState.Loading -> {
@@ -147,8 +153,8 @@ internal fun TrainingHistoryScreen(
 
                 if (uiState.workouts.isNotEmpty()) {
                     WorkoutList(
-                        workouts = uiState.workouts,
-                        selectedDate = selectedDate
+                        onNavigateToEditWorkoutScreen = onNavigateToEditWorkoutScreen,
+                        workouts = uiState.workouts
                     )
                 } else {
                     EmptyScreen(onLogWorkoutButtonClick = onLogWorkoutButtonClick)
@@ -251,9 +257,12 @@ private fun DateItem(
 }
 
 @Composable
-private fun WorkoutList(workouts: List<Workout>, selectedDate: LocalDate) {
+private fun WorkoutList(
+    onNavigateToEditWorkoutScreen: (String) -> Unit,
+    workouts: List<Workout>
+) {
     workouts.forEach {
-        WorkoutItem(workout = it)
+        WorkoutItem(workout = it, onEditWorkoutClickHandler = onNavigateToEditWorkoutScreen)
     }
 }
 
@@ -261,9 +270,7 @@ private fun WorkoutList(workouts: List<Workout>, selectedDate: LocalDate) {
 private fun WorkoutItem(
     workout: Workout, onItemClickHandler: (Workout) -> Unit = {
         //TODO
-    }, onIconMoreClickHandler: () -> Unit = {
-        // TODO
-    }
+    }, onEditWorkoutClickHandler: (workoutId: String) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -282,19 +289,24 @@ private fun WorkoutItem(
         ) {
             Text(
                 text = workout.name,
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.titleMedium,
             )
             Spacer(Modifier.weight(1f))
+            DropDownMenuScaffold(
+                menuItemsTextAndClickHandler = mapOf(
+                    "Edit" to { onEditWorkoutClickHandler(workout.id) })
+            ) { onExpandMenu ->
+                Icon(
+                    modifier = Modifier
+                        .clickable {
+                            onExpandMenu()
+                        }
+                        .size(dimensionResource(id = R.dimen.icon_size_medium)),
+                    painter = painterResource(id = R.drawable.ic_more_horizontal),
+                    contentDescription = "Icon more"
+                )
+            }
 
-            Icon(
-                modifier = Modifier
-                    .clickable {
-                        //TODO
-                    }
-                    .size(dimensionResource(id = R.dimen.icon_size_medium)),
-                painter = painterResource(id = R.drawable.ic_more_horizontal),
-                contentDescription = "Icon more"
-            )
         }
 
         workout.trainedExercises.subList(0, minOf(workout.trainedExercises.size, 3))

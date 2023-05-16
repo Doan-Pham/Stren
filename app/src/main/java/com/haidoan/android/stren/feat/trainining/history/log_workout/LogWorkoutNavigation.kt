@@ -12,22 +12,37 @@ import com.haidoan.android.stren.feat.trainining.routines.add_edit.*
 import timber.log.Timber
 import java.time.LocalDate
 
+private const val UNDEFINED_WORKOUT_ID_NAV_ARG = "UNDEFINED_WORKOUT_ID_NAV_ARG"
+private val UNDEFINED_SELECTED_DATE_NAV_ARG = LocalDate.of(1900, 12, 12)
+
+/**
+ * Currently, navigation to LogWorkoutScreen doesn't use optional arguments due to having
+ * trouble with savedStateHandle
+ * TODO: Migrate to optional navigation argument
+ */
 internal fun NavController.navigateToLogWorkoutScreen(
     userId: String,
-    selectedDate: LocalDate
+    isAddingWorkout: Boolean,
+    workoutId: String = UNDEFINED_WORKOUT_ID_NAV_ARG,
+    selectedDate: LocalDate = UNDEFINED_SELECTED_DATE_NAV_ARG
 ) {
-    this.navigate("$LOG_WORKOUT_SCREEN_ROUTE/$userId/${selectedDate.toEpochDay()}")
+    Timber.d("navigateToLogWorkoutScreen() - : $LOG_WORKOUT_SCREEN_ROUTE/$userId/$isAddingWorkout/$workoutId/${selectedDate.toEpochDay()}")
+    this.navigate("$LOG_WORKOUT_SCREEN_ROUTE/$userId/$isAddingWorkout/$workoutId/${selectedDate.toEpochDay()}")
 }
 
 // This encapsulate the SavedStateHandle access to allow ViewModel
 // to easily grabs nav args. Or else, it has to know all the nav args' names
 internal class LogWorkoutArgs(
     val userId: String,
+    val isAddingWorkout: Boolean,
+    val workoutId: String,
     val selectedDate: LocalDate,
 ) {
     constructor(savedStateHandle: SavedStateHandle) :
             this(
                 checkNotNull(savedStateHandle[USER_ID_WORKOUT_NAV_ARG]),
+                checkNotNull(savedStateHandle[IS_ADDING_WORKOUT_NAV_ARG]),
+                checkNotNull(savedStateHandle[WORKOUT_ID_NAV_ARG]),
                 checkNotNull(
                     LocalDate.ofEpochDay(
                         savedStateHandle[SELECTED_DATE_WORKOUT_NAV_ARG] ?: 0L
@@ -47,12 +62,19 @@ internal fun NavGraphBuilder.workoutGraph(
     navController: NavController,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit
 ) {
-
     composable(
-        route = "$LOG_WORKOUT_SCREEN_ROUTE/{$USER_ID_WORKOUT_NAV_ARG}/{$SELECTED_DATE_WORKOUT_NAV_ARG}",
+        route = LOG_WORKOUT_SCREEN_ROUTE + "/" +
+                "{$USER_ID_WORKOUT_NAV_ARG}" + "/" +
+                "{$IS_ADDING_WORKOUT_NAV_ARG}" + "/" +
+                "{$WORKOUT_ID_NAV_ARG}" + "/" +
+                "{$SELECTED_DATE_WORKOUT_NAV_ARG}",
         arguments = listOf(
             navArgument(USER_ID_WORKOUT_NAV_ARG) { type = NavType.StringType },
-            navArgument(SELECTED_DATE_WORKOUT_NAV_ARG) { type = NavType.LongType },
+            navArgument(IS_ADDING_WORKOUT_NAV_ARG) { type = NavType.BoolType },
+            navArgument(WORKOUT_ID_NAV_ARG) { type = NavType.StringType },
+            navArgument(SELECTED_DATE_WORKOUT_NAV_ARG) {
+                type = NavType.LongType
+            },
         )
 
     ) { navBackStackEntry ->

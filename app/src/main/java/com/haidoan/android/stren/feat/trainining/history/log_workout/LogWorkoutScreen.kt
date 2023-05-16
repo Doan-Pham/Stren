@@ -34,6 +34,8 @@ import timber.log.Timber
 
 internal const val LOG_WORKOUT_SCREEN_ROUTE = "LOG_WORKOUT_SCREEN_ROUTE"
 internal const val USER_ID_WORKOUT_NAV_ARG = "USER_ID_WORKOUT_NAV_ARG"
+internal const val IS_ADDING_WORKOUT_NAV_ARG = "IS_ADDING_WORKOUT_NAV_ARG"
+internal const val WORKOUT_ID_NAV_ARG = "WORKOUT_ID_NAV_ARG"
 internal const val SELECTED_DATE_WORKOUT_NAV_ARG = "SELECTED_DATE_WORKOUT_NAV_ARG"
 
 @Composable

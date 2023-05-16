@@ -44,8 +44,19 @@ fun NavGraphBuilder.trainingGraph(
                             appBarConfigurationChangeHandler = {
                                 appBarConfigurationChangeHandler(it)
                             },
-                            onLogWorkoutButtonClick = { userId, selectedDate ->
-                                navController.navigateToLogWorkoutScreen(userId, selectedDate)
+                            onNavigateToAddWorkoutScreen = { userId, selectedDate ->
+                                navController.navigateToLogWorkoutScreen(
+                                    userId = userId,
+                                    isAddingWorkout = true,
+                                    selectedDate = selectedDate
+                                )
+                            },
+                            onNavigateToEditWorkoutScreen = { userId, workoutId ->
+                                navController.navigateToLogWorkoutScreen(
+                                    userId = userId,
+                                    isAddingWorkout = false,
+                                    workoutId = workoutId
+                                )
                             }
                         )
                     },
