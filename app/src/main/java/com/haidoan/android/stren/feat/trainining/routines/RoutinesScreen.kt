@@ -26,7 +26,6 @@ import com.haidoan.android.stren.core.designsystem.component.*
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.designsystem.theme.Gray90
 import com.haidoan.android.stren.core.model.Routine
-import com.haidoan.android.stren.core.model.Workout
 import timber.log.Timber
 
 
@@ -36,7 +35,8 @@ internal fun RoutinesRoute(
     viewModel: RoutinesViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onNavigateToAddRoutineScreen: (userId: String) -> Unit,
-    onNavigateToEditRoutineScreen: (userId: String, routineId: String) -> Unit
+    onNavigateToEditRoutineScreen: (userId: String, routineId: String) -> Unit,
+    onNavigateToAddWorkoutScreen: (userId: String, routineId: String) -> Unit
 ) {
 
     val trainingHistoryAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
@@ -76,6 +76,9 @@ internal fun RoutinesRoute(
         onNavigateToAddRoutineScreen = { onNavigateToAddRoutineScreen(viewModel.cachedUserId) },
         onNavigateToEditRoutineScreen = { routineId ->
             onNavigateToEditRoutineScreen(viewModel.cachedUserId, routineId)
+        },
+        onNavigateToAddWorkoutScreen = { routineId ->
+            onNavigateToAddWorkoutScreen(viewModel.cachedUserId, routineId)
         }
     )
 }
@@ -86,7 +89,8 @@ internal fun RoutinesScreen(
     modifier: Modifier = Modifier,
     uiState: RoutinesUiState,
     onNavigateToAddRoutineScreen: () -> Unit,
-    onNavigateToEditRoutineScreen: (routineId: String) -> Unit
+    onNavigateToEditRoutineScreen: (routineId: String) -> Unit,
+    onNavigateToAddWorkoutScreen: (routineId: String) -> Unit
 ) {
     when (uiState) {
         is RoutinesUiState.Loading -> {
@@ -105,7 +109,8 @@ internal fun RoutinesScreen(
                 items(uiState.routines) { routine ->
                     RoutineItem(
                         routine = routine,
-                        onEditRoutineClickHandler = onNavigateToEditRoutineScreen
+                        onEditRoutineClickHandler = onNavigateToEditRoutineScreen,
+                        onItemClickHandler = onNavigateToAddWorkoutScreen
                     )
                 }
             }
@@ -120,9 +125,7 @@ internal fun RoutinesScreen(
 @Composable
 private fun RoutineItem(
     routine: Routine,
-    onItemClickHandler: (Workout) -> Unit = {
-        //TODO: Click routine item
-    },
+    onItemClickHandler: (routineId: String) -> Unit,
     onEditRoutineClickHandler: (routineId: String) -> Unit
 ) {
     Column(
@@ -181,7 +184,7 @@ private fun RoutineItem(
                 horizontal = 0.dp
             ),
             onClick = {
-                //TODO: Click button log workout
+                onItemClickHandler(routine.id)
             }) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_chevron_right),

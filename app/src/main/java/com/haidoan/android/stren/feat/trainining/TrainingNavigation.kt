@@ -11,6 +11,7 @@ import com.haidoan.android.stren.feat.trainining.exercises.navigation.exerciseGr
 import com.haidoan.android.stren.feat.trainining.exercises.navigation.navigateToExerciseDetail
 import com.haidoan.android.stren.feat.trainining.history.TrainingHistoryRoute
 import com.haidoan.android.stren.feat.trainining.history.log_workout.navigateToAddWorkoutScreen
+import com.haidoan.android.stren.feat.trainining.history.log_workout.navigateToAddWorkoutWithRoutine
 import com.haidoan.android.stren.feat.trainining.history.log_workout.navigateToEditWorkoutScreen
 import com.haidoan.android.stren.feat.trainining.history.log_workout.workoutGraph
 import com.haidoan.android.stren.feat.trainining.routines.RoutinesRoute
@@ -73,6 +74,12 @@ fun NavGraphBuilder.trainingGraph(
                             onNavigateToEditRoutineScreen = { userId, routineId ->
                                 navController.navigateToRoutineGraph(
                                     isAddingRoutine = false,
+                                    userId = userId,
+                                    routineId = routineId
+                                )
+                            },
+                            onNavigateToAddWorkoutScreen = { userId, routineId ->
+                                navController.navigateToAddWorkoutWithRoutine(
                                     userId = userId,
                                     routineId = routineId
                                 )

@@ -28,6 +28,7 @@ internal class LogWorkoutViewModel @Inject constructor(
     private val exercisesRepository: ExercisesRepository,
     private val workoutsRepository: WorkoutsRepository
 ) : ViewModel() {
+
     var workoutNameTextFieldValue by mutableStateOf("New workout")
     private lateinit var currentWorkoutInfo: Workout
 
@@ -54,6 +55,12 @@ internal class LogWorkoutViewModel @Inject constructor(
                 )
             )
             _routines.value = allRoutines
+            // In case user just navigates to LogWorkoutScreen from RoutinesScreen to quickly
+            // log workout, then selectedRoutineId won't be NO_SELECTION_ROUTINE_ID
+            // at init
+            selectRoutine(navArgs.selectedRoutineId)
+
+            Timber.d("init() - selectedRoutineId: ${navArgs.selectedRoutineId}")
             Timber.d("init() - routines: ${routines.value}")
         }
 
