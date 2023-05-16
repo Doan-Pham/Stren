@@ -10,7 +10,8 @@ import com.haidoan.android.stren.feat.trainining.exercises.ExercisesRoute
 import com.haidoan.android.stren.feat.trainining.exercises.navigation.exerciseGraph
 import com.haidoan.android.stren.feat.trainining.exercises.navigation.navigateToExerciseDetail
 import com.haidoan.android.stren.feat.trainining.history.TrainingHistoryRoute
-import com.haidoan.android.stren.feat.trainining.history.log_workout.navigateToLogWorkoutScreen
+import com.haidoan.android.stren.feat.trainining.history.log_workout.navigateToAddWorkoutScreen
+import com.haidoan.android.stren.feat.trainining.history.log_workout.navigateToEditWorkoutScreen
 import com.haidoan.android.stren.feat.trainining.history.log_workout.workoutGraph
 import com.haidoan.android.stren.feat.trainining.routines.RoutinesRoute
 import com.haidoan.android.stren.feat.trainining.routines.navigateToRoutineGraph
@@ -45,16 +46,14 @@ fun NavGraphBuilder.trainingGraph(
                                 appBarConfigurationChangeHandler(it)
                             },
                             onNavigateToAddWorkoutScreen = { userId, selectedDate ->
-                                navController.navigateToLogWorkoutScreen(
+                                navController.navigateToAddWorkoutScreen(
                                     userId = userId,
-                                    isAddingWorkout = true,
                                     selectedDate = selectedDate
                                 )
                             },
                             onNavigateToEditWorkoutScreen = { userId, workoutId ->
-                                navController.navigateToLogWorkoutScreen(
+                                navController.navigateToEditWorkoutScreen(
                                     userId = userId,
-                                    isAddingWorkout = false,
                                     workoutId = workoutId
                                 )
                             }
