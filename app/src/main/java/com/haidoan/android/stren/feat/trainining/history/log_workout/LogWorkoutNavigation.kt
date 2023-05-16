@@ -3,13 +3,11 @@ package com.haidoan.android.stren.feat.trainining.history.log_workout
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.*
 import com.google.accompanist.navigation.animation.composable
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
-import com.haidoan.android.stren.core.designsystem.component.DummyBoxWithText
 import com.haidoan.android.stren.feat.trainining.routines.add_edit.*
 import timber.log.Timber
 import java.time.LocalDate
@@ -63,20 +61,19 @@ internal fun NavGraphBuilder.workoutGraph(
             .getStateFlow(SELECTED_EXERCISES_IDS_SAVED_STATE_KEY, listOf<String>())
             .collectAsStateWithLifecycle()
         Timber.d("exercisesIdsToAdd: $exercisesIdsToAdd")
-        val viewModel: LogWorkoutViewModel = hiltViewModel()
-        DummyBoxWithText(text = "Log workout")
-//        AddEditRoutineRoute(
-//            exercisesIdsToAdd = exercisesIdsToAdd,
-//            onAddExercisesCompleted = {
-//                navBackStackEntry.savedStateHandle[SELECTED_EXERCISES_IDS_SAVED_STATE_KEY] =
-//                    listOf<String>()
-//            },
-//            appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
-//            onBackToPreviousScreen = { navController.popBackStack() },
-//            onNavigateToAddExercise = {
-//                navController.navigate(ADD_EXERCISE_TO_ROUTINE_SCREEN_ROUTE)
-//            }
-//        )
+
+        LogWorkoutRoute(
+            exercisesIdsToAdd = exercisesIdsToAdd,
+            onAddExercisesCompleted = {
+                navBackStackEntry.savedStateHandle[SELECTED_EXERCISES_IDS_SAVED_STATE_KEY] =
+                    listOf<String>()
+            },
+            appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
+            onBackToPreviousScreen = { navController.popBackStack() },
+            onNavigateToAddExercise = {
+                navController.navigate(ADD_EXERCISE_TO_ROUTINE_SCREEN_ROUTE)
+            }
+        )
     }
     composable(
         route = ADD_EXERCISE_TO_ROUTINE_SCREEN_ROUTE
