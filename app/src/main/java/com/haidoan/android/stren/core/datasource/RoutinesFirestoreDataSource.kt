@@ -23,6 +23,10 @@ class RoutinesFirestoreDataSource @Inject constructor() : RoutinesRemoteDataSour
         firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH").snapshots()
             .mapNotNull { it.toRoutines() }
 
+    override suspend fun getRoutinesByUserId(userId: String): List<Routine> =
+        firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH").get().await()
+            .toRoutines()
+
     override suspend fun getRoutineById(userId: String, routineId: String): Routine =
         firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH")
             .document(routineId).get().await().toRoutine()

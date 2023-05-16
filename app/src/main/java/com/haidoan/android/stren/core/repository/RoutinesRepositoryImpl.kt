@@ -12,10 +12,19 @@ class RoutinesRepositoryImpl @Inject constructor(
 ) : RoutinesRepository {
 
 
-    override suspend fun getRoutinesByUserId(userId: String): Flow<List<Routine>> =
+    override suspend fun getRoutinesStreamByUserId(userId: String): Flow<List<Routine>> =
         routinesRemoteDataSource.getRoutinesStreamByUserId(userId).catch {
             Timber.e("getRoutinesByUserId() - Exception: ${it.message}")
         }
+
+    override suspend fun getRoutinesByUserId(userId: String): List<Routine> {
+        return try {
+            routinesRemoteDataSource.getRoutinesByUserId(userId)
+        } catch (exception: Exception) {
+            Timber.e("getRoutinesByUserId() - Exception: $exception")
+            listOf()
+        }
+    }
 
     override suspend fun getRoutineById(userId: String, routineId: String): Routine {
         Timber.d("getRoutineById() is called: userId: $userId; routineId: $routineId")
