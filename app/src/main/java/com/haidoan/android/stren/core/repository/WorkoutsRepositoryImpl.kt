@@ -38,4 +38,26 @@ class WorkoutsRepositoryImpl @Inject constructor(private val workoutRemoteDataSo
         }
     }
 
+    override suspend fun getWorkoutById(workoutId: String): Workout {
+        Timber.d("getWorkoutById() is called: workoutId: $workoutId;")
+        return try {
+            workoutRemoteDataSource.getWorkoutById(workoutId)
+        } catch (ex: Exception) {
+            Timber.e("getWorkoutById() - exception: $ex")
+            Workout(
+                name = "Undefined",
+                trainedExercises = listOf(),
+                date = LocalDate.of(1900, 20, 12)
+            )
+        }
+    }
+
+    override suspend fun updateWorkout(userId: String, workout: Workout) {
+        try {
+            Timber.d("updateWorkout() - userId: $userId; workoutId: ${workout.id}")
+            workoutRemoteDataSource.updateWorkout(userId, workout)
+        } catch (exception: Exception) {
+            Timber.e("updateWorkout() - Exception: ${exception.message}")
+        }
+    }
 }

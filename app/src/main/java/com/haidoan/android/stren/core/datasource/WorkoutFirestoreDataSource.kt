@@ -2,6 +2,7 @@ package com.haidoan.android.stren.core.datasource
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentId
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.haidoan.android.stren.core.datasource.model.FirestoreTrainedExercise
@@ -42,6 +43,27 @@ class WorkoutFirestoreDataSource @Inject constructor() : WorkoutRemoteDataSource
             .add(FirestoreWorkout.from(userId, workout))
             .await().id
 
+    override suspend fun getWorkoutById(workoutId: String): Workout =
+        firestore.collection(WORKOUT_COLLECTION_PATH)
+            .document(workoutId).get().await().toWorkout()
+
+    override suspend fun updateWorkout(userId: String, workout: Workout) {
+        firestore.collection(WORKOUT_COLLECTION_PATH)
+            .document(workout.id)
+            .set(FirestoreWorkout.from(userId, workout))
+            .await()
+    }
+
+    private fun DocumentSnapshot.toWorkout(): Workout {
+        Timber.d("document: $this")
+        val data = this.toObject(FirestoreWorkout::class.java)
+        Timber.d("toFirestoreWorkout() - : $data")
+        return data?.asWorkout() ?: Workout(
+            name = "Undefined",
+            trainedExercises = listOf(),
+            date = LocalDate.of(1900, 12, 12)
+        )
+    }
 
     private fun QuerySnapshot.toWorkoutsList(): List<Workout> =
         this.documents.mapNotNull { document ->
