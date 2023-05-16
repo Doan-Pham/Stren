@@ -51,24 +51,31 @@ internal fun LogWorkoutRoute(
         onAddExercisesCompleted()
     }
 
-    var shouldShowBackConfirmDialog by remember {
-        mutableStateOf(false)
-    }
-    if (shouldShowBackConfirmDialog) {
+    val secondaryUiState by viewModel.secondaryUiState.collectAsStateWithLifecycle()
+    if (secondaryUiState.shouldShowBackConfirmDialog) {
         SimpleConfirmationDialog(
-            onDismissDialog = { shouldShowBackConfirmDialog = false },
+            onDismissDialog = { viewModel.updateBackConfirmDialogState(false) },
             title = "Your changes are not saved",
             body = "This action can't be undone. Are you sure don't want to save your changes?"
         ) {
             onBackToPreviousScreen()
         }
     }
+    if (secondaryUiState.shouldShowRoutineWarningDialog) {
+        SimpleConfirmationDialog(
+            onDismissDialog = { viewModel.updateRoutineWarningDialogState(false) },
+            title = "Switch to another routine",
+            body = "Once you you switch to another routine, the exercises you've added will be lost. Are you sure you want to continue?"
+        ) {
+            secondaryUiState.onConfirmSwitchRoutine()
+        }
+    }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val onBackClickHandler = {
         if (uiState is LogWorkoutUiState.IsLogging && (uiState as LogWorkoutUiState.IsLogging).trainedExercises.isNotEmpty()) {
-            shouldShowBackConfirmDialog = true
-        } else {
+            viewModel.updateBackConfirmDialogState(true)
+        } else if (uiState is LogWorkoutUiState.EmptyWorkout) {
             onBackToPreviousScreen()
         }
     }
@@ -114,6 +121,7 @@ internal fun LogWorkoutRoute(
             ),
         )
     )
+
     var isAppBarConfigured by remember { mutableStateOf(false) }
     if (!isAppBarConfigured) {
         appBarConfigurationChangeHandler(logWorkoutAppBarConfiguration)
@@ -176,7 +184,6 @@ internal fun LogWorkoutScreen(
                     errorText = "Workout name can't be empty"
                 )
 
-                //TODO: Choose routine
                 ExposedDropDownMenuTextField(
                     textFieldLabel = "Choose routine",
                     defaultSelectedText = NO_SELECTION_ROUTINE_NAME,
