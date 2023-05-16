@@ -16,7 +16,9 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
-const val SELECTED_EXERCISES_IDS_SAVED_STATE_KEY = "selected_exercises_ids"
+internal const val SELECTED_EXERCISES_IDS_SAVED_STATE_KEY = "selected_exercises_ids"
+internal const val NO_SELECTION_ROUTINE_ID = "NO SELECTION ROUTINE ID"
+internal const val NO_SELECTION_ROUTINE_NAME = "None"
 
 @HiltViewModel
 internal class LogWorkoutViewModel @Inject constructor(
@@ -25,12 +27,30 @@ internal class LogWorkoutViewModel @Inject constructor(
     private val exercisesRepository: ExercisesRepository
 ) : ViewModel() {
     var workoutNameTextFieldValue by mutableStateOf("New workout")
+
     private val navArgs: LogWorkoutArgs = LogWorkoutArgs(savedStateHandle)
     private val _trainedExercises: MutableStateFlow<List<TrainedExercise>> =
         MutableStateFlow(listOf())
 
+    private var _selectedRoutineId = NO_SELECTION_ROUTINE_ID
+    private val _routines = MutableStateFlow(listOf<Routine>())
+    val routines: StateFlow<List<Routine>> = _routines
+
     init {
-        Timber.d("init() - userId: ${navArgs.userId} - seletecdDate: ${navArgs.selectedDate}")
+        Timber.d("init() - userId: ${navArgs.userId} - selectedDate: ${navArgs.selectedDate}")
+        viewModelScope.launch {
+            val allRoutines = routinesRepository.getRoutinesByUserId(navArgs.userId).toMutableList()
+            allRoutines.add(
+                0, Routine(
+                    id = NO_SELECTION_ROUTINE_ID,
+                    name = NO_SELECTION_ROUTINE_NAME,
+                    trainedExercises = listOf()
+                )
+            )
+            _routines.value = allRoutines
+            Timber.d("init() - routines: ${routines.value}")
+        }
+
 //        if (!navArgs.isAddingRoutine) {
 //            viewModelScope.launch {
 //                val routine = routinesRepository.getRoutineById(navArgs.userId, navArgs.routineId)
@@ -41,6 +61,14 @@ internal class LogWorkoutViewModel @Inject constructor(
 //                Timber.d(" _trainedExercises.value: ${_trainedExercises.value}")
 //            }
 //        }
+    }
+
+    fun selectRoutine(newlySelectedRoutineId: String) {
+        if (_selectedRoutineId == NO_SELECTION_ROUTINE_ID) {
+            _selectedRoutineId = newlySelectedRoutineId
+            _trainedExercises.value =
+                routines.value.first { it.id == _selectedRoutineId }.trainedExercises
+        }
     }
 
     fun setExercisesIdsToAdd(ids: List<String>) {
@@ -57,7 +85,6 @@ internal class LogWorkoutViewModel @Inject constructor(
             Timber.d("_trainedExercises.value.size: ${_trainedExercises.value.size}")
         }
     }
-
 
     fun updateExerciseTrainingSet(
         exerciseToUpdate: TrainedExercise,
