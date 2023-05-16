@@ -25,6 +25,7 @@ import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.app.ui.LocalSnackbarHostState
 import com.haidoan.android.stren.core.designsystem.component.*
+import com.haidoan.android.stren.core.model.Routine
 import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics
 import com.haidoan.android.stren.core.utils.ValidationUtils
@@ -119,10 +120,13 @@ internal fun LogWorkoutRoute(
         isAppBarConfigured = true
     }
 
+    val routines by viewModel.routines.collectAsStateWithLifecycle()
     LogWorkoutScreen(
         modifier = modifier,
         uiState = uiState,
         workoutName = viewModel.workoutNameTextFieldValue,
+        routines = routines,
+        onSelectRoutine = viewModel::selectRoutine,
         onWorkoutNameChange = { viewModel.workoutNameTextFieldValue = it },
         onNavigateToAddExercise = onNavigateToAddExercise,
         onUpdateExercise = viewModel::updateExerciseTrainingSet,
@@ -138,6 +142,8 @@ internal fun LogWorkoutScreen(
     modifier: Modifier = Modifier,
     uiState: LogWorkoutUiState,
     workoutName: String,
+    routines: List<Routine>,
+    onSelectRoutine: (routineId: String) -> Unit,
     onWorkoutNameChange: (String) -> Unit,
     onNavigateToAddExercise: () -> Unit,
     onUpdateExercise: (
@@ -169,15 +175,14 @@ internal fun LogWorkoutScreen(
                     isError = workoutName.isBlank() || workoutName.isEmpty(),
                     errorText = "Workout name can't be empty"
                 )
+
                 //TODO: Choose routine
                 ExposedDropDownMenuTextField(
                     textFieldLabel = "Choose routine",
-                    defaultSelectedText = "None",
-                    menuItemsTextAndClickHandler = mapOf(
-                        "None" to { Timber.d("Menu click - None") },
-                        "Workout 1" to { Timber.d("Menu click - Workout 1") },
-                        "Workout 2" to { Timber.d("Menu click - Workout 2") },
-                        "Workout 3" to { Timber.d("Menu click - Workout 3") })
+                    defaultSelectedText = NO_SELECTION_ROUTINE_NAME,
+                    menuItemsTextAndClickHandler = routines.associate {
+                        it.name to { onSelectRoutine(it.id) }
+                    }
                 )
             }
 
