@@ -32,9 +32,12 @@ internal class LogWorkoutViewModel @Inject constructor(
     private val _trainedExercises: MutableStateFlow<List<TrainedExercise>> =
         MutableStateFlow(listOf())
 
-    private var _selectedRoutineId = NO_SELECTION_ROUTINE_ID
+    private var _currentSelectedRoutineId = NO_SELECTION_ROUTINE_ID
     private val _routines = MutableStateFlow(listOf<Routine>())
     val routines: StateFlow<List<Routine>> = _routines
+
+    private val _secondaryUiState = MutableStateFlow(LogWorkoutSecondaryUiState())
+    val secondaryUiState: StateFlow<LogWorkoutSecondaryUiState> = _secondaryUiState
 
     init {
         Timber.d("init() - userId: ${navArgs.userId} - selectedDate: ${navArgs.selectedDate}")
@@ -63,11 +66,32 @@ internal class LogWorkoutViewModel @Inject constructor(
 //        }
     }
 
+    fun updateBackConfirmDialogState(shouldShowDialog: Boolean) {
+        _secondaryUiState.update { currentState -> currentState.copy(shouldShowBackConfirmDialog = shouldShowDialog) }
+    }
+
+    fun updateRoutineWarningDialogState(shouldShowDialog: Boolean) {
+        _secondaryUiState.update { currentState ->
+            currentState.copy(shouldShowRoutineWarningDialog = shouldShowDialog)
+        }
+    }
+
     fun selectRoutine(newlySelectedRoutineId: String) {
-        if (_selectedRoutineId == NO_SELECTION_ROUTINE_ID) {
-            _selectedRoutineId = newlySelectedRoutineId
-            _trainedExercises.value =
-                routines.value.first { it.id == _selectedRoutineId }.trainedExercises
+        if (_trainedExercises.value.isEmpty()) {
+            if (newlySelectedRoutineId != NO_SELECTION_ROUTINE_ID) {
+                _currentSelectedRoutineId = newlySelectedRoutineId
+                _trainedExercises.value =
+                    routines.value.first { it.id == _currentSelectedRoutineId }.trainedExercises
+            }
+        } else {
+            _secondaryUiState.update { currentState ->
+                currentState.copy(shouldShowRoutineWarningDialog = true,
+                    onConfirmSwitchRoutine = {
+                        _currentSelectedRoutineId = newlySelectedRoutineId
+                        _trainedExercises.value =
+                            routines.value.first { it.id == _currentSelectedRoutineId }.trainedExercises
+                    })
+            }
         }
     }
 
@@ -225,11 +249,11 @@ internal class LogWorkoutViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<LogWorkoutUiState> =
         _trainedExercises.flatMapLatest { _trainedExercises ->
-            if (_trainedExercises.isEmpty()) flowOf(LogWorkoutUiState.EmptyWorkout) else
-                flowOf(LogWorkoutUiState.IsLogging(navArgs.selectedDate, _trainedExercises))
+            if (_trainedExercises.isEmpty()) flowOf(LogWorkoutUiState.EmptyWorkout) else flowOf(
+                LogWorkoutUiState.IsLogging(navArgs.selectedDate, _trainedExercises)
+            )
         }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000), LogWorkoutUiState.Loading
+            viewModelScope, SharingStarted.WhileSubscribed(5000), LogWorkoutUiState.Loading
         )
 
 }
