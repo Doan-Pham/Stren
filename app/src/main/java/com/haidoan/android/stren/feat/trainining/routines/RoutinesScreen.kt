@@ -121,7 +121,7 @@ internal fun RoutinesScreen(
 private fun RoutineItem(
     routine: Routine,
     onItemClickHandler: (Workout) -> Unit = {
-        //TODO
+        //TODO: Click routine item
     },
     onEditRoutineClickHandler: (routineId: String) -> Unit
 ) {
@@ -180,7 +180,9 @@ private fun RoutineItem(
                 vertical = dimensionResource(id = R.dimen.padding_small),
                 horizontal = 0.dp
             ),
-            onClick = { /*TODO*/ }) {
+            onClick = {
+                //TODO: Click button log workout
+            }) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_chevron_right),
                 contentDescription = "Icon arrow right",

@@ -29,6 +29,7 @@ internal class LogWorkoutViewModel @Inject constructor(
     private val workoutsRepository: WorkoutsRepository
 ) : ViewModel() {
     var workoutNameTextFieldValue by mutableStateOf("New workout")
+    private lateinit var currentWorkoutInfo: Workout
 
     private val navArgs: LogWorkoutArgs = LogWorkoutArgs(savedStateHandle)
     private val _trainedExercises: MutableStateFlow<List<TrainedExercise>> =
@@ -56,16 +57,17 @@ internal class LogWorkoutViewModel @Inject constructor(
             Timber.d("init() - routines: ${routines.value}")
         }
 
-//        if (!navArgs.isAddingRoutine) {
-//            viewModelScope.launch {
-//                val routine = routinesRepository.getRoutineById(navArgs.userId, navArgs.routineId)
-//                routineNameTextFieldValue = routine.name
-//                _trainedExercises.value = routine.trainedExercises
-//
-//                Timber.d("routine: $routine")
-//                Timber.d(" _trainedExercises.value: ${_trainedExercises.value}")
-//            }
-//        }
+        if (!navArgs.isAddingWorkout) {
+            viewModelScope.launch {
+                val workout = workoutsRepository.getWorkoutById(navArgs.workoutId)
+                workoutNameTextFieldValue = workout.name
+                _trainedExercises.value = workout.trainedExercises
+                currentWorkoutInfo = workout
+
+                Timber.d("workout: $workout")
+                Timber.d(" _trainedExercises.value: ${_trainedExercises.value}")
+            }
+        }
     }
 
     fun updateBackConfirmDialogState(shouldShowDialog: Boolean) {
@@ -233,15 +235,27 @@ internal class LogWorkoutViewModel @Inject constructor(
 
     fun addEditWorkout() {
         Timber.d("addEditWorkout() - userId: ${navArgs.userId}")
-        viewModelScope.launch {
-            workoutsRepository.addWorkout(
-                userId = navArgs.userId,
-                workout = Workout(
-                    name = workoutNameTextFieldValue,
-                    date = navArgs.selectedDate,
-                    trainedExercises = _trainedExercises.value
+        if (navArgs.isAddingWorkout) {
+            viewModelScope.launch {
+                workoutsRepository.addWorkout(
+                    userId = navArgs.userId,
+                    workout = Workout(
+                        name = workoutNameTextFieldValue,
+                        date = navArgs.selectedDate,
+                        trainedExercises = _trainedExercises.value
+                    )
                 )
-            )
+            }
+        } else {
+            viewModelScope.launch {
+                workoutsRepository.updateWorkout(
+                    userId = navArgs.userId,
+                    workout = currentWorkoutInfo.copy(
+                        name = workoutNameTextFieldValue,
+                        trainedExercises = _trainedExercises.value
+                    )
+                )
+            }
         }
     }
 

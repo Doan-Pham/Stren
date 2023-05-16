@@ -8,4 +8,6 @@ interface WorkoutRemoteDataSource {
     suspend fun getDatesThatHaveWorkoutByUserId(userId: String): List<LocalDate>
 
     suspend fun addWorkout(userId: String, workout: Workout): String
+    suspend fun getWorkoutById(workoutId: String): Workout
+    suspend fun updateWorkout(userId: String, workout: Workout)
 }

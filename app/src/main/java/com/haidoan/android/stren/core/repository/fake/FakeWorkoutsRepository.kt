@@ -29,4 +29,12 @@ class FakeWorkoutsRepository : WorkoutsRepository {
     override suspend fun addWorkout(userId: String, workout: Workout): String {
         TODO("Not yet implemented")
     }
+
+    override suspend fun getWorkoutById(workoutId: String): Workout {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateWorkout(userId: String, workout: Workout) {
+        TODO("Not yet implemented")
+    }
 }
