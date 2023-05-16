@@ -44,7 +44,7 @@ internal class RoutinesViewModel @Inject constructor(
             onUserAuthenticated = { userId ->
                 _dataFetchingTriggers.value = _dataFetchingTriggers.value.copy(userId = userId)
                 viewModelScope.launch {
-                    routinesRepository.getRoutinesByUserId(userId).collect {
+                    routinesRepository.getRoutinesStreamByUserId(userId).collect {
                         cachedRoutines = it
                     }
                 }
@@ -66,7 +66,7 @@ internal class RoutinesViewModel @Inject constructor(
             if (userId != cachedUserId) {
                 cachedUserId = userId
                 if (userId != UNDEFINED_USER_ID) {
-                    routinesRepository.getRoutinesByUserId(userId).map {
+                    routinesRepository.getRoutinesStreamByUserId(userId).map {
                         cachedRoutines = it
                         val result = it.filter { routine ->
                             routine.name.contains(
