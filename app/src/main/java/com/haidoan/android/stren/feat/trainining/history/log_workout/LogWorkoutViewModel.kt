@@ -77,19 +77,28 @@ internal class LogWorkoutViewModel @Inject constructor(
     }
 
     fun selectRoutine(newlySelectedRoutineId: String) {
+        if (newlySelectedRoutineId == _currentSelectedRoutineId) return
+
         if (_trainedExercises.value.isEmpty()) {
             if (newlySelectedRoutineId != NO_SELECTION_ROUTINE_ID) {
                 _currentSelectedRoutineId = newlySelectedRoutineId
                 _trainedExercises.value =
                     routines.value.first { it.id == _currentSelectedRoutineId }.trainedExercises
+                _secondaryUiState.update { currentState ->
+                    currentState.copy(selectedRoutineId = _currentSelectedRoutineId)
+                }
             }
         } else {
             _secondaryUiState.update { currentState ->
-                currentState.copy(shouldShowRoutineWarningDialog = true,
+                currentState.copy(
+                    shouldShowRoutineWarningDialog = true,
                     onConfirmSwitchRoutine = {
                         _currentSelectedRoutineId = newlySelectedRoutineId
                         _trainedExercises.value =
                             routines.value.first { it.id == _currentSelectedRoutineId }.trainedExercises
+                        _secondaryUiState.update { currentState ->
+                            currentState.copy(selectedRoutineId = _currentSelectedRoutineId)
+                        }
                     })
             }
         }

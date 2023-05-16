@@ -134,6 +134,7 @@ internal fun LogWorkoutRoute(
         uiState = uiState,
         workoutName = viewModel.workoutNameTextFieldValue,
         routines = routines,
+        selectedRoutineId = secondaryUiState.selectedRoutineId,
         onSelectRoutine = viewModel::selectRoutine,
         onWorkoutNameChange = { viewModel.workoutNameTextFieldValue = it },
         onNavigateToAddExercise = onNavigateToAddExercise,
@@ -152,6 +153,7 @@ internal fun LogWorkoutScreen(
     workoutName: String,
     routines: List<Routine>,
     onSelectRoutine: (routineId: String) -> Unit,
+    selectedRoutineId: String,
     onWorkoutNameChange: (String) -> Unit,
     onNavigateToAddExercise: () -> Unit,
     onUpdateExercise: (
@@ -186,7 +188,8 @@ internal fun LogWorkoutScreen(
 
                 ExposedDropDownMenuTextField(
                     textFieldLabel = "Choose routine",
-                    defaultSelectedText = NO_SELECTION_ROUTINE_NAME,
+                    selectedText = routines.firstOrNull { it.id == selectedRoutineId }?.name
+                        ?: NO_SELECTION_ROUTINE_NAME,
                     menuItemsTextAndClickHandler = routines.associate {
                         it.name to { onSelectRoutine(it.id) }
                     }
