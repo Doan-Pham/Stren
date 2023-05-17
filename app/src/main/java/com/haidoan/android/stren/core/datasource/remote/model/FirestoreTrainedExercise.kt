@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.core.datasource.model
+package com.haidoan.android.stren.core.datasource.remote.model
 
 import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.model.ExerciseCategoryWithSpecialMetrics

@@ -1,7 +1,7 @@
-package com.haidoan.android.stren.core.datasource.fake
+package com.haidoan.android.stren.core.datasource.remote.fake
 
 import com.google.firebase.firestore.Query
-import com.haidoan.android.stren.core.datasource.ExercisesRemoteDataSource
+import com.haidoan.android.stren.core.datasource.remote.ExercisesRemoteDataSource
 import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.model.ExerciseFilterStandards
