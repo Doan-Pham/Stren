@@ -7,9 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -20,6 +18,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.haidoan.android.stren.feat.auth.NAV_ROUTE_AUTH
 import com.haidoan.android.stren.feat.auth.authenticationGraph
 import com.haidoan.android.stren.feat.auth.navigateToAuthentication
+import com.haidoan.android.stren.feat.nutrition.nutritionGraph
 import com.haidoan.android.stren.feat.training.trainingGraph
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -76,20 +75,7 @@ fun StrenNavHost(
             }
         }
         trainingGraph(navController, appBarConfigurationChangeHandler)
-        composable(route = TopLevelDestination.NUTRITION.route) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("nutrition")
-                var isAppBarConfigured by remember { mutableStateOf(false) }
-                if (!isAppBarConfigured) {
-                    appBarConfigurationChangeHandler(AppBarConfiguration.NavigationAppBar())
-                    isAppBarConfigured = true
-                }
-            }
-        }
+        nutritionGraph(navController, appBarConfigurationChangeHandler)
         composable(route = TopLevelDestination.PROFILE.route) {
             Box(
                 modifier = Modifier
