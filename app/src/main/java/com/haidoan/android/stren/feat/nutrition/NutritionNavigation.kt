@@ -13,6 +13,8 @@ import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.core.designsystem.component.DummyBoxWithText
 import com.haidoan.android.stren.core.designsystem.component.TabLayout
 import com.haidoan.android.stren.feat.nutrition.food.FoodRoute
+import com.haidoan.android.stren.feat.nutrition.food.foodGraph
+import com.haidoan.android.stren.feat.nutrition.food.navigateToFoodDetail
 import com.haidoan.android.stren.feat.training.history.log_workout.navigateToAddWorkoutWithRoutine
 import com.haidoan.android.stren.feat.training.routines.RoutinesRoute
 import com.haidoan.android.stren.feat.training.routines.navigateToRoutineGraph
@@ -40,9 +42,13 @@ fun NavGraphBuilder.nutritionGraph(
                         }
                     },
                     Pair("Food") {
-                        FoodRoute(appBarConfigurationChangeHandler = {
-                            appBarConfigurationChangeHandler(it)
-                        })
+                        FoodRoute(
+                            appBarConfigurationChangeHandler = {
+                                appBarConfigurationChangeHandler(it)
+                            },
+                            onNavigateToFoodDetailScreen = {
+                                navController.navigateToFoodDetail(it)
+                            })
                     },
                     Pair("Routines") {
                         RoutinesRoute(
@@ -73,6 +79,12 @@ fun NavGraphBuilder.nutritionGraph(
                 )
             )
         }
+
+        foodGraph(
+            navController = navController,
+            appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
+        )
+
         routineGraph(
             navController,
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
