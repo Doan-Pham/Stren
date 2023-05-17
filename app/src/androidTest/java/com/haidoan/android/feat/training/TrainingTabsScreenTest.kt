@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import com.haidoan.android.stren.feat.trainining.TrainingTabsScreen
+import com.haidoan.android.stren.feat.training.TrainingTabsScreen
 import org.junit.Rule
 import org.junit.Test
 

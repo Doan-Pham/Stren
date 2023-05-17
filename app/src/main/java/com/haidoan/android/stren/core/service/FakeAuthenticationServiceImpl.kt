@@ -2,7 +2,7 @@ package com.haidoan.android.stren.core.service
 
 import androidx.annotation.VisibleForTesting
 import com.facebook.AccessToken
-import com.haidoan.android.stren.feat.trainining.history.UNDEFINED_USER_ID
+import com.haidoan.android.stren.feat.training.history.UNDEFINED_USER_ID
 import timber.log.Timber
 
 @VisibleForTesting

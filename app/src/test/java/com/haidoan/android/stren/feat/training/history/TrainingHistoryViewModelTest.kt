@@ -4,9 +4,6 @@ import com.haidoan.android.stren.core.repository.fake.FakeWorkoutsRepository
 import com.haidoan.android.stren.core.service.FakeAuthenticationServiceImpl
 import com.haidoan.android.stren.core.testing.data.WORKOUTS_TEST_DATA
 import com.haidoan.android.stren.core.testing.util.MainDispatcherRule
-import com.haidoan.android.stren.feat.trainining.history.TrainingHistoryUiState
-import com.haidoan.android.stren.feat.trainining.history.TrainingHistoryViewModel
-import com.haidoan.android.stren.feat.trainining.history.UNDEFINED_USER_ID
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -60,8 +57,9 @@ class TrainingHistoryViewModelTest {
         WORKOUTS_TEST_DATA.forEach { workout ->
             viewModel.selectDate(workout.date)
             Assert.assertEquals(
-                TrainingHistoryUiState.LoadComplete(
-                    WORKOUTS_TEST_DATA.filter { it.date.isEqual(workout.date) }, workout.date
+                TrainingHistoryUiState.LoadComplete(randomUserId,
+                    WORKOUTS_TEST_DATA.filter { it.date.isEqual(workout.date) }, workout.date,
+                    WORKOUTS_TEST_DATA.map { it.date }
                 ),
                 viewModel.uiState.value
             )

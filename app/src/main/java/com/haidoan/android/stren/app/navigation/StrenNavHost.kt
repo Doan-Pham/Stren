@@ -20,9 +20,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.haidoan.android.stren.feat.auth.NAV_ROUTE_AUTH
 import com.haidoan.android.stren.feat.auth.authenticationGraph
 import com.haidoan.android.stren.feat.auth.navigateToAuthentication
-import com.haidoan.android.stren.feat.trainining.trainingGraph
-
-private const val TAG = "StrenNavHost"
+import com.haidoan.android.stren.feat.training.trainingGraph
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable

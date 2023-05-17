@@ -1,9 +1,9 @@
 package com.haidoan.android.stren.app.navigation
 
 import com.haidoan.android.stren.R
-import com.haidoan.android.stren.feat.trainining.TRAINING_GRAPH_ROUTE
-import com.haidoan.android.stren.feat.trainining.TRAINING_GRAPH_STARTING_ROUTE
-import com.haidoan.android.stren.feat.trainining.exercises.EXERCISES_SCREEN_ROUTE
+import com.haidoan.android.stren.feat.training.TRAINING_GRAPH_ROUTE
+import com.haidoan.android.stren.feat.training.TRAINING_GRAPH_STARTING_ROUTE
+import com.haidoan.android.stren.feat.training.exercises.EXERCISES_SCREEN_ROUTE
 
 enum class TopLevelDestination(
     val route: String,
