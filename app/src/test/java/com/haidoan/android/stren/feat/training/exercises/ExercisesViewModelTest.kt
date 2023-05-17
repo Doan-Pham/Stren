@@ -6,7 +6,6 @@ import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.repository.fake.FakeExercisesRepository
 import com.haidoan.android.stren.core.testing.data.EXERCISES_TEST_DATA
 import com.haidoan.android.stren.core.testing.util.MainDispatcherRule
-import com.haidoan.android.stren.feat.trainining.exercises.ExercisesViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.test.*
