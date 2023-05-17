@@ -15,7 +15,7 @@ import java.time.LocalDate
 
 private const val UNDEFINED_WORKOUT_ID_NAV_ARG = "UNDEFINED_WORKOUT_ID_NAV_ARG"
 private val UNDEFINED_SELECTED_DATE_NAV_ARG = LocalDate.of(1900, 12, 12).toEpochDay()
-
+const val ADD_EXERCISE_TO_WORKOUT_SCREEN_ROUTE = "ADD_EXERCISE_TO_WORKOUT_SCREEN_ROUTE"
 internal fun NavController.navigateToAddWorkoutScreen(
     userId: String,
     selectedDate: LocalDate
@@ -136,12 +136,12 @@ internal fun NavGraphBuilder.workoutGraph(
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
             onBackToPreviousScreen = { navController.popBackStack() },
             onNavigateToAddExercise = {
-                navController.navigate(ADD_EXERCISE_TO_ROUTINE_SCREEN_ROUTE)
+                navController.navigate(ADD_EXERCISE_TO_WORKOUT_SCREEN_ROUTE)
             }
         )
     }
     composable(
-        route = ADD_EXERCISE_TO_ROUTINE_SCREEN_ROUTE
+        route = ADD_EXERCISE_TO_WORKOUT_SCREEN_ROUTE
     ) {
         AddExerciseToRoutineRoute(appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
             onBackToPreviousScreen = { navController.popBackStack() },

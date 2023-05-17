@@ -2,6 +2,7 @@ package com.haidoan.android.stren.core.network.model
 
 import com.haidoan.android.stren.core.model.Food
 import com.haidoan.android.stren.core.model.FoodNutrient
+import com.haidoan.android.stren.core.utils.StringFormatUtils.capitalizeFirstChar
 
 
 @kotlinx.serialization.Serializable
@@ -17,7 +18,7 @@ data class NetworkFoodNutrient(val name: String, val amount: Float, val unitName
 fun NetworkFood.asExternalModel() =
     Food(
         id = fdcId.toString(),
-        name = description,
+        name = description.capitalizeFirstChar(),
         nutrients = foodNutrients.map { it.asExternalModel() })
 
 fun NetworkFoodNutrient.asExternalModel() =
