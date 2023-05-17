@@ -1,6 +1,6 @@
 package com.haidoan.android.stren.data
 
-import com.haidoan.android.stren.core.datasource.fake.FakeExercisesRemoteDataSource
+import com.haidoan.android.stren.core.datasource.remote.fake.FakeExercisesRemoteDataSource
 import com.haidoan.android.stren.core.repository.ExercisesRepository
 import com.haidoan.android.stren.core.repository.ExercisesRepositoryImpl
 import com.haidoan.android.stren.core.testing.data.EXERCISE_CATEGORIES_TEST_DATA

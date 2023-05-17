@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.core.datasource
+package com.haidoan.android.stren.core.datasource.remote
 
 import com.haidoan.android.stren.core.model.Workout
 import java.time.LocalDate

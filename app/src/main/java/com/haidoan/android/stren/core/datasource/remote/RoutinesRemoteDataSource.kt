@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.core.datasource
+package com.haidoan.android.stren.core.datasource.remote
 
 import com.haidoan.android.stren.core.model.Routine
 import kotlinx.coroutines.flow.Flow

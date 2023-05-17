@@ -1,11 +1,11 @@
-package com.haidoan.android.stren.core.datasource
+package com.haidoan.android.stren.core.datasource.remote
 
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.snapshots
-import com.haidoan.android.stren.core.datasource.model.FirestoreTrainedExercise
+import com.haidoan.android.stren.core.datasource.remote.model.FirestoreTrainedExercise
 import com.haidoan.android.stren.core.model.Routine
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull

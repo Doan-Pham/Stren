@@ -1,6 +1,6 @@
 package com.haidoan.android.stren.core.repository
 
-import com.haidoan.android.stren.core.datasource.RoutinesRemoteDataSource
+import com.haidoan.android.stren.core.datasource.remote.RoutinesRemoteDataSource
 import com.haidoan.android.stren.core.model.Routine
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
