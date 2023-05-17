@@ -14,6 +14,7 @@ import retrofit2.http.Query
 import javax.inject.Inject
 import javax.inject.Singleton
 
+
 /**
  * Retrofit API declaration for FDC (Food Data Central) API
  */
@@ -21,6 +22,8 @@ private interface RetrofitFoodApi {
     @GET(value = "foods/list")
     suspend fun getAllFood(
         @Query("sortBy") sortBy: String? = "lowercaseDescription.keyword",
+        @Query("pageSize") pageSize: Int?,
+        @Query("pageNumber") pageNumber: Int?,
         @Query("sortOrder") sortOrder: String? = "asc",
         @Query("api_key") api_key: String? = BuildConfig.FDC_API_KEY
     ): List<NetworkFood>
@@ -39,7 +42,7 @@ private data class NetworkResponse<T>(
 )
 
 /**
- * [Retrofit] backed [FoodRemoteDataSource]
+ * [Retrofit] backend [FoodRemoteDataSource]
  */
 @Singleton
 class FoodRetrofitDataSource @Inject constructor(
@@ -55,5 +58,9 @@ class FoodRetrofitDataSource @Inject constructor(
         .build()
         .create(RetrofitFoodApi::class.java)
 
-    override suspend fun getAllFood(): List<NetworkFood> = networkApi.getAllFood()
+    override suspend fun getPagedFoodData(
+        dataPageSize: Int,
+        dataPageIndex: Int
+    ): List<NetworkFood> =
+        networkApi.getAllFood(pageSize = dataPageSize, pageNumber = dataPageIndex)
 }
