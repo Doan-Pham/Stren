@@ -32,8 +32,8 @@ import timber.log.Timber
 internal fun FoodRoute(
     modifier: Modifier = Modifier,
     viewModel: FoodViewModel = hiltViewModel(),
-    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {},
-    onNavigateToFoodDetailScreen: (exerciseId: String) -> Unit = {},
+    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
+    onNavigateToFoodDetailScreen: (foodId: String) -> Unit,
 ) {
     var shouldShowFilterSheet by rememberSaveable { mutableStateOf(false) }
     val pagedFoodData = viewModel.pagedFoodData.collectAsLazyPagingItems()
@@ -63,13 +63,14 @@ internal fun FoodRoute(
 //        onLabelSelected = { chosenLabel -> viewModel.toggleMuscleGroupSelection(chosenLabel.id) },
 //    )
 
-    val exercisesAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
+    val foodAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons =
         listOf(
             IconButtonInfo(
                 drawableResourceId = R.drawable.ic_search,
                 description = "MenuItem-Search",
                 clickHandler = {
+                    // TODO: Search
 //                    val searchBarConfiguration = AppBarConfiguration.SearchAppBar(
 //                        text = viewModel.searchBarText,
 //                        placeholder = "Search food",
@@ -79,15 +80,11 @@ internal fun FoodRoute(
 //                        onSearchClicked = { viewModel.searchFoodByName(it) })
 //                    appBarConfigurationChangeHandler(searchBarConfiguration)
                 }),
-            IconButtonInfo(
-                drawableResourceId = R.drawable.ic_filter,
-                description = "MenuItem-Filter",
-                clickHandler = { shouldShowFilterSheet = true })
         )
     )
     var isAppBarConfigured by remember { mutableStateOf(false) }
     if (!isAppBarConfigured) {
-        appBarConfigurationChangeHandler(exercisesAppBarConfiguration)
+        appBarConfigurationChangeHandler(foodAppBarConfiguration)
         isAppBarConfigured = true
     }
 
@@ -113,7 +110,7 @@ internal fun FoodScreen(
 //    filterStandards: List<FilterStandard> = listOf(),
 //    onResetFilters: () -> Unit,
 //    onApplyFilters: () -> Unit,
-    onNavigateToFoodDetailScreen: (exerciseId: String) -> Unit,
+    onNavigateToFoodDetailScreen: (foodId: String) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier
@@ -193,7 +190,7 @@ internal fun FoodScreen(
 private fun FoodItem(
     modifier: Modifier = Modifier,
     food: Food,
-    onClickHandler: (exerciseId: String) -> Unit
+    onClickHandler: (foodId: String) -> Unit
 ) {
     Row(
         modifier = Modifier
