@@ -6,6 +6,7 @@ import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
+import com.haidoan.android.stren.core.designsystem.component.TabLayout
 import com.haidoan.android.stren.feat.trainining.exercises.ExercisesRoute
 import com.haidoan.android.stren.feat.trainining.exercises.navigation.exerciseGraph
 import com.haidoan.android.stren.feat.trainining.exercises.navigation.navigateToExerciseDetail
@@ -29,7 +30,7 @@ fun NavGraphBuilder.trainingGraph(
 ) {
     navigation(startDestination = TRAINING_GRAPH_STARTING_ROUTE, route = TRAINING_GRAPH_ROUTE) {
         composable(route = TRAINING_GRAPH_STARTING_ROUTE) {
-            TrainingTabsScreen(
+            TabLayout(
                 tabNamesAndScreenComposables = listOf(
                     Pair("Exercises") {
                         ExercisesRoute(
