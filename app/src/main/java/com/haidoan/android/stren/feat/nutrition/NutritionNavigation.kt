@@ -15,10 +15,6 @@ import com.haidoan.android.stren.core.designsystem.component.TabLayout
 import com.haidoan.android.stren.feat.nutrition.food.FoodRoute
 import com.haidoan.android.stren.feat.nutrition.food.foodGraph
 import com.haidoan.android.stren.feat.nutrition.food.navigateToFoodDetail
-import com.haidoan.android.stren.feat.training.history.log_workout.navigateToAddWorkoutWithRoutine
-import com.haidoan.android.stren.feat.training.routines.RoutinesRoute
-import com.haidoan.android.stren.feat.training.routines.navigateToRoutineGraph
-import com.haidoan.android.stren.feat.training.routines.routineGraph
 
 
 const val NUTRITION_GRAPH_ROUTE = "nutrition_graph_route"
@@ -50,43 +46,12 @@ fun NavGraphBuilder.nutritionGraph(
                                 navController.navigateToFoodDetail(it)
                             })
                     },
-                    Pair("Routines") {
-                        RoutinesRoute(
-                            appBarConfigurationChangeHandler = {
-                                appBarConfigurationChangeHandler(it)
-                            },
-                            onNavigateToAddRoutineScreen = { userId ->
-                                navController.navigateToRoutineGraph(
-                                    userId = userId,
-                                    isAddingRoutine = true
-                                )
-                            },
-                            onNavigateToEditRoutineScreen = { userId, routineId ->
-                                navController.navigateToRoutineGraph(
-                                    isAddingRoutine = false,
-                                    userId = userId,
-                                    routineId = routineId
-                                )
-                            },
-                            onNavigateToAddWorkoutScreen = { userId, routineId ->
-                                navController.navigateToAddWorkoutWithRoutine(
-                                    userId = userId,
-                                    routineId = routineId
-                                )
-                            }
-                        )
-                    },
                 )
             )
         }
 
         foodGraph(
             navController = navController,
-            appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
-        )
-
-        routineGraph(
-            navController,
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
         )
     }
