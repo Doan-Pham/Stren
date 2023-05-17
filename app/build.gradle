@@ -60,7 +60,7 @@ android {
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.10.0'
+    implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
     implementation "androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version"
     implementation 'androidx.activity:activity-compose:1.7.1'
@@ -108,6 +108,13 @@ dependencies {
 
     // CALENDAR UI
     implementation "com.kizitonwose.calendar:compose:$calendar_ui_version"
+
+    // RETROFIT
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.okhttp3:logging-interceptor:3.4.1"
+    implementation "com.squareup.okhttp3:okhttps:3.4.1"
+    implementation "com.google.code.gson:gson:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
 
     // TEST
     testImplementation 'junit:junit:4.13.2'
