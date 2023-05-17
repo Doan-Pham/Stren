@@ -4,6 +4,7 @@ plugins {
     id 'com.google.gms.google-services'
     id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.8.21'
 }
 
 android {
@@ -30,6 +31,11 @@ android {
         resValue "string", "FACEBOOK_LOGIN_PROTOCOL_SCHEME", "\"${properties.getProperty("FACEBOOK_LOGIN_PROTOCOL_SCHEME")}\""
         resValue "string", "FACEBOOK_CLIENT_TOKEN", "\"${properties.getProperty("FACEBOOK_CLIENT_TOKEN")}\""
         resValue "string", "GOOGLE_WEB_CLIENT_ID", "\"${properties.getProperty("GOOGLE_WEB_CLIENT_ID")}\""
+
+        properties = new Properties()
+        properties.load(project.rootProject.file("api_key.properties").newDataInputStream())
+        buildConfigField "String", "FDC_API_KEY", "${properties.getProperty("FDC_API_KEY")}"
+        buildConfigField "String", "FDC_API_BASE_URL", "\"https://api.nal.usda.gov/fdc/v1/\""
     }
 
     buildTypes {
@@ -49,7 +55,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.5'
+        kotlinCompilerExtensionVersion '1.4.7'
     }
     packagingOptions {
         resources {
@@ -111,10 +117,13 @@ dependencies {
 
     // RETROFIT
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
-    implementation "com.squareup.okhttp3:logging-interceptor:3.4.1"
-    implementation "com.squareup.okhttp3:okhttps:3.4.1"
     implementation "com.google.code.gson:gson:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
+    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.11.0"))
+    implementation "com.squareup.okhttp3:okhttp"
+    implementation "com.squareup.okhttp3:logging-interceptor"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1"
+    implementation "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0"
 
     // TEST
     testImplementation 'junit:junit:4.13.2'
