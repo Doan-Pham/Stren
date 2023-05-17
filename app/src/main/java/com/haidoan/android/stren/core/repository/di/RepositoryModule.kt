@@ -18,5 +18,8 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindRoutinesRepository(impl: RoutinesRepositoryImpl): RoutinesRepository
+
+    @Binds
+    abstract fun bindFoodRepository(impl: FoodRepositoryImpl): FoodRepository
 }
 
