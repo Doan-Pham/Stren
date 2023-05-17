@@ -1,6 +1,8 @@
 package com.haidoan.android.stren.app.navigation
 
 import com.haidoan.android.stren.R
+import com.haidoan.android.stren.feat.nutrition.NUTRITION_GRAPH_ROUTE
+import com.haidoan.android.stren.feat.nutrition.NUTRITION_GRAPH_STARTING_ROUTE
 import com.haidoan.android.stren.feat.training.TRAINING_GRAPH_ROUTE
 import com.haidoan.android.stren.feat.training.TRAINING_GRAPH_STARTING_ROUTE
 import com.haidoan.android.stren.feat.training.exercises.EXERCISES_SCREEN_ROUTE
@@ -30,10 +32,13 @@ enum class TopLevelDestination(
     ),
 
     NUTRITION(
-        route = "nutrition_screen",
+        route = NUTRITION_GRAPH_ROUTE,
         iconDrawableId = R.drawable.ic_nutrition,
         titleTextId = R.string.bottom_nav_title_nutrition,
-        descriptionTextId = R.string.bottom_nav_title_nutrition
+        descriptionTextId = R.string.bottom_nav_title_nutrition,
+        immediateChildDestinationRoutes = listOf(
+            NUTRITION_GRAPH_STARTING_ROUTE
+        )
     ),
 
     PROFILE(
