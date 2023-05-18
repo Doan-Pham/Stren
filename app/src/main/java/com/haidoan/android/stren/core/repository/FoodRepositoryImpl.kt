@@ -6,7 +6,9 @@ import androidx.paging.PagingData
 import com.haidoan.android.stren.core.datasource.remote.FoodPagingDataSource
 import com.haidoan.android.stren.core.datasource.remote.FoodRemoteDataSource
 import com.haidoan.android.stren.core.model.Food
+import com.haidoan.android.stren.core.network.model.asExternalModel
 import kotlinx.coroutines.flow.Flow
+import timber.log.Timber
 import javax.inject.Inject
 
 class FoodRepositoryImpl @Inject constructor(private val foodRemoteDataSource: FoodRemoteDataSource) :
@@ -20,4 +22,14 @@ class FoodRepositoryImpl @Inject constructor(private val foodRemoteDataSource: F
                 foodRemoteDataSource = foodRemoteDataSource
             )
         }).flow
+
+    override suspend fun getFoodById(id: String): Food {
+        return try {
+            Timber.d("getFoodById() is called - id: $id")
+            foodRemoteDataSource.getFoodById(id).asExternalModel()
+        } catch (exception: Exception) {
+            Timber.e("getFoodById() - exception: $exception")
+            Food.undefinedFood
+        }
+    }
 }

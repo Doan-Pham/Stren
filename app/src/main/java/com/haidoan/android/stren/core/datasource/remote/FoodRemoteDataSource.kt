@@ -8,4 +8,6 @@ interface FoodRemoteDataSource {
         dataPageSize: Int = DEFAULT_FOOD_DATA_PAGE_SIZE,
         dataPageIndex: Int = 1
     ): List<NetworkFood>
+
+    suspend fun getFoodById(id: String): NetworkFood
 }

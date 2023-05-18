@@ -8,4 +8,6 @@ const val DEFAULT_FOOD_DATA_PAGE_SIZE = 20
 
 interface FoodRepository {
     fun getPagedFoodData(pageSize: Int = DEFAULT_FOOD_DATA_PAGE_SIZE): Flow<PagingData<Food>>
+
+    suspend fun getFoodById(id: String): Food
 }

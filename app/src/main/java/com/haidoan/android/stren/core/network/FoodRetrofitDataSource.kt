@@ -10,6 +10,7 @@ import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -27,6 +28,13 @@ private interface RetrofitFoodApi {
         @Query("sortOrder") sortOrder: String? = "asc",
         @Query("api_key") api_key: String? = BuildConfig.FDC_API_KEY
     ): List<NetworkFood>
+
+    @GET(value = "food/{fdcId}")
+    suspend fun getFoodById(
+        @Path("fdcId") id: String?,
+        @Query("format") format: String? = "abridged",
+        @Query("api_key") api_key: String? = BuildConfig.FDC_API_KEY
+    ): NetworkFood
 }
 
 private const val FdaFoodBaseUrl = BuildConfig.FDC_API_BASE_URL
@@ -63,4 +71,6 @@ class FoodRetrofitDataSource @Inject constructor(
         dataPageIndex: Int
     ): List<NetworkFood> =
         networkApi.getAllFood(pageSize = dataPageSize, pageNumber = dataPageIndex)
+
+    override suspend fun getFoodById(id: String): NetworkFood = networkApi.getFoodById(id = id)
 }
