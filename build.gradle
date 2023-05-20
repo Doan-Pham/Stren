@@ -14,11 +14,13 @@ buildscript {
         paging_compose_version = '1.0.0-alpha18'
         timber_version = '5.0.1'
         retrofit_version = '2.9.0'
+        tehras_charts_version = '0.2.4-alpha'
     }
 
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
     dependencies {
         classpath 'com.google.gms:google-services:4.3.15'
