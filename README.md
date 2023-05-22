@@ -59,8 +59,13 @@ FACEBOOK_LOGIN_PROTOCOL_SCHEME = [FACEBOOK_LOGIN_PROTOCOL_SCHEME]
 FACEBOOK_CLIENT_TOKEN = [FACEBOOK_CLIENT_TOKEN]
 GOOGLE_WEB_CLIENT_ID = [GOOGLE_WEB_CLIENT_ID]
 ```
-4. Click Build -> Rebuild Project.
-5. Click Run -> Run 'app'
+4. Get an API Key for FDC following this guide: https://fdc.nal.usda.gov/api-guide.html (Part 3 - Gaining Access)
+5. Add a "api_key.properties" file in the root project directory with the following content:
+```
+FDC_API_KEY = "[THE_API_KEY_YOU_JUST_GET]"
+```
+6. Click Build -> Rebuild Project.
+7. Click Run -> Run 'app'
 
 ## Architecture
 The application's architecture follows the MVVM pattern based on [Now In Android's](https://github.com/android/nowinandroid/tree/main) [Architecture Learning Journey](https://github.com/android/nowinandroid/blob/main/docs/ArchitectureLearningJourney.md) but without a local database and support for offline usage.
