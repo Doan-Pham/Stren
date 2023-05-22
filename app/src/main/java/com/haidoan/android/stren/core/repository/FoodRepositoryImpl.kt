@@ -11,15 +11,18 @@ import kotlinx.coroutines.flow.Flow
 import timber.log.Timber
 import javax.inject.Inject
 
-class FoodRepositoryImpl @Inject constructor(private val foodRemoteDataSource: FoodRemoteDataSource) :
+class FoodRepositoryImpl @Inject constructor(
+    private val foodRemoteDataSource: FoodRemoteDataSource
+) :
     FoodRepository {
-    override fun getPagedFoodData(pageSize: Int): Flow<PagingData<Food>> =
+    override fun getPagedFoodData(pageSize: Int, foodNameToQuery: String): Flow<PagingData<Food>> =
         Pager(config = PagingConfig(
             pageSize = pageSize,
         ), pagingSourceFactory = {
             FoodPagingDataSource(
                 pageSize = pageSize,
-                foodRemoteDataSource = foodRemoteDataSource
+                foodRemoteDataSource = foodRemoteDataSource,
+                foodNameToQuery = foodNameToQuery
             )
         }).flow
 
