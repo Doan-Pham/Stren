@@ -2,8 +2,13 @@ package com.haidoan.android.stren.core.network
 
 import com.haidoan.android.stren.BuildConfig
 import com.haidoan.android.stren.core.datasource.remote.FoodRemoteDataSource
+import com.haidoan.android.stren.core.network.di.IoDispatcher
 import com.haidoan.android.stren.core.network.model.NetworkFood
+import com.haidoan.android.stren.core.network.model.NetworkFoodNutrient.*
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.Call
@@ -12,6 +17,7 @@ import retrofit2.Retrofit
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,19 +28,25 @@ import javax.inject.Singleton
 private interface RetrofitFoodApi {
     @GET(value = "foods/list")
     suspend fun getAllFood(
-        @Query("sortBy") sortBy: String? = "lowercaseDescription.keyword",
         @Query("pageSize") pageSize: Int?,
         @Query("pageNumber") pageNumber: Int?,
-        @Query("sortOrder") sortOrder: String? = "asc",
         @Query("api_key") api_key: String? = BuildConfig.FDC_API_KEY
-    ): List<NetworkFood>
+    ): List<NetworkFood<DefaultNetworkFoodNutrient>>
+
+    @GET(value = "foods/search")
+    suspend fun getAllFoodByName(
+        @Query("query") query: String?,
+        @Query("pageSize") pageSize: Int?,
+        @Query("pageNumber") pageNumber: Int?,
+        @Query("api_key") api_key: String? = BuildConfig.FDC_API_KEY
+    ): NetworkFoodSearchResponse
 
     @GET(value = "food/{fdcId}")
     suspend fun getFoodById(
         @Path("fdcId") id: String?,
         @Query("format") format: String? = "abridged",
         @Query("api_key") api_key: String? = BuildConfig.FDC_API_KEY
-    ): NetworkFood
+    ): NetworkFood<DefaultNetworkFoodNutrient>
 }
 
 private const val FdaFoodBaseUrl = BuildConfig.FDC_API_BASE_URL
@@ -49,11 +61,20 @@ private data class NetworkResponse<T>(
     val data: T,
 )
 
+@Serializable
+private data class NetworkFoodSearchResponse(
+    val totalHits: Int,
+    val currentPage: Int,
+    @SerialName("foods")
+    val foods: List<NetworkFood<SearchResultNetworkFoodNutrient>>
+)
+
 /**
  * [Retrofit] backend [FoodRemoteDataSource]
  */
 @Singleton
 class FoodRetrofitDataSource @Inject constructor(
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     networkJson: Json,
     okhttpCallFactory: Call.Factory,
 ) : FoodRemoteDataSource {
@@ -69,8 +90,25 @@ class FoodRetrofitDataSource @Inject constructor(
     override suspend fun getPagedFoodData(
         dataPageSize: Int,
         dataPageIndex: Int
-    ): List<NetworkFood> =
+    ): List<NetworkFood<DefaultNetworkFoodNutrient>> =
         networkApi.getAllFood(pageSize = dataPageSize, pageNumber = dataPageIndex)
 
-    override suspend fun getFoodById(id: String): NetworkFood = networkApi.getFoodById(id = id)
+    override suspend fun getPagedFoodDataByName(
+        dataPageSize: Int,
+        dataPageIndex: Int,
+        foodName: String
+    ): List<NetworkFood<SearchResultNetworkFoodNutrient>> =
+        withContext(ioDispatcher) {
+            val response = networkApi.getAllFoodByName(
+                query = foodName,
+                pageSize = dataPageSize,
+                pageNumber = dataPageIndex,
+            )
+            Timber.d("food: $response")
+            response.foods
+        }
+
+
+    override suspend fun getFoodById(id: String): NetworkFood<DefaultNetworkFoodNutrient> =
+        networkApi.getFoodById(id = id)
 }
