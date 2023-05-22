@@ -3,6 +3,8 @@ package com.haidoan.android.stren.feat.nutrition.food
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +30,7 @@ import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.component.LoadingAnimation
 import com.haidoan.android.stren.core.model.Food
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 
@@ -39,6 +42,8 @@ internal fun FoodRoute(
     onNavigateToFoodDetailScreen: (foodId: String) -> Unit,
 ) {
     val pagedFoodData = viewModel.pagedFoodData.collectAsLazyPagingItems()
+    val lazyListState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
     val foodAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons =
@@ -53,7 +58,12 @@ internal fun FoodRoute(
                         onTextChange = {
                             viewModel.searchBarText.value = it
                         },
-                        onSearchClicked = { viewModel.searchFoodByName(it) })
+                        onSearchClicked = {
+                            viewModel.searchFoodByName(it)
+                            coroutineScope.launch {
+                                lazyListState.animateScrollToItem(0, 0)
+                            }
+                        })
                     appBarConfigurationChangeHandler(searchBarConfiguration)
                 }),
         )
@@ -67,7 +77,8 @@ internal fun FoodRoute(
     FoodScreen(
         modifier = modifier,
         pagedFoodData = pagedFoodData,
-        onNavigateToFoodDetailScreen = onNavigateToFoodDetailScreen
+        onNavigateToFoodDetailScreen = onNavigateToFoodDetailScreen,
+        lazyListState = lazyListState
     )
 }
 
@@ -76,11 +87,13 @@ internal fun FoodScreen(
     modifier: Modifier = Modifier,
     pagedFoodData: LazyPagingItems<Food>,
     onNavigateToFoodDetailScreen: (foodId: String) -> Unit,
+    lazyListState: LazyListState
 ) {
 
     LazyColumn(
         modifier = modifier
             .fillMaxSize(),
+        state = lazyListState
     )
     {
 
@@ -207,7 +220,7 @@ private fun EmptyScreen(
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "Please try again",
+                text = "Please try again with a different food name",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center
             )
