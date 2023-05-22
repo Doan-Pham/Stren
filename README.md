@@ -26,12 +26,15 @@
 ## Key Features
 ### Available
 * Signup with Facebook, Gmail
-### Work in Progress
 * View information of more than 800 exercises
-### TODO
 * View workout history
 * Log workout
-* View food's nutritional value
+* View foods' nutritional value
+### Work in Progress
+* Track nutrition and calories
+### TODO
+* View nutrition and training progress
+* Record body measurements and view progress
 * Log meals and track calories
 * Track training and body measurements progess
 
@@ -83,8 +86,10 @@ The application's conventions loosely follow the following guidelines:
 - Dependency Injection: [Hilt](https://dagger.dev/hilt/).
 - Pagination: [Paging 3](https://developer.android.com/topic/libraries/architecture/paging/v3-overview).
 - Testing: [JUnit](https://junit.org/junit4/).
+- Network: [Retrofit](https://square.github.io/retrofit/), [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization).
 - Authentication, Database and Storage: [Firebase](https://firebase.google.com/).
 - Exercise Dataset: [free-exercise-db](https://github.com/yuhonas/free-exercise-db).
+- Food Dataset: [FoodData Central API](https://fdc.nal.usda.gov/api-guide.html).
 - Upload Dataset to Firebase: [firestore-backup-restore](https://github.com/dalenguyen/firestore-backup-restore).
 - Icons: [Severicons](https://www.figma.com/community/file/929620430222653376/Severicons---Essential-icon-set).
 
