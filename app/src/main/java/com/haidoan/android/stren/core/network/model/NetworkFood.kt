@@ -4,13 +4,20 @@ import com.haidoan.android.stren.core.model.Food
 import com.haidoan.android.stren.core.model.FoodNutrient
 import com.haidoan.android.stren.core.model.FoodNutrient.Companion.undefinedFoodNutrient
 import com.haidoan.android.stren.core.utils.StringFormatUtils.capitalizeFirstChar
+import kotlinx.serialization.SerialName
 
 
+/**
+ *  [NetworkFoodNutrient] is an interface so it doesn't hold any Serialization info,
+ *  so parameterizing this class with a subtype of NetworkFoodNutrient allows developer
+ *  to decide which subtype to use depending on the serialization strategy (Ex: Different
+ *  schemas for different use cases)
+ */
 @kotlinx.serialization.Serializable
-data class NetworkFood(
+data class NetworkFood<T : NetworkFoodNutrient>(
     val fdcId: Long,
     val description: String,
-    val foodNutrients: List<NetworkFoodNutrient> = listOf()
+    val foodNutrients: List<T> = listOf()
 )
 
 /**
@@ -22,7 +29,7 @@ private val coreNutrients =
     listOf("Protein", "Total lipid (fat)", "Carbohydrate, by difference")
 private const val caloriesApiField = "Energy"
 
-fun NetworkFood.asExternalModel() =
+fun <T : NetworkFoodNutrient> NetworkFood<T>.asExternalModel() =
     Food(
         id = fdcId.toString(),
         name = description.capitalizeFirstChar(),
@@ -36,9 +43,38 @@ fun NetworkFood.asExternalModel() =
             .filterNot { it.name in coreNutrients && it.name != caloriesApiField }
             .map { it.asExternalModel() })
 
+/**
+ * Food API returns data of different schema depending on use case, but creating
+ * new model class will force rewriting a lot of code to use the new class.
+ * Instead, extend this interface (which application already depends on from the start). Each child
+ * class represents a different schema
+ */
+sealed interface NetworkFoodNutrient {
+    val name: String
+    val amount: Float
+    val unitName: String
 
-@kotlinx.serialization.Serializable
-data class NetworkFoodNutrient(val name: String, val amount: Float, val unitName: String)
+    @kotlinx.serialization.Serializable
+    data class DefaultNetworkFoodNutrient(
+        @SerialName("name")
+        override val name: String,
+        @SerialName("amount")
+        override val amount: Float,
+        @SerialName("unitName")
+        override val unitName: String
+    ) : NetworkFoodNutrient
+
+    @kotlinx.serialization.Serializable
+    data class SearchResultNetworkFoodNutrient(
+        @SerialName("nutrientName")
+        override val name: String,
+        @SerialName("value")
+        override val amount: Float,
+        @SerialName("unitName")
+        override val unitName: String
+    ) : NetworkFoodNutrient
+}
+
 
 /**
  * Nutrient name taken straight from the FDC API is quite lengthy, so this helps
