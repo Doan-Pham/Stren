@@ -70,15 +70,14 @@ internal fun FoodRoute(
                 drawableResourceId = R.drawable.ic_search,
                 description = "MenuItem-Search",
                 clickHandler = {
-                    // TODO: Search
-//                    val searchBarConfiguration = AppBarConfiguration.SearchAppBar(
-//                        text = viewModel.searchBarText,
-//                        placeholder = "Search food",
-//                        onTextChange = {
-//
-//                        },
-//                        onSearchClicked = { viewModel.searchFoodByName(it) })
-//                    appBarConfigurationChangeHandler(searchBarConfiguration)
+                    val searchBarConfiguration = AppBarConfiguration.SearchAppBar(
+                        text = viewModel.searchBarText,
+                        placeholder = "Search food",
+                        onTextChange = {
+                            viewModel.searchBarText.value = it
+                        },
+                        onSearchClicked = { viewModel.searchFoodByName(it) })
+                    appBarConfigurationChangeHandler(searchBarConfiguration)
                 }),
         )
     )

@@ -11,7 +11,8 @@ import timber.log.Timber
 
 class FoodPagingDataSource(
     private val pageSize: Int = DEFAULT_FOOD_DATA_PAGE_SIZE,
-    private val foodRemoteDataSource: FoodRemoteDataSource
+    private val foodRemoteDataSource: FoodRemoteDataSource,
+    private val foodNameToQuery: String
 ) : PagingSource<Int, Food>() {
     override fun getRefreshKey(state: PagingState<Int, Food>): Int? {
         return state.anchorPosition?.let { anchorPosition ->
@@ -26,7 +27,18 @@ class FoodPagingDataSource(
             val nextPageNumber = params.key ?: 1
             Timber.d("nextPageNumber:$nextPageNumber ")
 
-            val response = foodRemoteDataSource.getPagedFoodData(dataPageIndex = nextPageNumber)
+
+            val response =
+                if (foodNameToQuery.isEmpty() || foodNameToQuery.isBlank()) {
+                    foodRemoteDataSource.getPagedFoodData(
+                        dataPageIndex = nextPageNumber
+                    )
+                } else {
+                    foodRemoteDataSource.getPagedFoodDataByName(
+                        foodName = foodNameToQuery,
+                        dataPageIndex = nextPageNumber
+                    )
+                }
             Timber.d("response - size:${response.size}")
 
             return LoadResult.Page(
