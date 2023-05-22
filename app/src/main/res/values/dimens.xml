@@ -13,4 +13,5 @@
     <dimen name="icon_size_large">32dp</dimen>
     <dimen name="icon_size_extra_large">40dp</dimen>
     <dimen name="icon_size_extra_extra_large">48dp</dimen>
+    <dimen name="icon_size_whole_screen">72dp</dimen>
 </resources>
