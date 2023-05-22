@@ -4,26 +4,29 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
-import androidx.paging.compose.*
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import coil.compose.AsyncImage
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
-import com.haidoan.android.stren.core.designsystem.component.*
+import com.haidoan.android.stren.core.designsystem.component.LoadingAnimation
 import com.haidoan.android.stren.core.model.Food
 import timber.log.Timber
 
@@ -35,33 +38,7 @@ internal fun FoodRoute(
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onNavigateToFoodDetailScreen: (foodId: String) -> Unit,
 ) {
-    var shouldShowFilterSheet by rememberSaveable { mutableStateOf(false) }
     val pagedFoodData = viewModel.pagedFoodData.collectAsLazyPagingItems()
-//
-//    val exerciseCategories by viewModel.exerciseCategories.collectAsStateWithLifecycle()
-//    val exerciseCategoryFilter = FilterStandard(
-//        standardName = "Category",
-//        filterLabels = exerciseCategories.map {
-//            FilterLabel(
-//                it.category.id,
-//                it.category.name,
-//                it.isSelected
-//            )
-//        },
-//        onLabelSelected = { chosenLabel -> viewModel.toggleCategorySelection(chosenLabel.id) },
-//    )
-//    val muscleGroups by viewModel.muscleGroups.collectAsStateWithLifecycle()
-//    val muscleGroupFilter = FilterStandard(
-//        standardName = "Muscle group",
-//        filterLabels = muscleGroups.map {
-//            FilterLabel(
-//                it.muscleGroup.id,
-//                it.muscleGroup.name,
-//                it.isSelected
-//            )
-//        },
-//        onLabelSelected = { chosenLabel -> viewModel.toggleMuscleGroupSelection(chosenLabel.id) },
-//    )
 
     val foodAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons =
@@ -90,32 +67,23 @@ internal fun FoodRoute(
     FoodScreen(
         modifier = modifier,
         pagedFoodData = pagedFoodData,
-        shouldShowFilterSheet = shouldShowFilterSheet,
-        onHideFilterSheet = { shouldShowFilterSheet = false },
-//        filterStandards = listOf(exerciseCategoryFilter, muscleGroupFilter),
-//        onResetFilters = viewModel::resetFilters,
-//        onApplyFilters = viewModel::applyFilters,
         onNavigateToFoodDetailScreen = onNavigateToFoodDetailScreen
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun FoodScreen(
     modifier: Modifier = Modifier,
     pagedFoodData: LazyPagingItems<Food>,
-    shouldShowFilterSheet: Boolean = false,
-    onHideFilterSheet: () -> Unit = {},
-//    filterStandards: List<FilterStandard> = listOf(),
-//    onResetFilters: () -> Unit,
-//    onApplyFilters: () -> Unit,
     onNavigateToFoodDetailScreen: (foodId: String) -> Unit,
 ) {
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize(),
     )
     {
+
         this.items(
             count = pagedFoodData.itemCount,
             key = pagedFoodData.itemKey(),
@@ -134,9 +102,10 @@ internal fun FoodScreen(
             }
         }
         Timber.d("itemCount : ${pagedFoodData.itemCount}")
-
         when (pagedFoodData.loadState.append) {
-            is LoadState.NotLoading -> Unit
+            is LoadState.NotLoading -> {
+                Timber.d("loadState - append: ${pagedFoodData.loadState.append}")
+            }
             is LoadState.Loading -> {
                 Timber.d("loadState - append: ${pagedFoodData.loadState.append}")
                 item {
@@ -154,7 +123,14 @@ internal fun FoodScreen(
         }
 
         when (pagedFoodData.loadState.refresh) {
-            is LoadState.NotLoading -> Unit
+            is LoadState.NotLoading -> {
+                if (pagedFoodData.itemCount == 0) {
+                    item {
+                        EmptyScreen(modifier = Modifier.fillParentMaxSize())
+                    }
+                }
+                Timber.d("loadState - refresh: ${pagedFoodData.loadState.refresh}")
+            }
             is LoadState.Loading -> {
                 Timber.d("loadState - refresh: ${pagedFoodData.loadState.refresh}")
                 item {
@@ -169,20 +145,8 @@ internal fun FoodScreen(
             }
             is LoadState.Error -> TODO()
         }
+
     }
-
-//    if (shouldShowFilterSheet) {
-//        FilterModalBottomSheet(
-//            onDismissRequest = onHideFilterSheet,
-//            bottomSheetState = rememberModalBottomSheetState(
-//                skipPartiallyExpanded = true
-//            ),
-//            filterStandards = filterStandards,
-//            onResetFilters = onResetFilters,
-//            onApplyFilters = onApplyFilters
-//        )
-//    }
-
 }
 
 @Composable
@@ -212,6 +176,41 @@ private fun FoodItem(
         Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
         Column {
             Text(text = food.name, style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
+
+
+@Composable
+private fun EmptyScreen(
+    modifier: Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_whole_screen)),
+                painter = painterResource(id = R.drawable.ic_circle_question_mark),
+                contentDescription = "Icon edit"
+            )
+            Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_small)))
+            Text(
+                text = "No food found",
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = "Please try again",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
