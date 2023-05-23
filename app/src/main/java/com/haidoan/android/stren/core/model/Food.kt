@@ -7,7 +7,8 @@ data class Food(
     val name: String,
     val calories: FoodNutrient,
     val coreNutrients: List<FoodNutrient>,
-    val otherNutrients: List<FoodNutrient>
+    val otherNutrients: List<FoodNutrient>,
+    val brandName: String = "",
 ) {
     companion object {
         val undefinedFood = Food(

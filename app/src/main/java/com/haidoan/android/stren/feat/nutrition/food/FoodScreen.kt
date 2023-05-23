@@ -189,6 +189,10 @@ private fun FoodItem(
         Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
         Column {
             Text(text = food.name, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = if (food.brandName.isNotEmpty()) "Brand: ${food.brandName}" else "",
+                style = MaterialTheme.typography.labelMedium
+            )
         }
     }
 }
