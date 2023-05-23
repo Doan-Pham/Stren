@@ -19,6 +19,35 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Each nutrient is defined by a "number" in the FDC API,
+ */
+private val nutrientNameByNumber = mapOf(
+    208 to "Energy",
+    203 to "Protein",
+    205 to "Carbohydrate, by difference",
+    204 to "Total lipid (fat)",
+    291 to "Fiber, total dietary",
+    320 to "Vitamin A, RAE",
+    255 to "Water",
+    415 to "Vitamin B-6",
+    418 to "Vitamin B-12",
+    401 to "Vitamin C, total ascorbic acid",
+    328 to "Vitamin D (D2 + D3)",
+    323 to "Vitamin E (alpha-tocopherol)",
+    430 to "Vitamin K (phylloquinone)",
+    301 to "Calcium, Ca",
+    303 to "Iron, Fe",
+    307 to "Sodium, Na",
+    306 to "Potassium, K",
+    305 to "Phosphorus, P",
+    304 to "Magnesium, Mg",
+    309 to "Zinc, Zn",
+    269 to "Sugars, total including NLEA",
+    601 to "Cholesterol",
+    262 to "Caffeine",
+    221 to "Alcohol"
+)
 
 /**
  * Retrofit API declaration for FDC (Food Data Central) API
@@ -43,6 +72,7 @@ private interface RetrofitFoodApi {
     suspend fun getFoodById(
         @Path("fdcId") id: String?,
         @Query("format") format: String? = "abridged",
+        @Query("nutrients") nutrients: List<Int> = nutrientNameByNumber.keys.toList(),
         @Query("api_key") api_key: String? = BuildConfig.FDC_API_KEY
     ): NetworkFood<NetworkFoodNutrient.DefaultNetworkFoodNutrient>
 }
