@@ -40,7 +40,7 @@ fun <T : NetworkFoodNutrient> NetworkFood<T>.asExternalModel() =
             .filter { it.name in coreNutrients }
             .map { it.asExternalModel() },
         otherNutrients = foodNutrients
-            .filterNot { it.name in coreNutrients && it.name != caloriesApiField }
+            .filter { it.name !in coreNutrients && it.name != caloriesApiField }
             .map { it.asExternalModel() })
 
 /**
