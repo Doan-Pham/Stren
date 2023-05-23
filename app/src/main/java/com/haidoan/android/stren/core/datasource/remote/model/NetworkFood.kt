@@ -3,6 +3,7 @@ package com.haidoan.android.stren.core.datasource.remote.model
 import com.haidoan.android.stren.core.model.Food
 import com.haidoan.android.stren.core.model.FoodNutrient
 import com.haidoan.android.stren.core.model.FoodNutrient.Companion.undefinedFoodNutrient
+import com.haidoan.android.stren.core.utils.StringFormatUtils.capitalizeEveryWord
 import com.haidoan.android.stren.core.utils.StringFormatUtils.capitalizeFirstChar
 import kotlinx.serialization.SerialName
 
@@ -17,7 +18,8 @@ import kotlinx.serialization.SerialName
 data class NetworkFood<T : NetworkFoodNutrient>(
     val fdcId: Long,
     val description: String,
-    val foodNutrients: List<T> = listOf()
+    val foodNutrients: List<T> = listOf(),
+    val brandName: String = ""
 )
 
 /**
@@ -41,7 +43,9 @@ fun <T : NetworkFoodNutrient> NetworkFood<T>.asExternalModel() =
             .map { it.asExternalModel() },
         otherNutrients = foodNutrients
             .filter { it.name !in coreNutrients && it.name != caloriesApiField }
-            .map { it.asExternalModel() })
+            .map { it.asExternalModel() },
+        brandName = brandName.capitalizeEveryWord()
+    )
 
 /**
  * Food API returns data of different schema depending on use case, but creating

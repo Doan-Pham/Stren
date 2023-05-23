@@ -34,8 +34,10 @@ internal fun FoodDetailRoute(
 
     var isAppBarConfigured by remember { mutableStateOf(false) }
     if (!isAppBarConfigured && uiState is FoodDetailUiState.LoadComplete) {
+        val food = (uiState as FoodDetailUiState.LoadComplete).food
         val foodAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
-            title = (uiState as FoodDetailUiState.LoadComplete).food.name,
+            title = food.name +
+                    if (food.brandName.isEmpty()) "" else "(${food.brandName})",
             navigationIcon = IconButtonInfo.BACK_ICON.copy(clickHandler = onBackToPreviousScreen)
         )
         appBarConfigurationChangeHandler(foodAppBarConfiguration)
