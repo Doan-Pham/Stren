@@ -1,10 +1,11 @@
-package com.haidoan.android.stren.core.datasource.remote
+package com.haidoan.android.stren.core.repository.impl
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.haidoan.android.stren.core.datasource.remote.base.FoodRemoteDataSource
+import com.haidoan.android.stren.core.datasource.remote.model.asExternalModel
 import com.haidoan.android.stren.core.model.Food
-import com.haidoan.android.stren.core.network.model.asExternalModel
-import com.haidoan.android.stren.core.repository.DEFAULT_FOOD_DATA_PAGE_SIZE
+import com.haidoan.android.stren.core.repository.base.DEFAULT_FOOD_DATA_PAGE_SIZE
 import okio.IOException
 import retrofit2.HttpException
 import timber.log.Timber

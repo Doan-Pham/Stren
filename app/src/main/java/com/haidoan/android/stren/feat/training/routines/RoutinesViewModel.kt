@@ -4,7 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.model.Routine
-import com.haidoan.android.stren.core.repository.RoutinesRepository
+import com.haidoan.android.stren.core.repository.base.RoutinesRepository
 import com.haidoan.android.stren.core.service.AuthenticationService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi

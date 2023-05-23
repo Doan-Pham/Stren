@@ -1,14 +1,15 @@
-package com.haidoan.android.stren.core.datasource.remote
+package com.haidoan.android.stren.core.datasource.remote.impl
 
 import com.google.firebase.firestore.*
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.haidoan.android.stren.core.datasource.remote.base.ExercisesRemoteDataSource
 import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.model.ExerciseFilterStandards
 import com.haidoan.android.stren.core.model.MuscleGroup
-import com.haidoan.android.stren.core.repository.ExerciseExtraFilter
-import com.haidoan.android.stren.core.repository.QueryWrapper
+import com.haidoan.android.stren.core.repository.impl.ExerciseExtraFilter
+import com.haidoan.android.stren.core.repository.impl.QueryWrapper
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import javax.inject.Inject

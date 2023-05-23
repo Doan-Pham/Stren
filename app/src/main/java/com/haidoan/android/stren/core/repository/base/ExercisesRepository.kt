@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.core.repository
+package com.haidoan.android.stren.core.repository.base
 
 import androidx.paging.PagingData
 import com.haidoan.android.stren.core.model.Exercise

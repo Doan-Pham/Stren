@@ -1,10 +1,8 @@
-package com.haidoan.android.stren.core.network
+package com.haidoan.android.stren.core.datasource.remote.model
 
 import com.haidoan.android.stren.BuildConfig
-import com.haidoan.android.stren.core.datasource.remote.FoodRemoteDataSource
-import com.haidoan.android.stren.core.network.di.IoDispatcher
-import com.haidoan.android.stren.core.network.model.NetworkFood
-import com.haidoan.android.stren.core.network.model.NetworkFoodNutrient.*
+import com.haidoan.android.stren.core.datasource.remote.base.FoodRemoteDataSource
+import com.haidoan.android.stren.core.datasource.remote.di.IoDispatcher
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -31,7 +29,7 @@ private interface RetrofitFoodApi {
         @Query("pageSize") pageSize: Int?,
         @Query("pageNumber") pageNumber: Int?,
         @Query("api_key") api_key: String? = BuildConfig.FDC_API_KEY
-    ): List<NetworkFood<DefaultNetworkFoodNutrient>>
+    ): List<NetworkFood<NetworkFoodNutrient.DefaultNetworkFoodNutrient>>
 
     @GET(value = "foods/search")
     suspend fun getAllFoodByName(
@@ -46,7 +44,7 @@ private interface RetrofitFoodApi {
         @Path("fdcId") id: String?,
         @Query("format") format: String? = "abridged",
         @Query("api_key") api_key: String? = BuildConfig.FDC_API_KEY
-    ): NetworkFood<DefaultNetworkFoodNutrient>
+    ): NetworkFood<NetworkFoodNutrient.DefaultNetworkFoodNutrient>
 }
 
 private const val FdaFoodBaseUrl = BuildConfig.FDC_API_BASE_URL
@@ -66,7 +64,7 @@ private data class NetworkFoodSearchResponse(
     val totalHits: Int,
     val currentPage: Int,
     @SerialName("foods")
-    val foods: List<NetworkFood<SearchResultNetworkFoodNutrient>>
+    val foods: List<NetworkFood<NetworkFoodNutrient.SearchResultNetworkFoodNutrient>>
 )
 
 /**
@@ -90,14 +88,14 @@ class FoodRetrofitDataSource @Inject constructor(
     override suspend fun getPagedFoodData(
         dataPageSize: Int,
         dataPageIndex: Int
-    ): List<NetworkFood<DefaultNetworkFoodNutrient>> =
+    ): List<NetworkFood<NetworkFoodNutrient.DefaultNetworkFoodNutrient>> =
         networkApi.getAllFood(pageSize = dataPageSize, pageNumber = dataPageIndex)
 
     override suspend fun getPagedFoodDataByName(
         dataPageSize: Int,
         dataPageIndex: Int,
         foodName: String
-    ): List<NetworkFood<SearchResultNetworkFoodNutrient>> =
+    ): List<NetworkFood<NetworkFoodNutrient.SearchResultNetworkFoodNutrient>> =
         withContext(ioDispatcher) {
             val response = networkApi.getAllFoodByName(
                 query = foodName,
@@ -109,6 +107,6 @@ class FoodRetrofitDataSource @Inject constructor(
         }
 
 
-    override suspend fun getFoodById(id: String): NetworkFood<DefaultNetworkFoodNutrient> =
+    override suspend fun getFoodById(id: String): NetworkFood<NetworkFoodNutrient.DefaultNetworkFoodNutrient> =
         networkApi.getFoodById(id = id)
 }

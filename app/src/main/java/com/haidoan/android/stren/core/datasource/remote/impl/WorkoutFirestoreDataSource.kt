@@ -1,10 +1,11 @@
-package com.haidoan.android.stren.core.datasource.remote
+package com.haidoan.android.stren.core.datasource.remote.impl
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
+import com.haidoan.android.stren.core.datasource.remote.base.WorkoutRemoteDataSource
 import com.haidoan.android.stren.core.datasource.remote.model.FirestoreTrainedExercise
 import com.haidoan.android.stren.core.model.Workout
 import com.haidoan.android.stren.core.utils.DateUtils.toLocalDate

@@ -10,7 +10,7 @@ import androidx.paging.cachedIn
 import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.model.ExerciseFilterStandards
 import com.haidoan.android.stren.core.model.MuscleGroup
-import com.haidoan.android.stren.core.repository.ExercisesRepository
+import com.haidoan.android.stren.core.repository.base.ExercisesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*

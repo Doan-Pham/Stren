@@ -1,8 +1,8 @@
-package com.haidoan.android.stren.core.datasource.remote
+package com.haidoan.android.stren.core.datasource.remote.base
 
-import com.haidoan.android.stren.core.network.model.NetworkFood
-import com.haidoan.android.stren.core.network.model.NetworkFoodNutrient
-import com.haidoan.android.stren.core.repository.DEFAULT_FOOD_DATA_PAGE_SIZE
+import com.haidoan.android.stren.core.datasource.remote.model.NetworkFood
+import com.haidoan.android.stren.core.datasource.remote.model.NetworkFoodNutrient
+import com.haidoan.android.stren.core.repository.base.DEFAULT_FOOD_DATA_PAGE_SIZE
 
 interface FoodRemoteDataSource {
     suspend fun getPagedFoodData(

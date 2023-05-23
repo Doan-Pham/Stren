@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.core.repository
+package com.haidoan.android.stren.core.repository.impl
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState

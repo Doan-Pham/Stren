@@ -7,8 +7,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.model.*
-import com.haidoan.android.stren.core.repository.ExercisesRepository
-import com.haidoan.android.stren.core.repository.RoutinesRepository
+import com.haidoan.android.stren.core.repository.base.ExercisesRepository
+import com.haidoan.android.stren.core.repository.base.RoutinesRepository
 import com.haidoan.android.stren.feat.training.routines.AddEditRoutineArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi

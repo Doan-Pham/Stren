@@ -1,7 +1,8 @@
-package com.haidoan.android.stren.core.repository
+package com.haidoan.android.stren.core.repository.impl
 
-import com.haidoan.android.stren.core.datasource.remote.WorkoutRemoteDataSource
+import com.haidoan.android.stren.core.datasource.remote.base.WorkoutRemoteDataSource
 import com.haidoan.android.stren.core.model.Workout
+import com.haidoan.android.stren.core.repository.base.WorkoutsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow

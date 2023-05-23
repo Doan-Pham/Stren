@@ -3,7 +3,7 @@ package com.haidoan.android.stren.feat.nutrition.food.detail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.haidoan.android.stren.core.repository.FoodRepository
+import com.haidoan.android.stren.core.repository.base.FoodRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
