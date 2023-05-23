@@ -3,7 +3,7 @@ package com.haidoan.android.stren.feat.training.history
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.haidoan.android.stren.core.repository.WorkoutsRepository
+import com.haidoan.android.stren.core.repository.base.WorkoutsRepository
 import com.haidoan.android.stren.core.service.AuthenticationService
 import com.haidoan.android.stren.core.utils.DateUtils
 import dagger.hilt.android.lifecycle.HiltViewModel

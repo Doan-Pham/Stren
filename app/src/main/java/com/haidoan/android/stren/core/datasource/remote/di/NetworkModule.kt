@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.core.network.di
+package com.haidoan.android.stren.core.datasource.remote.di
 
 import com.haidoan.android.stren.BuildConfig
 import dagger.Module

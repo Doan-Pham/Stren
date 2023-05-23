@@ -8,7 +8,7 @@ import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.model.ExerciseFilterStandards
 import com.haidoan.android.stren.core.model.MuscleGroup
-import com.haidoan.android.stren.core.repository.ExercisesRepository
+import com.haidoan.android.stren.core.repository.base.ExercisesRepository
 import com.haidoan.android.stren.core.testing.data.EXERCISES_TEST_DATA
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow

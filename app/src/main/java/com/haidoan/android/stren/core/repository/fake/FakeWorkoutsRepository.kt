@@ -1,7 +1,7 @@
 package com.haidoan.android.stren.core.repository.fake
 
 import com.haidoan.android.stren.core.model.Workout
-import com.haidoan.android.stren.core.repository.WorkoutsRepository
+import com.haidoan.android.stren.core.repository.base.WorkoutsRepository
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow

@@ -1,12 +1,12 @@
-package com.haidoan.android.stren.core.repository
+package com.haidoan.android.stren.core.repository.impl
 
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.haidoan.android.stren.core.datasource.remote.FoodPagingDataSource
-import com.haidoan.android.stren.core.datasource.remote.FoodRemoteDataSource
+import com.haidoan.android.stren.core.datasource.remote.base.FoodRemoteDataSource
+import com.haidoan.android.stren.core.datasource.remote.model.asExternalModel
 import com.haidoan.android.stren.core.model.Food
-import com.haidoan.android.stren.core.network.model.asExternalModel
+import com.haidoan.android.stren.core.repository.base.FoodRepository
 import kotlinx.coroutines.flow.Flow
 import timber.log.Timber
 import javax.inject.Inject

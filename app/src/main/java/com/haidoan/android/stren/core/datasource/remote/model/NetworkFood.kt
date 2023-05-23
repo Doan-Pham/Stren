@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.core.network.model
+package com.haidoan.android.stren.core.datasource.remote.model
 
 import com.haidoan.android.stren.core.model.Food
 import com.haidoan.android.stren.core.model.FoodNutrient
