@@ -37,7 +37,7 @@ fun StrenPieChart(
     val sliceColors = listOf(Red60, Orange60, Green70)
     var sliceColorAlpha = 1f
 
-    val data = valuesByLabel.toList().mapIndexed { index, labelAndValue ->
+    val data = valuesByLabel.toList().sortedBy { it.first }.mapIndexed { index, labelAndValue ->
         if (index % sliceColors.size == 0 && sliceColorAlpha > 0) sliceColorAlpha -= 0.1f
         val currentSliceColor = sliceColors[index % sliceColors.size]
         Triple(
