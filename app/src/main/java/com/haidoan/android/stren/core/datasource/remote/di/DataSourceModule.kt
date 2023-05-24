@@ -2,10 +2,8 @@ package com.haidoan.android.stren.core.datasource.remote.di
 
 import com.haidoan.android.stren.core.datasource.*
 import com.haidoan.android.stren.core.datasource.remote.*
-import com.haidoan.android.stren.core.datasource.remote.base.ExercisesRemoteDataSource
-import com.haidoan.android.stren.core.datasource.remote.base.FoodRemoteDataSource
-import com.haidoan.android.stren.core.datasource.remote.base.RoutinesRemoteDataSource
-import com.haidoan.android.stren.core.datasource.remote.base.WorkoutRemoteDataSource
+import com.haidoan.android.stren.core.datasource.remote.base.*
+import com.haidoan.android.stren.core.datasource.remote.impl.EatingDayFirestoreDataSource
 import com.haidoan.android.stren.core.datasource.remote.impl.ExercisesFirestoreDataSource
 import com.haidoan.android.stren.core.datasource.remote.impl.RoutinesFirestoreDataSource
 import com.haidoan.android.stren.core.datasource.remote.impl.WorkoutFirestoreDataSource
@@ -29,4 +27,7 @@ abstract class DataSourceModule {
 
     @Binds
     abstract fun bindRemoteFoodDataSource(impl: FoodRetrofitDataSource): FoodRemoteDataSource
+
+    @Binds
+    abstract fun bindEatingDayRemoteDataSource(impl: EatingDayFirestoreDataSource): EatingDayRemoteDataSource
 }
