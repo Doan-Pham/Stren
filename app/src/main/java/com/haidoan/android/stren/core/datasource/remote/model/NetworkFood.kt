@@ -31,21 +31,25 @@ private val coreNutrients =
     listOf("Protein", "Total lipid (fat)", "Carbohydrate, by difference")
 private const val caloriesApiField = "Energy"
 
-fun <T : NetworkFoodNutrient> NetworkFood<T>.asExternalModel() =
-    Food(
+fun <T : NetworkFoodNutrient> NetworkFood<T>.asExternalModel(): Food {
+    val relevantNutrients =
+        foodNutrients.filter { nutrient -> nutrient.identifierNumber in relevantNutrientNameByNumber.keys.map { it.toString() } }
+    return Food(
         id = fdcId.toString(),
         name = description.capitalizeFirstChar(),
-        calories = foodNutrients
+        calories = relevantNutrients
             .firstOrNull { it.name == caloriesApiField }?.asExternalModel()
             ?: undefinedFoodNutrient,
-        coreNutrients = foodNutrients
+        coreNutrients = relevantNutrients
             .filter { it.name in coreNutrients }
             .map { it.asExternalModel() },
-        otherNutrients = foodNutrients
+        otherNutrients = relevantNutrients
             .filter { it.name !in coreNutrients && it.name != caloriesApiField }
             .map { it.asExternalModel() },
         brandName = brandName.capitalizeEveryWord()
     )
+}
+
 
 /**
  * Food API returns data of different schema depending on use case, but creating
@@ -55,27 +59,61 @@ fun <T : NetworkFoodNutrient> NetworkFood<T>.asExternalModel() =
  */
 sealed interface NetworkFoodNutrient {
     val name: String
-    val amount: Float
+    val amount: Float?
     val unitName: String
+    val identifierNumber: String
 
     @kotlinx.serialization.Serializable
     data class DefaultNetworkFoodNutrient(
+        @SerialName("unitName")
+        override val unitName: String,
         @SerialName("name")
         override val name: String,
         @SerialName("amount")
-        override val amount: Float,
-        @SerialName("unitName")
-        override val unitName: String
+        override val amount: Float? = 0f,
+        @SerialName("number")
+        override val identifierNumber: String
     ) : NetworkFoodNutrient
+
+    @kotlinx.serialization.Serializable
+    data class DetailNetworkFoodNutrient(
+        @SerialName("amount")
+        override val amount: Float? = 0f,
+        @SerialName("nutrient")
+        private val nutrientWrapper: DetailNutrientWrapper
+    ) : NetworkFoodNutrient {
+        @kotlinx.serialization.Serializable
+        data class DetailNutrientWrapper(
+            @SerialName("name")
+            val name: String,
+            @SerialName("unitName")
+            val unitName: String,
+            @SerialName("number")
+            val number: String,
+            @SerialName("rank")
+            val rank: Int
+        )
+
+        override val identifierNumber: String
+            get() = nutrientWrapper.number
+
+        override val name: String
+            get() = nutrientWrapper.name
+
+        override val unitName: String
+            get() = nutrientWrapper.unitName
+    }
 
     @kotlinx.serialization.Serializable
     data class SearchResultNetworkFoodNutrient(
         @SerialName("nutrientName")
         override val name: String,
         @SerialName("value")
-        override val amount: Float,
+        override val amount: Float = 0f,
         @SerialName("unitName")
-        override val unitName: String
+        override val unitName: String,
+        @SerialName("nutrientNumber")
+        override val identifierNumber: String
     ) : NetworkFoodNutrient
 }
 
@@ -111,7 +149,7 @@ fun NetworkFoodNutrient.asExternalModel(): FoodNutrient {
 
     return FoodNutrient(
         nutrientName = nutrientName,
-        amount = amount,
+        amount = amount ?: 0f,
         unitName = unitName
     )
 }

@@ -20,9 +20,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Each nutrient is defined by a "number" in the FDC API,
+ * In the FDC API, each nutrient is defined by a "number" and since we don't need all nutrients
+ * (Ex: those that are only relevant for research), this val's keySet represents
+ * only the needed nutrients for personal and commercial use (The nutrientName
+ * is simply for better understanding, since having only numbers is confusing)
  */
-private val nutrientNameByNumber = mapOf(
+internal val relevantNutrientNameByNumber = mapOf(
     208 to "Energy",
     203 to "Protein",
     205 to "Carbohydrate, by difference",
@@ -50,11 +53,21 @@ private val nutrientNameByNumber = mapOf(
 )
 
 /**
+ * There are different types of foods present in the FDC API, among them are the "Experimental"
+ * and "Foundation" foods which are grown and harvested in a controlled environment mainly for
+ * research, and not fit for commercial use. This list helps excludes those types of data
+ */
+private val defaultDataTypes = listOf(
+    "Branded", "Survey (FNDDS)", "SR Legacy"
+)
+
+/**
  * Retrofit API declaration for FDC (Food Data Central) API
  */
 private interface RetrofitFoodApi {
     @GET(value = "foods/list")
     suspend fun getAllFood(
+        @Query("dataType") dataType: List<String> = defaultDataTypes,
         @Query("pageSize") pageSize: Int?,
         @Query("pageNumber") pageNumber: Int?,
         @Query("api_key") api_key: String? = BuildConfig.FDC_API_KEY
@@ -63,6 +76,7 @@ private interface RetrofitFoodApi {
     @GET(value = "foods/search")
     suspend fun getAllFoodByName(
         @Query("query") query: String?,
+        @Query("dataType") dataType: List<String> = defaultDataTypes,
         @Query("pageSize") pageSize: Int?,
         @Query("pageNumber") pageNumber: Int?,
         @Query("api_key") api_key: String? = BuildConfig.FDC_API_KEY
@@ -71,8 +85,15 @@ private interface RetrofitFoodApi {
     @GET(value = "food/{fdcId}")
     suspend fun getFoodById(
         @Path("fdcId") id: String?,
+        /**
+         * If "format" is "full", Certain types of food won't include the "unitName" for some reason (Not specified in the API Spec !!!!????)
+         */
         @Query("format") format: String? = "abridged",
-        @Query("nutrients") nutrients: List<Int> = nutrientNameByNumber.keys.toList(),
+        /**
+         * This query only works for all foods if the "format" is "abridged". If "format" is "full",
+         * it'll only work for certain types of foods
+         */
+        @Query("nutrients") nutrients: List<Int>? = relevantNutrientNameByNumber.keys.toList(),
         @Query("api_key") api_key: String? = BuildConfig.FDC_API_KEY
     ): NetworkFood<NetworkFoodNutrient.DefaultNetworkFoodNutrient>
 }
