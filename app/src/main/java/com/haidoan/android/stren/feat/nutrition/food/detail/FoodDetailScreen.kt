@@ -16,7 +16,7 @@ import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.component.LoadingAnimation
-import com.haidoan.android.stren.core.designsystem.component.StrenPieChart
+import com.haidoan.android.stren.core.designsystem.component.PieChartWithLegend
 import timber.log.Timber
 import kotlin.math.roundToLong
 
@@ -74,7 +74,7 @@ internal fun FoodDetailScreen(
 
                 Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_small)))
 
-                StrenPieChart(
+                PieChartWithLegend(
                     modifier = Modifier.fillMaxWidth(),
                     valuesByLabel = currentFood.coreNutrients
                         .associate { it.nutrientName to it.amount },

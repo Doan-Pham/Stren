@@ -15,19 +15,17 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.github.tehras.charts.piechart.PieChart
 import com.github.tehras.charts.piechart.PieChartData
 import com.github.tehras.charts.piechart.animation.simpleChartAnimation
 import com.github.tehras.charts.piechart.renderer.SimpleSliceDrawer
 import com.haidoan.android.stren.R
-import com.haidoan.android.stren.core.designsystem.theme.Gray60
-import com.haidoan.android.stren.core.designsystem.theme.Green70
-import com.haidoan.android.stren.core.designsystem.theme.Orange60
-import com.haidoan.android.stren.core.designsystem.theme.Red60
+import com.haidoan.android.stren.core.designsystem.theme.*
 
 @Composable
-fun StrenPieChart(
+fun PieChartWithLegend(
     modifier: Modifier = Modifier,
     valuesByLabel: Map<String, Float>,
     valueMeasurementUnit: String,
@@ -37,59 +35,26 @@ fun StrenPieChart(
     val sliceColors = listOf(Red60, Orange60, Green70)
     var sliceColorAlpha = 1f
 
-    val data = valuesByLabel.toList().sortedBy { it.first }.mapIndexed { index, labelAndValue ->
+    val data = valuesByLabel.toList().sortedBy { it.first }.mapIndexed { index, value ->
         if (index % sliceColors.size == 0 && sliceColorAlpha > 0) sliceColorAlpha -= 0.1f
         val currentSliceColor = sliceColors[index % sliceColors.size]
         Triple(
-            labelAndValue.first,
-            labelAndValue.second,
+            value.first,
+            value.second,
             currentSliceColor
         )
     }
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(150.dp),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(modifier = Modifier.weight(1f)) {
-            PieChart(
-                modifier = modifier
-                    .fillMaxSize()
-                    .align(Alignment.Center),
-                pieChartData = PieChartData(
-                    data.map {
-                        PieChartData.Slice(
-                            it.second,
-                            it.third
-                        )
-                    }
-                ),
-                animation = simpleChartAnimation(),
-                sliceDrawer = SimpleSliceDrawer()
-            )
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .align(Alignment.Center)
-                    .padding(dimensionResource(id = R.dimen.padding_medium)),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = middleSubTitle,
-                    style = MaterialTheme.typography.labelLarge,
-                    textAlign = TextAlign.Center,
-                    color = Gray60
-                )
-                Text(
-                    text = middleTitle,
-                    style = MaterialTheme.typography.titleMedium,
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
+        StrenPieChart(
+            modifier = Modifier.weight(1f),
+            values = valuesByLabel.values.toList(),
+            middleSubTitle = middleSubTitle,
+            middleTitle = middleTitle
+        )
         Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
         Column(
             Modifier.weight(1f),
@@ -118,6 +83,80 @@ fun StrenPieChart(
             }
         }
     }
+}
 
+/**
+ * @param isShowProgress If this is false, the values provided through [values] are sufficient, and the pie chart shows the ratio between them. If true, that means the pie chart is supposed to show the progress towards
+ * a [goalValue] by subtracting the sum of [values] from [goalValue]
+ *
+ */
+@Composable
+fun StrenPieChart(
+    modifier: Modifier = Modifier,
+    values: List<Float>,
+    goalValue: Float = values.sum(),
+    isShowProgress: Boolean = false,
+    middleSubTitle: String,
+    middleTitle: String,
+    size: PieChartSize = PieChartSize.DEFAULT
+) {
+    val unreachedGoalSliceColor = Gray90
+    val sliceColors = listOf(Red60, Orange60, Green70)
+    var sliceColorAlpha = 1f
 
+    val data = values.toList().sortedBy { it }.mapIndexed { index, value ->
+        if (index % sliceColors.size == 0 && sliceColorAlpha > 0) sliceColorAlpha -= 0.1f
+        val currentSliceColor = sliceColors[index % sliceColors.size]
+        Pair(
+            value,
+            currentSliceColor
+        )
+    }.toMutableList()
+
+    if (isShowProgress && goalValue > values.sum()) {
+        data.add(Pair(goalValue - values.sum(), unreachedGoalSliceColor))
+    }
+
+    // Unless you specify a size, pie chart won't be drawn
+    Box(
+        modifier = modifier.size(size.value)
+    ) {
+        PieChart(
+            modifier = modifier,
+            pieChartData = PieChartData(
+                data.map {
+                    PieChartData.Slice(
+                        it.first,
+                        it.second
+                    )
+                }
+            ),
+            animation = simpleChartAnimation(),
+            sliceDrawer = SimpleSliceDrawer()
+        )
+        Column(
+            Modifier
+                .fillMaxSize()
+                .align(Alignment.Center),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = middleSubTitle,
+                style = MaterialTheme.typography.labelLarge,
+                textAlign = TextAlign.Center,
+                color = Gray60
+            )
+            Text(
+                text = middleTitle,
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+enum class PieChartSize(val value: Dp) {
+    MEDIUM(140.dp),
+    DEFAULT(150.dp)
 }
