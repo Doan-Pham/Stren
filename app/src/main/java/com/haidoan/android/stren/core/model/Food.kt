@@ -3,11 +3,11 @@ package com.haidoan.android.stren.core.model
 import com.haidoan.android.stren.core.model.FoodNutrient.Companion.undefinedFoodNutrient
 
 data class Food(
-    val id: String,
-    val name: String,
-    val calories: FoodNutrient,
-    val coreNutrients: List<FoodNutrient>,
-    val otherNutrients: List<FoodNutrient>,
+    val id: String = "Undefined",
+    val name: String = "Undefined ",
+    val calories: FoodNutrient = undefinedFoodNutrient,
+    val coreNutrients: List<FoodNutrient> = listOf(),
+    val otherNutrients: List<FoodNutrient> = listOf(),
     val brandName: String = "",
 ) {
     companion object {
@@ -21,7 +21,11 @@ data class Food(
     }
 }
 
-data class FoodNutrient(val nutrientName: String, val amount: Float, val unitName: String) {
+data class FoodNutrient(
+    val nutrientName: String = "Undefined",
+    val amount: Float = -1f,
+    val unitName: String = "Undefined"
+) {
     companion object {
         val undefinedFoodNutrient = FoodNutrient("Undefined", -1F, "Undefined")
     }
