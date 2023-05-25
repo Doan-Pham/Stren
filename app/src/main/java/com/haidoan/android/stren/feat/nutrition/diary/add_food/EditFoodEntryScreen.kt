@@ -51,6 +51,8 @@ internal fun EditFoodEntryRoute(
                     description = "MenuItem Check Mark",
                     clickHandler = {
                         //TODO: Save
+                        viewModel.addFoodToMeal()
+                        onBackToPreviousScreen()
                     })
             )
         )
