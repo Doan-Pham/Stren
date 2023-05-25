@@ -5,7 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -35,13 +36,16 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+
+/**
+ * @param markedDates Dates that should be marked with some special sign (Ex use case: dates that user tracked calories, dates that user had workouts)
+ */
 @Composable
 fun CalendarDialog(
     onDismissDialog: () -> Unit,
     onSelectDate: (LocalDate) -> Unit,
     selectedDate: LocalDate,
-    datesThatHaveWorkouts: List<LocalDate>
+    markedDates: List<LocalDate>
 ) {
     Dialog(
         onDismissRequest = onDismissDialog,
@@ -77,7 +81,7 @@ fun CalendarDialog(
                     Day(
                         day = it,
                         isSelected = it.date.isEqual(selectedDate),
-                        haveWorkouts = datesThatHaveWorkouts.any { date -> date.isEqual(it.date) },
+                        haveWorkouts = markedDates.any { date -> date.isEqual(it.date) },
                         onClickHandler = { newlySelectedDate ->
                             if (!newlySelectedDate.isEqual(selectedDate)) {
                                 onSelectDate(newlySelectedDate)
