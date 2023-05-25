@@ -36,7 +36,7 @@ internal fun NutritionDiaryRoute(
     viewModel: NutritionDiaryViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onNavigateToAddWorkoutScreen: (userId: String, selectedDate: LocalDate) -> Unit,
-    onNavigateToAddFoodToMeal: (userId: String, eatingDayId: String, mealId: String, mealName: String) -> Unit,
+    onNavigateToAddFoodToMeal: (userId: String, selectedDate: LocalDate, mealId: String, mealName: String) -> Unit,
 ) {
     var shouldShowCalendarDialog by remember {
         mutableStateOf(false)
@@ -96,7 +96,7 @@ internal fun NutritionDiaryScreen(
     onMoveToPreviousWeek: () -> Unit,
     onMoveToNextWeek: () -> Unit,
     onLogWorkoutButtonClick: () -> Unit,
-    onButtonAddFoodClick: (userId: String, eatingDayId: String, mealId: String, mealName: String) -> Unit,
+    onButtonAddFoodClick: (userId: String, selectedDate: LocalDate, mealId: String, mealName: String) -> Unit
 ) {
     when (uiState) {
         is NutritionDiaryUiState.Loading -> {
@@ -187,7 +187,7 @@ internal fun NutritionDiaryScreen(
                     MealItem(meal = it, onButtonAddFoodClickHandler = { meal ->
                         onButtonAddFoodClick(
                             uiState.userId,
-                            uiState.eatingDay.id,
+                            uiState.selectedDate,
                             meal.id,
                             meal.name
                         )
