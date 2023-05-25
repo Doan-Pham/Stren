@@ -1,8 +1,12 @@
 package com.haidoan.android.stren.feat.nutrition.diary.add_food
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.haidoan.android.stren.core.model.FoodNutrient
 import com.haidoan.android.stren.core.repository.base.FoodRepository
 import com.haidoan.android.stren.feat.nutrition.diary.EditFoodEntryArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,6 +20,7 @@ internal class EditFoodEntryViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle, foodRepository: FoodRepository
 ) : ViewModel() {
     private val navArgs: EditFoodEntryArgs = EditFoodEntryArgs(savedStateHandle)
+    var foodAmountInGram by mutableStateOf(FoodNutrient.DEFAULT_FOOD_AMOUNT_IN_GRAM)
 
     init {
         Timber.d("navArgs - userId ${navArgs.userId}; eatingDayId: ${navArgs.eatingDayId} ; mealId: ${navArgs.mealId}; foodId: ${navArgs.foodId}")
@@ -30,4 +35,8 @@ internal class EditFoodEntryViewModel @Inject constructor(
             SharingStarted.WhileSubscribed(5000),
             EditFoodEntryUiState.Loading
         )
+
+    fun onChangeFoodAmount(newAmount: Float) {
+        foodAmountInGram = newAmount
+    }
 }
