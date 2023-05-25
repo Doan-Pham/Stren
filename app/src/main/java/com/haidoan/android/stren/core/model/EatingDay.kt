@@ -9,7 +9,11 @@ data class EatingDay(
     val id: String = UUID.randomUUID().toString(),
     val date: LocalDate,
     val meals: List<Meal> = listOf()
-)
+) {
+    companion object {
+        val undefined = EatingDay(id = "Undefined", date = LocalDate.of(1000, 10, 10))
+    }
+}
 
 enum class DefaultMeal(val id: String, val indexWhenSorted: Int) {
     BREAKFAST(MEAL_BREAKFAST_ID, 0),
@@ -20,7 +24,6 @@ enum class DefaultMeal(val id: String, val indexWhenSorted: Int) {
     companion object {
         fun from(id: String): DefaultMeal? = DefaultMeal.values().find { it.id == id }
     }
-
 }
 
 const val MEAL_BREAKFAST_ID = "MEAL_BREAKFAST_ID"
@@ -33,7 +36,6 @@ data class Meal(
     val name: String = "Undefined Meal name",
     val foods: List<FoodToConsume> = listOf()
 ) {
-
 
     companion object {
         val defaultMeals = listOf(

@@ -1,11 +1,14 @@
 package com.haidoan.android.stren.core.datasource.remote.model
 
+import com.haidoan.android.stren.core.datasource.remote.impl.relevantNutrientNameByNumber
 import com.haidoan.android.stren.core.model.Food
 import com.haidoan.android.stren.core.model.FoodNutrient
 import com.haidoan.android.stren.core.model.FoodNutrient.Companion.undefinedFoodNutrient
 import com.haidoan.android.stren.core.utils.StringFormatUtils.capitalizeEveryWord
 import com.haidoan.android.stren.core.utils.StringFormatUtils.capitalizeFirstChar
 import kotlinx.serialization.SerialName
+import java.math.RoundingMode
+import java.text.DecimalFormat
 
 
 /**
@@ -147,9 +150,13 @@ fun NetworkFoodNutrient.asExternalModel(): FoodNutrient {
         if (unitName.equals("iu", true)) unitName.uppercase()
         else unitName.lowercase()
 
+    val df = DecimalFormat("#.#")
+    df.roundingMode = RoundingMode.DOWN
+
     return FoodNutrient(
         nutrientName = nutrientName,
-        amount = amount ?: 0f,
+        amount =
+        df.format(amount).toFloatOrNull() ?: 0f,
         unitName = unitName
     )
 }
