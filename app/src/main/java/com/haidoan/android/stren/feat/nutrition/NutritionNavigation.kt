@@ -1,17 +1,13 @@
 package com.haidoan.android.stren.feat.nutrition
 
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
-import com.haidoan.android.stren.core.designsystem.component.DummyBoxWithText
 import com.haidoan.android.stren.core.designsystem.component.TabLayout
+import com.haidoan.android.stren.feat.nutrition.diary.NutritionDiaryRoute
 import com.haidoan.android.stren.feat.nutrition.food.FoodRoute
 import com.haidoan.android.stren.feat.nutrition.food.foodGraph
 import com.haidoan.android.stren.feat.nutrition.food.navigateToFoodDetail
@@ -30,12 +26,13 @@ fun NavGraphBuilder.nutritionGraph(
             TabLayout(
                 tabNamesAndScreenComposables = listOf(
                     Pair("Diary") {
-                        DummyBoxWithText(text = "Food Diary")
-                        var isAppBarConfigured by remember { mutableStateOf(false) }
-                        if (!isAppBarConfigured) {
-                            appBarConfigurationChangeHandler(AppBarConfiguration.NavigationAppBar())
-                            isAppBarConfigured = true
-                        }
+                        NutritionDiaryRoute(
+                            appBarConfigurationChangeHandler = {
+                                appBarConfigurationChangeHandler(it)
+                            },
+                            onNavigateToAddWorkoutScreen = { _, _ -> },
+                            onNavigateToEditWorkoutScreen = { _, _ -> }
+                        )
                     },
                     Pair("Food") {
                         FoodRoute(
