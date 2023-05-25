@@ -1,8 +1,10 @@
-package com.haidoan.android.stren.core.datasource.remote.model
+package com.haidoan.android.stren.core.datasource.remote.impl
 
 import com.haidoan.android.stren.BuildConfig
 import com.haidoan.android.stren.core.datasource.remote.base.FoodRemoteDataSource
 import com.haidoan.android.stren.core.datasource.remote.di.IoDispatcher
+import com.haidoan.android.stren.core.datasource.remote.model.NetworkFood
+import com.haidoan.android.stren.core.datasource.remote.model.NetworkFoodNutrient
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext

@@ -6,10 +6,12 @@ import com.haidoan.android.stren.core.datasource.remote.base.EatingDayRemoteData
 import com.haidoan.android.stren.core.datasource.remote.model.FirestoreEatingDay
 import com.haidoan.android.stren.core.datasource.remote.model.toExternalModel
 import com.haidoan.android.stren.core.model.EatingDay
+import com.haidoan.android.stren.core.model.Meal
 import com.haidoan.android.stren.core.utils.DateUtils.toTimeStampDayEnd
 import com.haidoan.android.stren.core.utils.DateUtils.toTimeStampDayStart
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -28,4 +30,18 @@ class EatingDayFirestoreDataSource @Inject constructor() : EatingDayRemoteDataSo
                 it.toObjects(FirestoreEatingDay::class.java).firstOrNull()?.toExternalModel()
                     ?: EatingDay(date = date)
             }
+
+    override suspend fun getEatingDayById(userId: String, eatingDayId: String): EatingDay =
+        firestore.collection("$USER_COLLECTION_PATH/$userId/$EATING_DAY_COLLECTION_PATH")
+            .document(eatingDayId).get().await().toObject(FirestoreEatingDay::class.java)
+            ?.toExternalModel()
+            ?: EatingDay(date = LocalDate.of(1000, 10, 10))
+
+    override suspend fun updateEatingDay(userId: String, eatingDayId: String, meals: List<Meal>) {
+        firestore.collection("$USER_COLLECTION_PATH/$userId/$EATING_DAY_COLLECTION_PATH")
+            .document(eatingDayId)
+            .update("meals", meals)
+            .await()
+    }
+
 }
