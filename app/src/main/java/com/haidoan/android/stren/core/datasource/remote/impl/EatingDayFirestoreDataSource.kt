@@ -59,5 +59,10 @@ class EatingDayFirestoreDataSource @Inject constructor() : EatingDayRemoteDataSo
             .add(FirestoreEatingDay.from(eatingDay))
             .await().id
 
-
+    override suspend fun getDatesUserTracked(userId: String): List<LocalDate> =
+        firestore.collection(
+            "$USER_COLLECTION_PATH/$userId/$EATING_DAY_COLLECTION_PATH"
+        ).get().await().toObjects(FirestoreEatingDay::class.java).mapNotNull {
+            it.toExternalModel().date
+        }
 }

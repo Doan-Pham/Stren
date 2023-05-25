@@ -6,6 +6,7 @@ import com.haidoan.android.stren.core.model.Meal
 import com.haidoan.android.stren.core.repository.base.EatingDayRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
 import timber.log.Timber
 import java.time.LocalDate
 import javax.inject.Inject
@@ -53,4 +54,12 @@ class EatingDayRepositoryImpl @Inject constructor(private val eatingDayRemoteDat
             "Undefined Doc ID"
         }
     }
+
+    override suspend fun getDatesUserTracked(userId: String): Flow<List<LocalDate>> =
+        flow {
+            Timber.d("getDatesUserTracked() has been called - userId: $userId")
+            emit(eatingDayRemoteDataSource.getDatesUserTracked(userId))
+        }.catch {
+            Timber.e("getDatesThatHaveWorkoutByUserId() - Exception: ${it.message}")
+        }
 }

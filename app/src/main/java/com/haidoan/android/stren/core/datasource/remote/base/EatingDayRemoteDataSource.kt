@@ -12,4 +12,5 @@ interface EatingDayRemoteDataSource {
     suspend fun updateEatingDay(userId: String, eatingDayId: String, meals: List<Meal>)
     suspend fun getEatingDayByDate(userId: String, selectedDate: LocalDate): EatingDay
     suspend fun addEatingDay(userId: String, eatingDay: EatingDay): String
+    suspend fun getDatesUserTracked(userId: String): List<LocalDate>
 }

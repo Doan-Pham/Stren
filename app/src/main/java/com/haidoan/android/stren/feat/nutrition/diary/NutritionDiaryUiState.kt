@@ -9,6 +9,6 @@ internal sealed interface NutritionDiaryUiState {
         val userId: String,
         val eatingDay: EatingDay,
         val selectedDate: LocalDate,
-        val datesThatHaveWorkouts: List<LocalDate>
+        val datesTracked: List<LocalDate>
     ) : NutritionDiaryUiState
 }
