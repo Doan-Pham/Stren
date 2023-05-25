@@ -8,6 +8,8 @@ import com.google.accompanist.navigation.animation.navigation
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.core.designsystem.component.TabLayout
 import com.haidoan.android.stren.feat.nutrition.diary.NutritionDiaryRoute
+import com.haidoan.android.stren.feat.nutrition.diary.navigateToAddFoodToMeal
+import com.haidoan.android.stren.feat.nutrition.diary.nutritionDiaryGraph
 import com.haidoan.android.stren.feat.nutrition.food.FoodRoute
 import com.haidoan.android.stren.feat.nutrition.food.foodGraph
 import com.haidoan.android.stren.feat.nutrition.food.navigateToFoodDetail
@@ -31,7 +33,9 @@ fun NavGraphBuilder.nutritionGraph(
                                 appBarConfigurationChangeHandler(it)
                             },
                             onNavigateToAddWorkoutScreen = { _, _ -> },
-                            onNavigateToEditWorkoutScreen = { _, _ -> }
+                            onNavigateToAddFoodToMeal = { userId, eatingDayId, mealId ->
+                                navController.navigateToAddFoodToMeal(userId, eatingDayId, mealId)
+                            }
                         )
                     },
                     Pair("Food") {
@@ -48,6 +52,11 @@ fun NavGraphBuilder.nutritionGraph(
         }
 
         foodGraph(
+            navController = navController,
+            appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
+        )
+
+        nutritionDiaryGraph(
             navController = navController,
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
         )

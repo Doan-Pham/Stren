@@ -36,7 +36,7 @@ internal fun NutritionDiaryRoute(
     viewModel: NutritionDiaryViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onNavigateToAddWorkoutScreen: (userId: String, selectedDate: LocalDate) -> Unit,
-    onNavigateToEditWorkoutScreen: (userId: String, workoutId: String) -> Unit
+    onNavigateToAddFoodToMeal: (userId: String, eatingDayId: String, mealId: String) -> Unit,
 ) {
     var shouldShowCalendarDialog by remember {
         mutableStateOf(false)
@@ -80,10 +80,7 @@ internal fun NutritionDiaryRoute(
             val uiStateValue = viewModel.uiState.value as NutritionDiaryUiState.LoadComplete
             onNavigateToAddWorkoutScreen(uiStateValue.userId, uiStateValue.selectedDate)
         },
-        onNavigateToEditWorkoutScreen = { workoutId ->
-            val uiStateValue = viewModel.uiState.value as NutritionDiaryUiState.LoadComplete
-            onNavigateToEditWorkoutScreen(uiStateValue.userId, workoutId)
-        }
+        onButtonAddFoodClick = onNavigateToAddFoodToMeal
     )
 }
 
@@ -99,7 +96,7 @@ internal fun NutritionDiaryScreen(
     onMoveToPreviousWeek: () -> Unit,
     onMoveToNextWeek: () -> Unit,
     onLogWorkoutButtonClick: () -> Unit,
-    onNavigateToEditWorkoutScreen: (String) -> Unit,
+    onButtonAddFoodClick: (userId: String, eatingDayId: String, mealId: String) -> Unit,
 ) {
     when (uiState) {
         is NutritionDiaryUiState.Loading -> {
@@ -187,14 +184,10 @@ internal fun NutritionDiaryScreen(
                 }
 
                 items(uiState.eatingDay.meals) {
-                    MealItem(it)
+                    MealItem(meal = it, onButtonAddFoodClickHandler = { mealId ->
+                        onButtonAddFoodClick(uiState.userId, uiState.eatingDay.id, mealId)
+                    })
                 }
-//                item {
-//                    WorkoutList(
-//                        onNavigateToEditWorkoutScreen = onNavigateToEditWorkoutScreen,
-//                        workouts = uiState.workouts
-//                    )
-//                }
 
             }
 
@@ -215,8 +208,9 @@ private fun DateHeader(
     modifier: Modifier = Modifier, headerTitle: String,
     onHeaderClickHandler: () -> Unit,
     onIconPreviousClickHandler: () -> Unit,
-    onIconNextClickHandler: () -> Unit
-) {
+    onIconNextClickHandler: () -> Unit,
+
+    ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -247,7 +241,7 @@ private fun DateHeader(
 @Composable
 private fun MealItem(
     meal: Meal,
-    onItemClickHandler: (mealId: String) -> Unit = {},
+    onButtonAddFoodClickHandler: (mealId: String) -> Unit,
     onEditMealClickHandler: (mealId: String) -> Unit = {}
 ) {
     Column(
@@ -303,6 +297,8 @@ private fun MealItem(
                 .align(CenterHorizontally),
             textStyle = MaterialTheme.typography.bodyMedium,
             text = "Add food",
-            onClickHandler = { /*TODO*/ })
+            onClickHandler = {
+                onButtonAddFoodClickHandler(meal.id)
+            })
     }
 }
