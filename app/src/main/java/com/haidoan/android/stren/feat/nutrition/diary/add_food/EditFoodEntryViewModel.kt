@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.model.Food
 import com.haidoan.android.stren.core.model.FoodNutrient
 import com.haidoan.android.stren.core.model.FoodToConsume
+import com.haidoan.android.stren.core.model.Meal
 import com.haidoan.android.stren.core.repository.base.EatingDayRepository
 import com.haidoan.android.stren.core.repository.base.FoodRepository
 import com.haidoan.android.stren.core.utils.ListUtils.replaceWith
@@ -53,10 +54,11 @@ internal class EditFoodEntryViewModel @Inject constructor(
         viewModelScope.launch {
             val eatingDay =
                 eatingDayRepository.getEatingDayById(navArgs.userId, navArgs.eatingDayId)
+            val foodToAdd = FoodToConsume(food = currentFood, amountInGram = foodAmountInGram)
+            val mealsAfterUpdate = eatingDay.meals.toMutableList()
 
             if (eatingDay.meals.any { it.id == navArgs.mealId }) {
                 val mealToUpdate = eatingDay.meals.first { it.id == navArgs.mealId }
-                val foodToAdd = FoodToConsume(food = currentFood, amountInGram = foodAmountInGram)
 
                 val foodsAfterUpdate: List<FoodToConsume> =
                     if (mealToUpdate.foods.any { it.food.id == foodToAdd.food.id }) {
@@ -70,21 +72,24 @@ internal class EditFoodEntryViewModel @Inject constructor(
                     }
 
                 Timber.d("foodsAfterUpdate: $foodsAfterUpdate")
-
-                val mealsAfterUpdate = eatingDay.meals.toMutableList()
                 mealsAfterUpdate.remove(mealToUpdate)
                 mealsAfterUpdate.add(mealToUpdate.copy(foods = foodsAfterUpdate))
-
                 Timber.d("mealsAfterUpdate: $mealsAfterUpdate")
-
-                eatingDayRepository.updateEatingDay(
-                    userId = navArgs.userId,
-                    eatingDayId = navArgs.eatingDayId,
-                    meals = mealsAfterUpdate
-                )
             } else {
-
+                mealsAfterUpdate.add(
+                    Meal(
+                        id = navArgs.mealId,
+                        name = navArgs.mealName,
+                        foods = listOf(foodToAdd)
+                    )
+                )
             }
+
+            eatingDayRepository.updateEatingDay(
+                userId = navArgs.userId,
+                eatingDayId = navArgs.eatingDayId,
+                meals = mealsAfterUpdate
+            )
         }
     }
 
