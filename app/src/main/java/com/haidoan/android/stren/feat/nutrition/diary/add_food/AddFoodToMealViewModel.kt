@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.feat.nutrition.diary
+package com.haidoan.android.stren.feat.nutrition.diary.add_food
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import com.haidoan.android.stren.core.repository.base.FoodRepository
+import com.haidoan.android.stren.feat.nutrition.diary.AddFoodToMealArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,11 +23,10 @@ class AddFoodToMealViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     foodRepository: FoodRepository
 ) : ViewModel() {
-    private val navArgs: AddFoodToMealArgs = AddFoodToMealArgs(savedStateHandle)
+    internal val navArgs: AddFoodToMealArgs = AddFoodToMealArgs(savedStateHandle)
     var searchBarText = mutableStateOf(EMPTY_FOOD_QUERY)
 
     private val foodNameToQuery = MutableStateFlow("")
-
 
     init {
         Timber.d("navArgs - userId ${navArgs.userId}; eatingDayId: ${navArgs.eatingDayId} ; mealId: ${navArgs.mealId}")
