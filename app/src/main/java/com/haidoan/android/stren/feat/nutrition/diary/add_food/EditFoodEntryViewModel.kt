@@ -25,17 +25,18 @@ internal class EditFoodEntryViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle, foodRepository: FoodRepository,
     private val eatingDayRepository: EatingDayRepository
 ) : ViewModel() {
-    private val navArgs: EditFoodEntryArgs = EditFoodEntryArgs(savedStateHandle)
     var foodAmountInGram by mutableStateOf(FoodNutrient.DEFAULT_FOOD_AMOUNT_IN_GRAM)
+
+    private val navArgs: EditFoodEntryArgs = EditFoodEntryArgs(savedStateHandle)
     private lateinit var currentFood: Food
 
     init {
-        Timber.d("navArgs - userId ${navArgs.userId}; eatingDayId: ${navArgs.eatingDayId} ; mealId: ${navArgs.mealId}; foodId: ${navArgs.foodId}")
+        Timber.d("navArgs - userId ${navArgs.userId}; eatingDayId: ${navArgs.eatingDayId} ; mealId: ${navArgs.mealId}; mealName: ${navArgs.mealName}; foodId: ${navArgs.foodId}")
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<EditFoodEntryUiState> =
-        savedStateHandle.getStateFlow(FOOD_ID_EDIT_FOOD_ENTRY_NAV_ARG, "Undefined").flatMapLatest {
+        MutableStateFlow(navArgs.foodId).flatMapLatest {
             currentFood = foodRepository.getFoodById(it)
             flowOf(EditFoodEntryUiState.LoadComplete(currentFood))
         }.stateIn(
@@ -50,41 +51,40 @@ internal class EditFoodEntryViewModel @Inject constructor(
 
     fun addFoodToMeal() {
         viewModelScope.launch {
-            val foodToAdd = FoodToConsume(food = currentFood, amountInGram = foodAmountInGram)
-            Timber.d("foodToAdd: $foodToAdd")
-
             val eatingDay =
                 eatingDayRepository.getEatingDayById(navArgs.userId, navArgs.eatingDayId)
 
-            val mealToUpdate = eatingDay.meals.first { it.id == navArgs.mealId }
+            if (eatingDay.meals.any { it.id == navArgs.mealId }) {
+                val mealToUpdate = eatingDay.meals.first { it.id == navArgs.mealId }
+                val foodToAdd = FoodToConsume(food = currentFood, amountInGram = foodAmountInGram)
 
-            Timber.d("mealToUpdate: $mealToUpdate")
-
-            val foodsAfterUpdate: List<FoodToConsume> =
-                if (mealToUpdate.foods.any { it.food.id == foodToAdd.food.id }) {
-                    mealToUpdate.foods.replaceWith(foodToAdd) { foodToConsume ->
-                        foodToConsume.food.id == currentFood.id
+                val foodsAfterUpdate: List<FoodToConsume> =
+                    if (mealToUpdate.foods.any { it.food.id == foodToAdd.food.id }) {
+                        mealToUpdate.foods.replaceWith(foodToAdd) { foodToConsume ->
+                            foodToConsume.food.id == currentFood.id
+                        }
+                    } else {
+                        val mealsAfterAddFood = mealToUpdate.foods.toMutableList()
+                        mealsAfterAddFood.add(foodToAdd)
+                        mealsAfterAddFood
                     }
-                } else {
-                    val mealsAfterAddFood = mealToUpdate.foods.toMutableList()
-                    mealsAfterAddFood.add(foodToAdd)
-                    mealsAfterAddFood
-                }
 
+                Timber.d("foodsAfterUpdate: $foodsAfterUpdate")
 
-            Timber.d("foodsAfterUpdate: $foodsAfterUpdate")
+                val mealsAfterUpdate = eatingDay.meals.toMutableList()
+                mealsAfterUpdate.remove(mealToUpdate)
+                mealsAfterUpdate.add(mealToUpdate.copy(foods = foodsAfterUpdate))
 
-            val mealsAfterUpdate = eatingDay.meals.toMutableList()
-            mealsAfterUpdate.remove(mealToUpdate)
-            mealsAfterUpdate.add(mealToUpdate.copy(foods = foodsAfterUpdate))
+                Timber.d("mealsAfterUpdate: $mealsAfterUpdate")
 
-            Timber.d("mealsAfterUpdate: $mealsAfterUpdate")
+                eatingDayRepository.updateEatingDay(
+                    userId = navArgs.userId,
+                    eatingDayId = navArgs.eatingDayId,
+                    meals = mealsAfterUpdate
+                )
+            } else {
 
-            eatingDayRepository.updateEatingDay(
-                userId = navArgs.userId,
-                eatingDayId = navArgs.eatingDayId,
-                meals = mealsAfterUpdate
-            )
+            }
         }
     }
 

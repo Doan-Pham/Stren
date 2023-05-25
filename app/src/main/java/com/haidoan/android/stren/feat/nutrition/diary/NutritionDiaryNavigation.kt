@@ -14,12 +14,14 @@ internal fun NavController.navigateToAddFoodToMeal(
     userId: String,
     eatingDayId: String,
     mealId: String,
+    mealName: String,
 ) {
     this.navigate(
         ADD_FOOD_TO_MEAL_SCREEN_ROUTE +
                 "/" + userId +
                 "/" + eatingDayId +
-                "/" + mealId
+                "/" + mealId +
+                "/" + mealName
     )
 }
 
@@ -27,6 +29,7 @@ internal fun NavController.navigateToEditFoodEntry(
     userId: String,
     eatingDayId: String,
     mealId: String,
+    mealName: String,
     foodId: String,
 ) {
     this.navigate(
@@ -34,6 +37,7 @@ internal fun NavController.navigateToEditFoodEntry(
                 "/" + userId +
                 "/" + eatingDayId +
                 "/" + mealId +
+                "/" + mealName +
                 "/" + foodId
     )
 }
@@ -44,12 +48,14 @@ internal class AddFoodToMealArgs(
     val userId: String,
     val eatingDayId: String,
     val mealId: String,
+    val mealName: String,
 ) {
     constructor(savedStateHandle: SavedStateHandle) :
             this(
                 checkNotNull(savedStateHandle[USER_ID_ADD_FOOD_TO_MEAL_NAV_ARG]),
                 checkNotNull(savedStateHandle[EATING_DAY_ID_ADD_FOOD_TO_MEAL_NAV_ARG]),
-                checkNotNull(savedStateHandle[MEAL_ID_ADD_FOOD_TO_MEAL_NAV_ARG])
+                checkNotNull(savedStateHandle[MEAL_ID_ADD_FOOD_TO_MEAL_NAV_ARG]),
+                checkNotNull(savedStateHandle[MEAL_NAME_ADD_FOOD_TO_MEAL_NAV_ARG])
             )
 }
 
@@ -59,6 +65,7 @@ internal class EditFoodEntryArgs(
     val userId: String,
     val eatingDayId: String,
     val mealId: String,
+    val mealName: String,
     val foodId: String,
 ) {
     constructor(savedStateHandle: SavedStateHandle) :
@@ -66,6 +73,7 @@ internal class EditFoodEntryArgs(
                 checkNotNull(savedStateHandle[USER_ID_EDIT_FOOD_ENTRY_NAV_ARG]),
                 checkNotNull(savedStateHandle[EATING_DAY_ID_EDIT_FOOD_ENTRY_NAV_ARG]),
                 checkNotNull(savedStateHandle[MEAL_ID_EDIT_FOOD_ENTRY_NAV_ARG]),
+                checkNotNull(savedStateHandle[MEAL_NAME_EDIT_FOOD_ENTRY_NAV_ARG]),
                 checkNotNull(savedStateHandle[FOOD_ID_EDIT_FOOD_ENTRY_NAV_ARG])
             )
 }
@@ -84,22 +92,25 @@ internal fun NavGraphBuilder.nutritionDiaryGraph(
         route = ADD_FOOD_TO_MEAL_SCREEN_ROUTE +
                 "/" + "{$USER_ID_ADD_FOOD_TO_MEAL_NAV_ARG}" +
                 "/" + "{$EATING_DAY_ID_ADD_FOOD_TO_MEAL_NAV_ARG}" +
-                "/" + "{$MEAL_ID_ADD_FOOD_TO_MEAL_NAV_ARG}",
+                "/" + "{$MEAL_ID_ADD_FOOD_TO_MEAL_NAV_ARG}" +
+                "/" + "{$MEAL_NAME_ADD_FOOD_TO_MEAL_NAV_ARG}",
 
         arguments = listOf(
             navArgument(USER_ID_ADD_FOOD_TO_MEAL_NAV_ARG) { type = NavType.StringType },
             navArgument(EATING_DAY_ID_ADD_FOOD_TO_MEAL_NAV_ARG) { type = NavType.StringType },
-            navArgument(MEAL_ID_ADD_FOOD_TO_MEAL_NAV_ARG) { type = NavType.StringType }
+            navArgument(MEAL_ID_ADD_FOOD_TO_MEAL_NAV_ARG) { type = NavType.StringType },
+            navArgument(MEAL_NAME_ADD_FOOD_TO_MEAL_NAV_ARG) { type = NavType.StringType }
         )
 
     ) {
         AddFoodToMealRoute(
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
-            onNavigateToEditFoodEntry = { userId, eatingDayId, mealId, foodId ->
+            onNavigateToEditFoodEntry = { userId, eatingDayId, mealId, mealName, foodId ->
                 navController.navigateToEditFoodEntry(
                     userId,
                     eatingDayId,
                     mealId,
+                    mealName,
                     foodId
                 )
             },
@@ -111,12 +122,14 @@ internal fun NavGraphBuilder.nutritionDiaryGraph(
                 "/" + "{$USER_ID_EDIT_FOOD_ENTRY_NAV_ARG}" +
                 "/" + "{$EATING_DAY_ID_EDIT_FOOD_ENTRY_NAV_ARG}" +
                 "/" + "{$MEAL_ID_EDIT_FOOD_ENTRY_NAV_ARG}" +
+                "/" + "{$MEAL_NAME_EDIT_FOOD_ENTRY_NAV_ARG}" +
                 "/" + "{$FOOD_ID_EDIT_FOOD_ENTRY_NAV_ARG}",
 
         arguments = listOf(
             navArgument(USER_ID_EDIT_FOOD_ENTRY_NAV_ARG) { type = NavType.StringType },
             navArgument(EATING_DAY_ID_EDIT_FOOD_ENTRY_NAV_ARG) { type = NavType.StringType },
             navArgument(MEAL_ID_EDIT_FOOD_ENTRY_NAV_ARG) { type = NavType.StringType },
+            navArgument(MEAL_NAME_EDIT_FOOD_ENTRY_NAV_ARG) { type = NavType.StringType },
             navArgument(FOOD_ID_EDIT_FOOD_ENTRY_NAV_ARG) { type = NavType.StringType }
         )) {
         EditFoodEntryRoute(
