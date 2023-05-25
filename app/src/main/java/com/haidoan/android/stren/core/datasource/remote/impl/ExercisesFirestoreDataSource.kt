@@ -19,18 +19,12 @@ const val EXERCISE_CATEGORY_COLLECTION_PATH = "ExerciseCategory"
 const val MUSCLE_GROUP_COLLECTION_PATH = "MuscleGroup"
 
 class ExercisesFirestoreDataSource @Inject constructor() : ExercisesRemoteDataSource {
-    private var exerciseCollection: CollectionReference
-    private var exerciseCategoryCollection: CollectionReference
-    private var muscleGroupCollection: CollectionReference
-
-    init {
-        val firestore = Firebase.firestore
-        firestore.firestoreSettings =
-            FirebaseFirestoreSettings.Builder().setPersistenceEnabled(false).build()
-        exerciseCollection = firestore.collection(EXERCISE_COLLECTION_PATH)
-        exerciseCategoryCollection = firestore.collection(EXERCISE_CATEGORY_COLLECTION_PATH)
-        muscleGroupCollection = firestore.collection(MUSCLE_GROUP_COLLECTION_PATH)
-    }
+    private var exerciseCollection: CollectionReference =
+        Firebase.firestore.collection(EXERCISE_COLLECTION_PATH)
+    private var exerciseCategoryCollection: CollectionReference =
+        Firebase.firestore.collection(EXERCISE_CATEGORY_COLLECTION_PATH)
+    private var muscleGroupCollection: CollectionReference =
+        Firebase.firestore.collection(MUSCLE_GROUP_COLLECTION_PATH)
 
     override fun getExercisesWithLimitAsQuery(limit: Long): Query =
         exerciseCollection.orderBy("name", Query.Direction.ASCENDING)
