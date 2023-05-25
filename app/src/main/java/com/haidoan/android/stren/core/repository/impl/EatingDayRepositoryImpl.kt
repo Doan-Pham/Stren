@@ -35,4 +35,22 @@ class EatingDayRepositoryImpl @Inject constructor(private val eatingDayRemoteDat
             Timber.e("updateWorkout() - Exception: ${exception.message}")
         }
     }
+
+    override suspend fun getEatingDayByDate(userId: String, selectedDate: LocalDate): EatingDay {
+        return try {
+            eatingDayRemoteDataSource.getEatingDayByDate(userId, selectedDate)
+        } catch (exception: Exception) {
+            Timber.e("getEatingDayByDate() - Exception: ${exception.message}")
+            EatingDay.undefined
+        }
+    }
+
+    override suspend fun addEatingDay(userId: String, eatingDay: EatingDay): String {
+        return try {
+            eatingDayRemoteDataSource.addEatingDay(userId, eatingDay)
+        } catch (exception: Exception) {
+            Timber.e("addEatingDay() - Exception: ${exception.message}")
+            "Undefined Doc ID"
+        }
+    }
 }

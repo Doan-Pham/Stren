@@ -6,10 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.haidoan.android.stren.core.model.Food
-import com.haidoan.android.stren.core.model.FoodNutrient
-import com.haidoan.android.stren.core.model.FoodToConsume
-import com.haidoan.android.stren.core.model.Meal
+import com.haidoan.android.stren.core.model.*
 import com.haidoan.android.stren.core.repository.base.EatingDayRepository
 import com.haidoan.android.stren.core.repository.base.FoodRepository
 import com.haidoan.android.stren.core.utils.ListUtils.replaceWith
@@ -32,7 +29,7 @@ internal class EditFoodEntryViewModel @Inject constructor(
     private lateinit var currentFood: Food
 
     init {
-        Timber.d("navArgs - userId ${navArgs.userId}; eatingDayId: ${navArgs.eatingDayId} ; mealId: ${navArgs.mealId}; mealName: ${navArgs.mealName}; foodId: ${navArgs.foodId}")
+        Timber.d("navArgs - userId ${navArgs.userId}; eatingDayId: ${navArgs.selectedDate} ; mealId: ${navArgs.mealId}; mealName: ${navArgs.mealName}; foodId: ${navArgs.foodId}")
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -53,7 +50,7 @@ internal class EditFoodEntryViewModel @Inject constructor(
     fun addFoodToMeal() {
         viewModelScope.launch {
             val eatingDay =
-                eatingDayRepository.getEatingDayById(navArgs.userId, navArgs.eatingDayId)
+                eatingDayRepository.getEatingDayByDate(navArgs.userId, navArgs.selectedDate)
             val foodToAdd = FoodToConsume(food = currentFood, amountInGram = foodAmountInGram)
             val mealsAfterUpdate = eatingDay.meals.toMutableList()
 
@@ -85,11 +82,19 @@ internal class EditFoodEntryViewModel @Inject constructor(
                 )
             }
 
-            eatingDayRepository.updateEatingDay(
-                userId = navArgs.userId,
-                eatingDayId = navArgs.eatingDayId,
-                meals = mealsAfterUpdate
-            )
+            if (eatingDay == EatingDay.undefined) {
+                val id = eatingDayRepository.addEatingDay(
+                    userId = navArgs.userId,
+                    eatingDay = EatingDay(date = navArgs.selectedDate, meals = mealsAfterUpdate)
+                )
+                Timber.d("doc id: $id")
+            } else {
+                eatingDayRepository.updateEatingDay(
+                    userId = navArgs.userId,
+                    eatingDayId = eatingDay.id,
+                    meals = mealsAfterUpdate
+                )
+            }
         }
     }
 

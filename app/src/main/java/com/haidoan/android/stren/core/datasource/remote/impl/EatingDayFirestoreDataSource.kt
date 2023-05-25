@@ -44,4 +44,20 @@ class EatingDayFirestoreDataSource @Inject constructor() : EatingDayRemoteDataSo
             .await()
     }
 
+    override suspend fun getEatingDayByDate(userId: String, selectedDate: LocalDate): EatingDay =
+        firestore.collection("$USER_COLLECTION_PATH/$userId/$EATING_DAY_COLLECTION_PATH")
+            .whereGreaterThanOrEqualTo("date", selectedDate.toTimeStampDayStart())
+            .whereLessThanOrEqualTo("date", selectedDate.toTimeStampDayEnd())
+            .get().await()
+            .firstOrNull()?.toObject(FirestoreEatingDay::class.java)?.toExternalModel()
+            ?: EatingDay.undefined
+
+    override suspend fun addEatingDay(userId: String, eatingDay: EatingDay): String =
+        firestore.collection(
+            "$USER_COLLECTION_PATH/$userId/$EATING_DAY_COLLECTION_PATH"
+        )
+            .add(FirestoreEatingDay.from(eatingDay))
+            .await().id
+
+
 }
