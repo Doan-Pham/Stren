@@ -9,17 +9,18 @@ import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.feat.nutrition.diary.add_food.*
 import com.haidoan.android.stren.feat.training.history.log_workout.*
 import com.haidoan.android.stren.feat.training.routines.add_edit.*
+import java.time.LocalDate
 
 internal fun NavController.navigateToAddFoodToMeal(
     userId: String,
-    eatingDayId: String,
+    selectedDate: LocalDate,
     mealId: String,
     mealName: String,
 ) {
     this.navigate(
         ADD_FOOD_TO_MEAL_SCREEN_ROUTE +
                 "/" + userId +
-                "/" + eatingDayId +
+                "/" + selectedDate.toEpochDay() +
                 "/" + mealId +
                 "/" + mealName
     )
@@ -27,7 +28,7 @@ internal fun NavController.navigateToAddFoodToMeal(
 
 internal fun NavController.navigateToEditFoodEntry(
     userId: String,
-    eatingDayId: String,
+    selectedDate: LocalDate,
     mealId: String,
     mealName: String,
     foodId: String,
@@ -35,7 +36,7 @@ internal fun NavController.navigateToEditFoodEntry(
     this.navigate(
         EDIT_FOOD_ENTRY_SCREEN_ROUTE +
                 "/" + userId +
-                "/" + eatingDayId +
+                "/" + selectedDate.toEpochDay() +
                 "/" + mealId +
                 "/" + mealName +
                 "/" + foodId
@@ -46,14 +47,18 @@ internal fun NavController.navigateToEditFoodEntry(
 // to easily grabs nav args. Or else, it has to know all the nav args' names
 internal class AddFoodToMealArgs(
     val userId: String,
-    val eatingDayId: String,
+    val selectedDate: LocalDate,
     val mealId: String,
     val mealName: String,
 ) {
     constructor(savedStateHandle: SavedStateHandle) :
             this(
                 checkNotNull(savedStateHandle[USER_ID_ADD_FOOD_TO_MEAL_NAV_ARG]),
-                checkNotNull(savedStateHandle[EATING_DAY_ID_ADD_FOOD_TO_MEAL_NAV_ARG]),
+                checkNotNull(
+                    LocalDate.ofEpochDay(
+                        savedStateHandle[SELECTED_DATE_ADD_FOOD_TO_MEAL_NAV_ARG] ?: 0L
+                    )
+                ),
                 checkNotNull(savedStateHandle[MEAL_ID_ADD_FOOD_TO_MEAL_NAV_ARG]),
                 checkNotNull(savedStateHandle[MEAL_NAME_ADD_FOOD_TO_MEAL_NAV_ARG])
             )
@@ -63,7 +68,7 @@ internal class AddFoodToMealArgs(
 // to easily grabs nav args. Or else, it has to know all the nav args' names
 internal class EditFoodEntryArgs(
     val userId: String,
-    val eatingDayId: String,
+    val selectedDate: LocalDate,
     val mealId: String,
     val mealName: String,
     val foodId: String,
@@ -71,7 +76,11 @@ internal class EditFoodEntryArgs(
     constructor(savedStateHandle: SavedStateHandle) :
             this(
                 checkNotNull(savedStateHandle[USER_ID_EDIT_FOOD_ENTRY_NAV_ARG]),
-                checkNotNull(savedStateHandle[EATING_DAY_ID_EDIT_FOOD_ENTRY_NAV_ARG]),
+                checkNotNull(
+                    LocalDate.ofEpochDay(
+                        savedStateHandle[SELECTED_DATE_EDIT_FOOD_ENTRY_NAV_ARG] ?: 0L
+                    )
+                ),
                 checkNotNull(savedStateHandle[MEAL_ID_EDIT_FOOD_ENTRY_NAV_ARG]),
                 checkNotNull(savedStateHandle[MEAL_NAME_EDIT_FOOD_ENTRY_NAV_ARG]),
                 checkNotNull(savedStateHandle[FOOD_ID_EDIT_FOOD_ENTRY_NAV_ARG])
@@ -91,13 +100,13 @@ internal fun NavGraphBuilder.nutritionDiaryGraph(
     composable(
         route = ADD_FOOD_TO_MEAL_SCREEN_ROUTE +
                 "/" + "{$USER_ID_ADD_FOOD_TO_MEAL_NAV_ARG}" +
-                "/" + "{$EATING_DAY_ID_ADD_FOOD_TO_MEAL_NAV_ARG}" +
+                "/" + "{$SELECTED_DATE_ADD_FOOD_TO_MEAL_NAV_ARG}" +
                 "/" + "{$MEAL_ID_ADD_FOOD_TO_MEAL_NAV_ARG}" +
                 "/" + "{$MEAL_NAME_ADD_FOOD_TO_MEAL_NAV_ARG}",
 
         arguments = listOf(
             navArgument(USER_ID_ADD_FOOD_TO_MEAL_NAV_ARG) { type = NavType.StringType },
-            navArgument(EATING_DAY_ID_ADD_FOOD_TO_MEAL_NAV_ARG) { type = NavType.StringType },
+            navArgument(SELECTED_DATE_ADD_FOOD_TO_MEAL_NAV_ARG) { type = NavType.LongType },
             navArgument(MEAL_ID_ADD_FOOD_TO_MEAL_NAV_ARG) { type = NavType.StringType },
             navArgument(MEAL_NAME_ADD_FOOD_TO_MEAL_NAV_ARG) { type = NavType.StringType }
         )
@@ -105,10 +114,10 @@ internal fun NavGraphBuilder.nutritionDiaryGraph(
     ) {
         AddFoodToMealRoute(
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
-            onNavigateToEditFoodEntry = { userId, eatingDayId, mealId, mealName, foodId ->
+            onNavigateToEditFoodEntry = { userId, selectedDate, mealId, mealName, foodId ->
                 navController.navigateToEditFoodEntry(
                     userId,
-                    eatingDayId,
+                    selectedDate,
                     mealId,
                     mealName,
                     foodId
@@ -120,14 +129,14 @@ internal fun NavGraphBuilder.nutritionDiaryGraph(
     composable(
         route = EDIT_FOOD_ENTRY_SCREEN_ROUTE +
                 "/" + "{$USER_ID_EDIT_FOOD_ENTRY_NAV_ARG}" +
-                "/" + "{$EATING_DAY_ID_EDIT_FOOD_ENTRY_NAV_ARG}" +
+                "/" + "{$SELECTED_DATE_EDIT_FOOD_ENTRY_NAV_ARG}" +
                 "/" + "{$MEAL_ID_EDIT_FOOD_ENTRY_NAV_ARG}" +
                 "/" + "{$MEAL_NAME_EDIT_FOOD_ENTRY_NAV_ARG}" +
                 "/" + "{$FOOD_ID_EDIT_FOOD_ENTRY_NAV_ARG}",
 
         arguments = listOf(
             navArgument(USER_ID_EDIT_FOOD_ENTRY_NAV_ARG) { type = NavType.StringType },
-            navArgument(EATING_DAY_ID_EDIT_FOOD_ENTRY_NAV_ARG) { type = NavType.StringType },
+            navArgument(SELECTED_DATE_EDIT_FOOD_ENTRY_NAV_ARG) { type = NavType.LongType },
             navArgument(MEAL_ID_EDIT_FOOD_ENTRY_NAV_ARG) { type = NavType.StringType },
             navArgument(MEAL_NAME_EDIT_FOOD_ENTRY_NAV_ARG) { type = NavType.StringType },
             navArgument(FOOD_ID_EDIT_FOOD_ENTRY_NAV_ARG) { type = NavType.StringType }
