@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.feat.nutrition.diary
+package com.haidoan.android.stren.feat.nutrition.diary.add_food
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -44,7 +44,7 @@ internal fun AddFoodToMealRoute(
     viewModel: AddFoodToMealViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onBackToPreviousScreen: () -> Unit,
-    onNavigateToFoodDetailScreen: (foodId: String) -> Unit,
+    onNavigateToEditFoodEntry: (userId: String, eatingDayId: String, mealId: String, foodId: String) -> Unit,
 ) {
     val pagedFoodData = viewModel.pagedFoodData.collectAsLazyPagingItems()
     val lazyListState = rememberLazyListState()
@@ -84,7 +84,14 @@ internal fun AddFoodToMealRoute(
     AddFoodToMealScreen(
         modifier = modifier,
         pagedFoodData = pagedFoodData,
-        onNavigateToFoodDetailScreen = onNavigateToFoodDetailScreen,
+        onNavigateToEditFoodEntry = { foodId ->
+            onNavigateToEditFoodEntry(
+                viewModel.navArgs.userId,
+                viewModel.navArgs.eatingDayId,
+                viewModel.navArgs.mealId,
+                foodId
+            )
+        },
         lazyListState = lazyListState
     )
 }
@@ -93,7 +100,7 @@ internal fun AddFoodToMealRoute(
 internal fun AddFoodToMealScreen(
     modifier: Modifier = Modifier,
     pagedFoodData: LazyPagingItems<Food>,
-    onNavigateToFoodDetailScreen: (foodId: String) -> Unit,
+    onNavigateToEditFoodEntry: (foodId: String) -> Unit,
     lazyListState: LazyListState
 ) {
 
@@ -117,7 +124,7 @@ internal fun AddFoodToMealScreen(
                         .fillMaxWidth()
                         .padding(dimensionResource(id = R.dimen.padding_medium)),
                     food = food,
-                    onClickHandler = onNavigateToFoodDetailScreen
+                    onClickHandler = onNavigateToEditFoodEntry
                 )
             }
         }
