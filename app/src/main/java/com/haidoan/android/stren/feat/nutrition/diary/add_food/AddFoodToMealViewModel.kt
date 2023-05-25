@@ -29,7 +29,7 @@ class AddFoodToMealViewModel @Inject constructor(
     private val foodNameToQuery = MutableStateFlow("")
 
     init {
-        Timber.d("navArgs - userId ${navArgs.userId}; eatingDayId: ${navArgs.eatingDayId} ; mealId: ${navArgs.mealId}")
+        Timber.d("navArgs - userId ${navArgs.userId}; eatingDayId: ${navArgs.eatingDayId} ; mealId: ${navArgs.mealId}; mealName: ${navArgs.mealName}\"")
     }
 
     fun searchFoodByName(name: String) {

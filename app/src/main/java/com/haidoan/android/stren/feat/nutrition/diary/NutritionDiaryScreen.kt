@@ -36,7 +36,7 @@ internal fun NutritionDiaryRoute(
     viewModel: NutritionDiaryViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onNavigateToAddWorkoutScreen: (userId: String, selectedDate: LocalDate) -> Unit,
-    onNavigateToAddFoodToMeal: (userId: String, eatingDayId: String, mealId: String) -> Unit,
+    onNavigateToAddFoodToMeal: (userId: String, eatingDayId: String, mealId: String, mealName: String) -> Unit,
 ) {
     var shouldShowCalendarDialog by remember {
         mutableStateOf(false)
@@ -96,7 +96,7 @@ internal fun NutritionDiaryScreen(
     onMoveToPreviousWeek: () -> Unit,
     onMoveToNextWeek: () -> Unit,
     onLogWorkoutButtonClick: () -> Unit,
-    onButtonAddFoodClick: (userId: String, eatingDayId: String, mealId: String) -> Unit,
+    onButtonAddFoodClick: (userId: String, eatingDayId: String, mealId: String, mealName: String) -> Unit,
 ) {
     when (uiState) {
         is NutritionDiaryUiState.Loading -> {
@@ -184,8 +184,13 @@ internal fun NutritionDiaryScreen(
                 }
 
                 items(uiState.eatingDay.meals) {
-                    MealItem(meal = it, onButtonAddFoodClickHandler = { mealId ->
-                        onButtonAddFoodClick(uiState.userId, uiState.eatingDay.id, mealId)
+                    MealItem(meal = it, onButtonAddFoodClickHandler = { meal ->
+                        onButtonAddFoodClick(
+                            uiState.userId,
+                            uiState.eatingDay.id,
+                            meal.id,
+                            meal.name
+                        )
                     })
                 }
 
@@ -241,7 +246,7 @@ private fun DateHeader(
 @Composable
 private fun MealItem(
     meal: Meal,
-    onButtonAddFoodClickHandler: (mealId: String) -> Unit,
+    onButtonAddFoodClickHandler: (meal: Meal) -> Unit,
     onEditMealClickHandler: (mealId: String) -> Unit = {}
 ) {
     Column(
@@ -298,7 +303,7 @@ private fun MealItem(
             textStyle = MaterialTheme.typography.bodyMedium,
             text = "Add food",
             onClickHandler = {
-                onButtonAddFoodClickHandler(meal.id)
+                onButtonAddFoodClickHandler(meal)
             })
     }
 }

@@ -37,6 +37,7 @@ internal const val ADD_FOOD_TO_MEAL_SCREEN_ROUTE = "ADD_FOOD_TO_MEAL_SCREEN_ROUT
 internal const val USER_ID_ADD_FOOD_TO_MEAL_NAV_ARG = "USER_ID_ADD_FOOD_TO_MEAL_NAV_ARG"
 internal const val EATING_DAY_ID_ADD_FOOD_TO_MEAL_NAV_ARG = "EATING_DAY_ID_ADD_FOOD_TO_MEAL_NAV_ARG"
 internal const val MEAL_ID_ADD_FOOD_TO_MEAL_NAV_ARG = "MEAL_ID_ADD_FOOD_TO_MEAL_NAV_ARG"
+internal const val MEAL_NAME_ADD_FOOD_TO_MEAL_NAV_ARG = "MEAL_NAME_ADD_FOOD_TO_MEAL_NAV_ARG"
 
 @Composable
 internal fun AddFoodToMealRoute(
@@ -44,7 +45,7 @@ internal fun AddFoodToMealRoute(
     viewModel: AddFoodToMealViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onBackToPreviousScreen: () -> Unit,
-    onNavigateToEditFoodEntry: (userId: String, eatingDayId: String, mealId: String, foodId: String) -> Unit,
+    onNavigateToEditFoodEntry: (userId: String, eatingDayId: String, mealId: String, mealName: String, foodId: String) -> Unit,
 ) {
     val pagedFoodData = viewModel.pagedFoodData.collectAsLazyPagingItems()
     val lazyListState = rememberLazyListState()
@@ -89,6 +90,7 @@ internal fun AddFoodToMealRoute(
                 viewModel.navArgs.userId,
                 viewModel.navArgs.eatingDayId,
                 viewModel.navArgs.mealId,
+                viewModel.navArgs.mealName,
                 foodId
             )
         },

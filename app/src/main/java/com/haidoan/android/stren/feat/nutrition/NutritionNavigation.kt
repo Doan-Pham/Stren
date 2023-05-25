@@ -33,8 +33,13 @@ fun NavGraphBuilder.nutritionGraph(
                                 appBarConfigurationChangeHandler(it)
                             },
                             onNavigateToAddWorkoutScreen = { _, _ -> },
-                            onNavigateToAddFoodToMeal = { userId, eatingDayId, mealId ->
-                                navController.navigateToAddFoodToMeal(userId, eatingDayId, mealId)
+                            onNavigateToAddFoodToMeal = { userId, eatingDayId, mealId, mealName ->
+                                navController.navigateToAddFoodToMeal(
+                                    userId,
+                                    eatingDayId,
+                                    mealId,
+                                    mealName
+                                )
                             }
                         )
                     },
