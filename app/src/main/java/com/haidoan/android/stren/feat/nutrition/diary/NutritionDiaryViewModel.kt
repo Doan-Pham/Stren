@@ -7,7 +7,6 @@ import com.haidoan.android.stren.core.model.EatingDay
 import com.haidoan.android.stren.core.model.FoodToConsume
 import com.haidoan.android.stren.core.model.Meal
 import com.haidoan.android.stren.core.repository.base.EatingDayRepository
-import com.haidoan.android.stren.core.repository.base.WorkoutsRepository
 import com.haidoan.android.stren.core.service.AuthenticationService
 import com.haidoan.android.stren.core.utils.DateUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,8 +21,7 @@ const val UNDEFINED_USER_ID = "Undefined User ID"
 @HiltViewModel
 internal class NutritionDiaryViewModel @Inject constructor(
     authenticationService: AuthenticationService,
-    private val eatingDayRepository: EatingDayRepository,
-    private val workoutsRepository: WorkoutsRepository
+    private val eatingDayRepository: EatingDayRepository
 ) : ViewModel() {
 
     /**
@@ -62,14 +60,14 @@ internal class NutritionDiaryViewModel @Inject constructor(
             if (userId != UNDEFINED_USER_ID) {
                 combine(
                     eatingDayRepository.getEatingDayByUserIdAndDate(userId, selectedDate),
-                    workoutsRepository.getDatesThatHaveWorkoutByUserId(userId)
-                ) { eatingDay, datesThatHaveWorkouts ->
+                    eatingDayRepository.getDatesUserTracked(userId)
+                ) { eatingDay, datesTracked ->
                     currentEatingDay = eatingDay.addMeals(Meal.defaultMeals)
                     NutritionDiaryUiState.LoadComplete(
                         userId,
                         currentEatingDay,
                         selectedDate,
-                        datesThatHaveWorkouts
+                        datesTracked
                     )
                 }
             } else {

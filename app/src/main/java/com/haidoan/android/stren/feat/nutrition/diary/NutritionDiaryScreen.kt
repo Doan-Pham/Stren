@@ -35,7 +35,6 @@ internal fun NutritionDiaryRoute(
     modifier: Modifier = Modifier,
     viewModel: NutritionDiaryViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
-    onNavigateToAddWorkoutScreen: (userId: String, selectedDate: LocalDate) -> Unit,
     onNavigateToAddFoodToMeal: (userId: String, selectedDate: LocalDate, mealId: String, mealName: String) -> Unit,
 ) {
     var shouldShowCalendarDialog by remember {
@@ -44,13 +43,6 @@ internal fun NutritionDiaryRoute(
 
     val trainingHistoryAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons = listOf(
-            IconButtonInfo(drawableResourceId = R.drawable.ic_add,
-                description = "MenuItem-Add",
-                clickHandler = {
-                    val uiStateValue =
-                        viewModel.uiState.value as NutritionDiaryUiState.LoadComplete
-                    onNavigateToAddWorkoutScreen(uiStateValue.userId, uiStateValue.selectedDate)
-                }),
             IconButtonInfo(
                 drawableResourceId = R.drawable.ic_calendar,
                 description = "MenuItem-Calendar",
@@ -76,10 +68,6 @@ internal fun NutritionDiaryRoute(
         onMoveToPreviousWeek = viewModel::moveToPreviousDay,
         shouldShowCalendarDialog = shouldShowCalendarDialog,
         onDismissCalendarDialog = { shouldShowCalendarDialog = false },
-        onLogWorkoutButtonClick = {
-            val uiStateValue = viewModel.uiState.value as NutritionDiaryUiState.LoadComplete
-            onNavigateToAddWorkoutScreen(uiStateValue.userId, uiStateValue.selectedDate)
-        },
         onButtonAddFoodClick = onNavigateToAddFoodToMeal
     )
 }
@@ -95,7 +83,6 @@ internal fun NutritionDiaryScreen(
     onSelectCurrentDate: () -> Unit,
     onMoveToPreviousWeek: () -> Unit,
     onMoveToNextWeek: () -> Unit,
-    onLogWorkoutButtonClick: () -> Unit,
     onButtonAddFoodClick: (userId: String, selectedDate: LocalDate, mealId: String, mealName: String) -> Unit
 ) {
     when (uiState) {
@@ -108,7 +95,7 @@ internal fun NutritionDiaryScreen(
         is NutritionDiaryUiState.LoadComplete -> {
             Timber.d("selectedDate: ${uiState.selectedDate}")
             Timber.d("eatingDay: ${uiState.eatingDay}")
-            Timber.d("dates with workouts: ${uiState.datesThatHaveWorkouts}")
+            Timber.d("dates with workouts: ${uiState.datesTracked}")
 
             val selectedDate = uiState.selectedDate
             LazyColumn(
@@ -200,7 +187,7 @@ internal fun NutritionDiaryScreen(
                 CalendarDialog(
                     onDismissDialog = onDismissCalendarDialog,
                     selectedDate = selectedDate,
-                    datesThatHaveWorkouts = uiState.datesThatHaveWorkouts,
+                    markedDates = uiState.datesTracked,
                     onSelectDate = onSelectDate
                 )
             }
