@@ -161,7 +161,7 @@ internal fun NutritionDiaryScreen(
                             )
                         }, Pair("Macronutrients") {
                             MacronutrientsRow(
-                                macronutrientsByGoal = eatingDay.totalMacros()
+                                macronutrientsByGoal = eatingDay.totalMacros
                                     .associateWith { 500f }
                             )
                         })

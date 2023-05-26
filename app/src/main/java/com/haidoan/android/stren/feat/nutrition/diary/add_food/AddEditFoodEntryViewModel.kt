@@ -48,13 +48,13 @@ internal class AddEditFoodEntryViewModel @Inject constructor(
 
     fun addFoodToMeal() {
         viewModelScope.launch {
-            val eatingDay =
+            val currentEatingDay =
                 eatingDayRepository.getEatingDayByDate(navArgs.userId, navArgs.selectedDate)
             val foodToAdd = FoodToConsume(food = currentFood, amountInGram = foodAmountInGram)
-            val mealsAfterUpdate = eatingDay.meals.toMutableList()
+            val mealsAfterUpdate = currentEatingDay.meals.toMutableList()
 
-            if (eatingDay.meals.any { it.id == navArgs.mealId }) {
-                val mealToUpdate = eatingDay.meals.first { it.id == navArgs.mealId }
+            if (currentEatingDay.meals.any { it.id == navArgs.mealId }) {
+                val mealToUpdate = currentEatingDay.meals.first { it.id == navArgs.mealId }
 
                 val foodsAfterUpdate: List<FoodToConsume> =
                     if (mealToUpdate.foods.any { it.food.id == foodToAdd.food.id }) {
@@ -81,7 +81,11 @@ internal class AddEditFoodEntryViewModel @Inject constructor(
                 )
             }
 
-            if (eatingDay == EatingDay.undefined) {
+            /**
+             * The current eating day is undefined, which means user is adding a new
+             * one
+             */
+            if (currentEatingDay == EatingDay.undefined) {
                 val id = eatingDayRepository.addEatingDay(
                     userId = navArgs.userId,
                     eatingDay = EatingDay(date = navArgs.selectedDate, meals = mealsAfterUpdate)
@@ -90,8 +94,7 @@ internal class AddEditFoodEntryViewModel @Inject constructor(
             } else {
                 eatingDayRepository.updateEatingDay(
                     userId = navArgs.userId,
-                    eatingDayId = eatingDay.id,
-                    meals = mealsAfterUpdate
+                    eatingDay = currentEatingDay.copy(meals = mealsAfterUpdate)
                 )
             }
         }
