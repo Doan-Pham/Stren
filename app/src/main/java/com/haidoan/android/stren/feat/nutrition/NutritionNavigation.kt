@@ -9,6 +9,7 @@ import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.core.designsystem.component.TabLayout
 import com.haidoan.android.stren.feat.nutrition.diary.NutritionDiaryRoute
 import com.haidoan.android.stren.feat.nutrition.diary.navigateToAddFoodToMeal
+import com.haidoan.android.stren.feat.nutrition.diary.navigateToEditFoodEntry
 import com.haidoan.android.stren.feat.nutrition.diary.nutritionDiaryGraph
 import com.haidoan.android.stren.feat.nutrition.food.FoodRoute
 import com.haidoan.android.stren.feat.nutrition.food.foodGraph
@@ -38,6 +39,16 @@ fun NavGraphBuilder.nutritionGraph(
                                     selectedDate,
                                     mealId,
                                     mealName
+                                )
+                            },
+                            onNavigateToEditFoodEntry = { userId, selectedDate, mealId, mealName, foodId, foodAmount ->
+                                navController.navigateToEditFoodEntry(
+                                    userId,
+                                    selectedDate,
+                                    mealId,
+                                    mealName,
+                                    foodId,
+                                    foodAmount
                                 )
                             }
                         )

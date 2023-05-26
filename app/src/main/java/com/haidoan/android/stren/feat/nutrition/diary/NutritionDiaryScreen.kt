@@ -33,6 +33,7 @@ import com.haidoan.android.stren.core.designsystem.component.*
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.designsystem.theme.Gray90
 import com.haidoan.android.stren.core.model.FoodNutrient
+import com.haidoan.android.stren.core.model.FoodToConsume
 import com.haidoan.android.stren.core.model.Meal
 import com.haidoan.android.stren.core.utils.DateUtils
 import timber.log.Timber
@@ -47,14 +48,17 @@ internal fun NutritionDiaryRoute(
     viewModel: NutritionDiaryViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onNavigateToAddFoodToMeal: (userId: String, selectedDate: LocalDate, mealId: String, mealName: String) -> Unit,
-) {
+    onNavigateToEditFoodEntry: (userId: String, selectedDate: LocalDate, mealId: String, mealName: String, foodId: String, foodAmount: Float) -> Unit,
+
+    ) {
     var shouldShowCalendarDialog by remember {
         mutableStateOf(false)
     }
 
     val trainingHistoryAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons = listOf(
-            IconButtonInfo(drawableResourceId = R.drawable.ic_calendar,
+            IconButtonInfo(
+                drawableResourceId = R.drawable.ic_calendar,
                 description = "MenuItem-Calendar",
                 clickHandler = {
                     shouldShowCalendarDialog = true
@@ -78,7 +82,8 @@ internal fun NutritionDiaryRoute(
         onMoveToPreviousWeek = viewModel::moveToPreviousDay,
         shouldShowCalendarDialog = shouldShowCalendarDialog,
         onDismissCalendarDialog = { shouldShowCalendarDialog = false },
-        onButtonAddFoodClick = onNavigateToAddFoodToMeal
+        onButtonAddFoodClick = onNavigateToAddFoodToMeal,
+        onFoodEntryClick = onNavigateToEditFoodEntry
     )
 }
 
@@ -94,7 +99,13 @@ internal fun NutritionDiaryScreen(
     onSelectCurrentDate: () -> Unit,
     onMoveToPreviousWeek: () -> Unit,
     onMoveToNextWeek: () -> Unit,
-    onButtonAddFoodClick: (userId: String, selectedDate: LocalDate, mealId: String, mealName: String) -> Unit
+    onFoodEntryClick: (
+        userId: String, selectedDate: LocalDate, mealId: String,
+        mealName: String, foodId: String, foodAmount: Float
+    ) -> Unit,
+    onButtonAddFoodClick: (
+        userId: String, selectedDate: LocalDate, mealId: String, mealName: String
+    ) -> Unit
 ) {
     when (uiState) {
         is NutritionDiaryUiState.Loading -> {
@@ -167,12 +178,25 @@ internal fun NutritionDiaryScreen(
                         contents = summaryNutrientInfoPages.map { it.second })
                 }
 
-                items(eatingDay.meals) {
-                    MealItem(meal = it, onButtonAddFoodClickHandler = { meal ->
-                        onButtonAddFoodClick(
-                            uiState.userId, uiState.selectedDate, meal.id, meal.name
-                        )
-                    })
+                items(eatingDay.meals) { meal ->
+                    MealItem(
+                        meal = meal,
+                        onButtonAddFoodClickHandler = {
+                            onButtonAddFoodClick(
+                                uiState.userId, uiState.selectedDate, meal.id, meal.name
+                            )
+                        },
+                        onFoodEntryClick = { foodToConsume ->
+                            onFoodEntryClick(
+                                uiState.userId,
+                                uiState.selectedDate,
+                                meal.id,
+                                meal.name,
+                                foodToConsume.food.id,
+                                foodToConsume.amountInGram
+                            )
+                        }
+                    )
                 }
             }
 
@@ -226,7 +250,8 @@ private fun DateHeader(
 @Composable
 private fun MealItem(
     meal: Meal,
-    onButtonAddFoodClickHandler: (meal: Meal) -> Unit,
+    onButtonAddFoodClickHandler: () -> Unit,
+    onFoodEntryClick: (food: FoodToConsume) -> Unit,
     onEditMealClickHandler: (mealId: String) -> Unit = {}
 ) {
     Column(
@@ -253,27 +278,12 @@ private fun MealItem(
                 text = meal.totalCaloriesString,
                 style = MaterialTheme.typography.titleMedium,
             )
-//            Spacer(Modifier.weight(1f))
-//            DropDownMenuScaffold(
-//                menuItemsTextAndClickHandler = mapOf(
-//                    "Edit" to { onEditMealClickHandler(meal.id) })
-//            )
-//            { onExpandMenu ->
-//                Icon(
-//                    modifier = Modifier
-//                        .clickable {
-//                            onExpandMenu()
-//                        }
-//                        .size(dimensionResource(id = R.dimen.icon_size_medium)),
-//                    painter = painterResource(id = R.drawable.ic_more_horizontal),
-//                    contentDescription = "Icon more"
-//                )
-//            }
         }
 
         meal.foods.forEach {
             Row(
                 modifier = Modifier
+                    .clickable { onFoodEntryClick(it) }
                     .fillMaxWidth()
                     .padding(bottom = dimensionResource(id = R.dimen.padding_small)),
                 verticalAlignment = Alignment.CenterVertically
@@ -295,14 +305,14 @@ private fun MealItem(
         }
 
         Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
-        StrenFilledButton(modifier = Modifier
-            .padding(horizontal = dimensionResource(id = R.dimen.padding_extra_large))
-            .align(CenterHorizontally),
+        StrenFilledButton(
+            modifier = Modifier
+                .padding(horizontal = dimensionResource(id = R.dimen.padding_extra_large))
+                .align(CenterHorizontally),
             textStyle = MaterialTheme.typography.bodyMedium,
             text = "Add food",
-            onClickHandler = {
-                onButtonAddFoodClickHandler(meal)
-            })
+            onClickHandler = onButtonAddFoodClickHandler
+        )
     }
 }
 
