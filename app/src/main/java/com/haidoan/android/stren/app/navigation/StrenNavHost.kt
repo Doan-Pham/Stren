@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.testTag
 import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -18,6 +17,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.haidoan.android.stren.feat.auth.NAV_ROUTE_AUTH
 import com.haidoan.android.stren.feat.auth.authenticationGraph
 import com.haidoan.android.stren.feat.auth.navigateToAuthentication
+import com.haidoan.android.stren.feat.dashboard.dashboardGraph
 import com.haidoan.android.stren.feat.nutrition.nutritionGraph
 import com.haidoan.android.stren.feat.training.trainingGraph
 
@@ -60,20 +60,8 @@ fun StrenNavHost(
         }
     ) {
         authenticationGraph(navController)
-        composable(route = TopLevelDestination.DASHBOARD.route) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color = Color.Black)
-                    .testTag("Screen-Dashboard")
-            ) {
-                var isAppBarConfigured by remember { mutableStateOf(false) }
-                if (!isAppBarConfigured) {
-                    appBarConfigurationChangeHandler(AppBarConfiguration.NavigationAppBar())
-                    isAppBarConfigured = true
-                }
-            }
-        }
+
+        dashboardGraph(navController, appBarConfigurationChangeHandler)
         trainingGraph(navController, appBarConfigurationChangeHandler)
         nutritionGraph(navController, appBarConfigurationChangeHandler)
         composable(route = TopLevelDestination.PROFILE.route) {
