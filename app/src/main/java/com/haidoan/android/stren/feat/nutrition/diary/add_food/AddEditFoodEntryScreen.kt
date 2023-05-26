@@ -32,17 +32,17 @@ internal const val FOOD_ID_EDIT_FOOD_ENTRY_NAV_ARG = "FOOD_ID_EDIT_FOOD_ENTRY_NA
 internal const val FOOD_AMOUNT_EDIT_FOOD_ENTRY_NAV_ARG = "FOOD_AMOUNT_EDIT_FOOD_ENTRY_NAV_ARG"
 
 @Composable
-internal fun EditFoodEntryRoute(
+internal fun AddEditFoodEntryRoute(
     modifier: Modifier = Modifier,
-    viewModel: EditFoodEntryViewModel = hiltViewModel(),
+    viewModel: AddEditFoodEntryViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onBackToPreviousScreen: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var isAppBarConfigured by remember { mutableStateOf(false) }
-    if (!isAppBarConfigured && uiState is EditFoodEntryUiState.LoadComplete) {
-        val food = (uiState as EditFoodEntryUiState.LoadComplete).food
+    if (!isAppBarConfigured && uiState is AddEditFoodEntryUiState.LoadComplete) {
+        val food = (uiState as AddEditFoodEntryUiState.LoadComplete).food
         val foodAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
             title = food.name +
                     if (food.brandName.isEmpty()) "" else "(${food.brandName})",
@@ -73,17 +73,17 @@ internal fun EditFoodEntryRoute(
 @Composable
 internal fun EditFoodEntryScreen(
     modifier: Modifier,
-    uiState: EditFoodEntryUiState,
+    uiState: AddEditFoodEntryUiState,
     foodAmountInGram: Float,
     onChangeFoodAmount: (Float) -> Unit
 ) {
     when (uiState) {
-        is EditFoodEntryUiState.Loading -> {
+        is AddEditFoodEntryUiState.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 LoadingAnimation()
             }
         }
-        is EditFoodEntryUiState.LoadComplete -> {
+        is AddEditFoodEntryUiState.LoadComplete -> {
             Timber.d("food: ${uiState.food}")
             val calories = uiState.food.calories.with(foodAmountInGram)
             val coreNutrients = uiState.food.coreNutrients.map { it.with(foodAmountInGram) }

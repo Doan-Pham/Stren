@@ -136,7 +136,7 @@ internal fun NavGraphBuilder.nutritionDiaryGraph(
     ) {
         AddFoodToMealRoute(
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
-            onNavigateToEditFoodEntry = { userId, selectedDate, mealId, mealName, foodId ->
+            onNavigateToAddFoodEntry = { userId, selectedDate, mealId, mealName, foodId ->
                 navController.navigateToAddFoodEntry(
                     userId,
                     selectedDate,
@@ -169,7 +169,7 @@ internal fun NavGraphBuilder.nutritionDiaryGraph(
             },
         )
     ) {
-        EditFoodEntryRoute(
+        AddEditFoodEntryRoute(
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
             onBackToPreviousScreen = { navController.popBackStack() })
     }
