@@ -1,7 +1,10 @@
 package com.haidoan.android.stren.core.model
 
 import com.google.firebase.firestore.DocumentId
+import com.haidoan.android.stren.core.model.Food.Companion.defaultCoreNutrients
 import com.haidoan.android.stren.core.model.FoodNutrient.Companion.with
+import com.haidoan.android.stren.core.utils.ListUtils.replaceWith
+import timber.log.Timber
 import java.time.LocalDate
 import java.util.*
 
@@ -12,6 +15,33 @@ data class EatingDay(
     val meals: List<Meal> = listOf()
 ) {
     val totalCalories = this.meals.sumOf { it.totalCalories() }
+    fun totalMacros(): List<FoodNutrient> {
+        var result = defaultCoreNutrients.toMutableList()
+
+        this.meals.forEach { meals ->
+            meals.totalMacros().forEach { macronutrient ->
+                Timber.d("Day - macronutrient: $macronutrient ; result - before: $result")
+
+                if (!result.any { it.nutrientName == macronutrient.nutrientName }) {
+                    result.add(macronutrient)
+                } else {
+                    val oldNutrientAmount =
+                        result.first { it.nutrientName == macronutrient.nutrientName }
+                    result = result.replaceWith(
+                        macronutrient.copy(
+                            amount = oldNutrientAmount.amount + macronutrient
+                                .amount
+                        )
+                    ) { it.nutrientName == macronutrient.nutrientName }.toMutableList()
+                }
+                Timber.d("Day - result - after: $result")
+            }
+        }
+
+        Timber.d("Day - result - final: $result")
+        return result.sortedBy { it.nutrientName }
+    }
+
 
     companion object {
         val undefined = EatingDay(id = "Undefined", date = LocalDate.of(1000, 10, 10))
@@ -43,6 +73,31 @@ data class Meal(
     val totalCaloriesString
         get() = "${totalCalories()}kcal"
 
+    fun totalMacros(): List<FoodNutrient> {
+        var result = mutableListOf<FoodNutrient>()
+        this.foods.forEach { foodToConsume ->
+            foodToConsume.totalMacros().forEach { macronutrient ->
+                Timber.d("Meal - macronutrient: $macronutrient ; result - before: $result")
+                if (!result.any { it.nutrientName == macronutrient.nutrientName }) {
+                    result.add(macronutrient)
+                } else {
+                    val nutrientInResult =
+                        result.first { it.nutrientName == macronutrient.nutrientName }
+                    result = result.replaceWith(
+                        macronutrient.copy(
+                            amount = nutrientInResult.amount + macronutrient
+                                .amount
+                        )
+                    ) { it.nutrientName == macronutrient.nutrientName }.toMutableList()
+                }
+                Timber.d("Meal - result - after: $result")
+
+            }
+        }
+        Timber.d("Meal - result - final: $result")
+        return result
+    }
+
     companion object {
         val defaultMeals = listOf(
             Meal(id = MEAL_BREAKFAST_ID, name = "Breakfast"),
@@ -56,6 +111,9 @@ data class Meal(
 data class FoodToConsume(val food: Food = Food(), val amountInGram: Float = -1f) {
     fun totalCalories(): Int =
         this.food.calories.with(foodAmountInGram = amountInGram).amount.toInt()
+
+    fun totalMacros(): List<FoodNutrient> =
+        this.food.coreNutrients.map { it.with(foodAmountInGram = amountInGram) }
 
     val totalCaloriesString
         get() = "${totalCalories()}kcal"
