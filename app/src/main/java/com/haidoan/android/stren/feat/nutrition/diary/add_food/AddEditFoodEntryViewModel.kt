@@ -19,7 +19,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-internal class EditFoodEntryViewModel @Inject constructor(
+internal class AddEditFoodEntryViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle, foodRepository: FoodRepository,
     private val eatingDayRepository: EatingDayRepository
 ) : ViewModel() {
@@ -32,14 +32,14 @@ internal class EditFoodEntryViewModel @Inject constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val uiState: StateFlow<EditFoodEntryUiState> =
+    val uiState: StateFlow<AddEditFoodEntryUiState> =
         MutableStateFlow(navArgs.foodId).flatMapLatest {
             currentFood = foodRepository.getFoodById(it)
-            flowOf(EditFoodEntryUiState.LoadComplete(currentFood))
+            flowOf(AddEditFoodEntryUiState.LoadComplete(currentFood))
         }.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            EditFoodEntryUiState.Loading
+            AddEditFoodEntryUiState.Loading
         )
 
     fun onChangeFoodAmount(newAmount: Float) {

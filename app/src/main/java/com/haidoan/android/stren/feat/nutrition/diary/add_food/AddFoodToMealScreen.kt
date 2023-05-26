@@ -46,7 +46,7 @@ internal fun AddFoodToMealRoute(
     viewModel: AddFoodToMealViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onBackToPreviousScreen: () -> Unit,
-    onNavigateToEditFoodEntry: (userId: String, selectedDate: LocalDate, mealId: String, mealName: String, foodId: String) -> Unit,
+    onNavigateToAddFoodEntry: (userId: String, selectedDate: LocalDate, mealId: String, mealName: String, foodId: String) -> Unit,
 ) {
     val pagedFoodData = viewModel.pagedFoodData.collectAsLazyPagingItems()
     val lazyListState = rememberLazyListState()
@@ -87,7 +87,7 @@ internal fun AddFoodToMealRoute(
         modifier = modifier,
         pagedFoodData = pagedFoodData,
         onNavigateToEditFoodEntry = { foodId ->
-            onNavigateToEditFoodEntry(
+            onNavigateToAddFoodEntry(
                 viewModel.navArgs.userId,
                 viewModel.navArgs.selectedDate,
                 viewModel.navArgs.mealId,
