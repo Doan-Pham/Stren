@@ -23,13 +23,12 @@ internal class EditFoodEntryViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle, foodRepository: FoodRepository,
     private val eatingDayRepository: EatingDayRepository
 ) : ViewModel() {
-    var foodAmountInGram by mutableStateOf(FoodNutrient.DEFAULT_FOOD_AMOUNT_IN_GRAM)
-
     private val navArgs: EditFoodEntryArgs = EditFoodEntryArgs(savedStateHandle)
+    var foodAmountInGram by mutableStateOf(navArgs.foodAmount)
     private lateinit var currentFood: Food
 
     init {
-        Timber.d("navArgs - userId ${navArgs.userId}; eatingDayId: ${navArgs.selectedDate} ; mealId: ${navArgs.mealId}; mealName: ${navArgs.mealName}; foodId: ${navArgs.foodId}")
+        Timber.d("navArgs - userId ${navArgs.userId}; eatingDayId: ${navArgs.selectedDate} ; mealId: ${navArgs.mealId}; mealName: ${navArgs.mealName}; foodId: ${navArgs.foodId}; foodAmount: ${navArgs.foodAmount}")
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

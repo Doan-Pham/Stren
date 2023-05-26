@@ -6,6 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.*
 import com.google.accompanist.navigation.animation.composable
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
+import com.haidoan.android.stren.core.model.FoodNutrient.Companion.DEFAULT_FOOD_AMOUNT_IN_GRAM
 import com.haidoan.android.stren.feat.nutrition.diary.add_food.*
 import com.haidoan.android.stren.feat.training.history.log_workout.*
 import com.haidoan.android.stren.feat.training.routines.add_edit.*
@@ -26,7 +27,7 @@ internal fun NavController.navigateToAddFoodToMeal(
     )
 }
 
-internal fun NavController.navigateToEditFoodEntry(
+internal fun NavController.navigateToAddFoodEntry(
     userId: String,
     selectedDate: LocalDate,
     mealId: String,
@@ -40,6 +41,25 @@ internal fun NavController.navigateToEditFoodEntry(
                 "/" + mealId +
                 "/" + mealName +
                 "/" + foodId
+    )
+}
+
+internal fun NavController.navigateToEditFoodEntry(
+    userId: String,
+    selectedDate: LocalDate,
+    mealId: String,
+    mealName: String,
+    foodId: String,
+    foodAmount: Float,
+) {
+    this.navigate(
+        EDIT_FOOD_ENTRY_SCREEN_ROUTE +
+                "/" + userId +
+                "/" + selectedDate.toEpochDay() +
+                "/" + mealId +
+                "/" + mealName +
+                "/" + foodId +
+                "?" + "$FOOD_AMOUNT_EDIT_FOOD_ENTRY_NAV_ARG=${foodAmount}"
     )
 }
 
@@ -72,6 +92,7 @@ internal class EditFoodEntryArgs(
     val mealId: String,
     val mealName: String,
     val foodId: String,
+    val foodAmount: Float,
 ) {
     constructor(savedStateHandle: SavedStateHandle) :
             this(
@@ -83,7 +104,8 @@ internal class EditFoodEntryArgs(
                 ),
                 checkNotNull(savedStateHandle[MEAL_ID_EDIT_FOOD_ENTRY_NAV_ARG]),
                 checkNotNull(savedStateHandle[MEAL_NAME_EDIT_FOOD_ENTRY_NAV_ARG]),
-                checkNotNull(savedStateHandle[FOOD_ID_EDIT_FOOD_ENTRY_NAV_ARG])
+                checkNotNull(savedStateHandle[FOOD_ID_EDIT_FOOD_ENTRY_NAV_ARG]),
+                checkNotNull(savedStateHandle[FOOD_AMOUNT_EDIT_FOOD_ENTRY_NAV_ARG])
             )
 }
 
@@ -115,7 +137,7 @@ internal fun NavGraphBuilder.nutritionDiaryGraph(
         AddFoodToMealRoute(
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
             onNavigateToEditFoodEntry = { userId, selectedDate, mealId, mealName, foodId ->
-                navController.navigateToEditFoodEntry(
+                navController.navigateToAddFoodEntry(
                     userId,
                     selectedDate,
                     mealId,
@@ -132,15 +154,21 @@ internal fun NavGraphBuilder.nutritionDiaryGraph(
                 "/" + "{$SELECTED_DATE_EDIT_FOOD_ENTRY_NAV_ARG}" +
                 "/" + "{$MEAL_ID_EDIT_FOOD_ENTRY_NAV_ARG}" +
                 "/" + "{$MEAL_NAME_EDIT_FOOD_ENTRY_NAV_ARG}" +
-                "/" + "{$FOOD_ID_EDIT_FOOD_ENTRY_NAV_ARG}",
+                "/" + "{$FOOD_ID_EDIT_FOOD_ENTRY_NAV_ARG}" +
+                "?" + "$FOOD_AMOUNT_EDIT_FOOD_ENTRY_NAV_ARG={$FOOD_AMOUNT_EDIT_FOOD_ENTRY_NAV_ARG}",
 
         arguments = listOf(
             navArgument(USER_ID_EDIT_FOOD_ENTRY_NAV_ARG) { type = NavType.StringType },
             navArgument(SELECTED_DATE_EDIT_FOOD_ENTRY_NAV_ARG) { type = NavType.LongType },
             navArgument(MEAL_ID_EDIT_FOOD_ENTRY_NAV_ARG) { type = NavType.StringType },
             navArgument(MEAL_NAME_EDIT_FOOD_ENTRY_NAV_ARG) { type = NavType.StringType },
-            navArgument(FOOD_ID_EDIT_FOOD_ENTRY_NAV_ARG) { type = NavType.StringType }
-        )) {
+            navArgument(FOOD_ID_EDIT_FOOD_ENTRY_NAV_ARG) { type = NavType.StringType },
+            navArgument(FOOD_AMOUNT_EDIT_FOOD_ENTRY_NAV_ARG) {
+                type = NavType.FloatType
+                defaultValue = DEFAULT_FOOD_AMOUNT_IN_GRAM
+            },
+        )
+    ) {
         EditFoodEntryRoute(
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
             onBackToPreviousScreen = { navController.popBackStack() })
