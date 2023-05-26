@@ -4,6 +4,7 @@ import com.haidoan.android.stren.core.model.FoodNutrient.Companion.undefinedFood
 import java.math.RoundingMode
 import java.text.DecimalFormat
 
+
 data class Food(
     val id: String = "Undefined",
     val name: String = "Undefined ",
@@ -13,6 +14,11 @@ data class Food(
     val brandName: String = "",
 ) {
     companion object {
+        val defaultCoreNutrients = listOf(
+            FoodNutrient("Protein", 0f, "g"),
+            FoodNutrient("Carb", 0f, "g"),
+            FoodNutrient("Fat", 0f, "g"),
+        )
         val undefinedFood = Food(
             "Undefined",
             "Undefined",
