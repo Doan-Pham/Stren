@@ -1,11 +1,13 @@
 package com.haidoan.android.stren.feat.nutrition.diary
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -26,8 +29,11 @@ import com.haidoan.android.stren.core.designsystem.component.*
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.designsystem.theme.Gray90
 import com.haidoan.android.stren.core.model.Meal
+import com.haidoan.android.stren.core.utils.DateUtils
 import timber.log.Timber
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 
 @Composable
@@ -72,6 +78,7 @@ internal fun NutritionDiaryRoute(
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @SuppressLint("NewApi")
 @Composable
 internal fun NutritionDiaryScreen(
@@ -98,6 +105,9 @@ internal fun NutritionDiaryScreen(
             Timber.d("dates with workouts: ${uiState.datesTracked}")
 
             val selectedDate = uiState.selectedDate
+            val eatingDay = uiState.eatingDay
+            val datesTracked = uiState.datesTracked
+
             LazyColumn(
                 modifier = modifier
                     .fillMaxSize()
@@ -106,71 +116,56 @@ internal fun NutritionDiaryScreen(
                 item {
                     DateHeader(
                         modifier = Modifier.fillMaxWidth(),
-                        headerTitle = "$selectedDate",
+                        headerTitle =
+                        if (selectedDate.isEqual(DateUtils.getCurrentDate())) "Today"
+                        else selectedDate.format(
+                            DateTimeFormatter.ofLocalizedDate(
+                                FormatStyle.LONG
+                            )
+                        ),
                         onHeaderClickHandler = onSelectCurrentDate,
                         onIconPreviousClickHandler = onMoveToPreviousWeek,
                         onIconNextClickHandler = onMoveToNextWeek
                     )
                 }
 
-                item {
-                    Text(text = "Calories", style = MaterialTheme.typography.titleMedium)
-                }
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
-                    ) {
-                        Column(
-                            Modifier.weight(1f),
-                            horizontalAlignment = CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = "Goal",
-                                style = MaterialTheme.typography.labelLarge,
-                                textAlign = TextAlign.Center,
-                                color = Gray60
-                            )
-                            Text(
-                                text = "2000",
-                                style = MaterialTheme.typography.titleMedium,
-                                textAlign = TextAlign.Center
-                            )
-                        }
+                val goalCalories = 2000f
+                val consumedCalories = eatingDay.totalCalories
 
-                        StrenPieChart(
-                            modifier = Modifier.weight(1f),
-                            values = listOf(1600f),
-                            goalValue = 2000f,
-                            isShowProgress = true,
-                            middleSubTitle = "Remaining",
-                            size = PieChartSize.MEDIUM,
-                            middleTitle = (2000f - 1600f).toInt().toString(),
+                item {
+                    /**
+                     * For some reason, defining the variable's type causes type inference error,
+                     * while specifying explicit type for "listOf()" method works fine
+                     */
+                    @Suppress("RemoveExplicitTypeArguments")
+                    val summaryNutrientInfoPages =
+                        listOf<Pair<String, @Composable () -> Unit>>(
+                            Pair("Calories") {
+                                TotalCaloriesRow(
+                                    goalCalories = goalCalories,
+                                    consumedCalories = consumedCalories.toFloat()
+                                )
+                            }, Pair("Macronutrients") {
+                                TotalCaloriesRow(
+                                    goalCalories = goalCalories,
+                                    consumedCalories = consumedCalories.toFloat()
+                                )
+                            }
                         )
 
-                        Column(
-                            Modifier.weight(1f),
-                            horizontalAlignment = CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = "Consumed",
-                                style = MaterialTheme.typography.labelLarge,
-                                textAlign = TextAlign.Center,
-                                color = Gray60
-                            )
-                            Text(
-                                text = "400",
-                                style = MaterialTheme.typography.titleMedium,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
+                    val pagerState = rememberPagerState(initialPage = 0)
+                    Text(
+                        text = summaryNutrientInfoPages[pagerState.currentPage].first,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    StrenHorizontalPager(
+                        modifier = Modifier
+                            .wrapContentHeight()
+                            .fillMaxWidth(), contents = summaryNutrientInfoPages.map { it.second }
+                    )
                 }
 
-                items(uiState.eatingDay.meals) {
+                items(eatingDay.meals) {
                     MealItem(meal = it, onButtonAddFoodClickHandler = { meal ->
                         onButtonAddFoodClick(
                             uiState.userId,
@@ -180,14 +175,13 @@ internal fun NutritionDiaryScreen(
                         )
                     })
                 }
-
             }
 
             if (shouldShowCalendarDialog) {
                 CalendarDialog(
                     onDismissDialog = onDismissCalendarDialog,
                     selectedDate = selectedDate,
-                    markedDates = uiState.datesTracked,
+                    markedDates = datesTracked,
                     onSelectDate = onSelectDate
                 )
             }
@@ -197,12 +191,12 @@ internal fun NutritionDiaryScreen(
 
 @Composable
 private fun DateHeader(
-    modifier: Modifier = Modifier, headerTitle: String,
+    modifier: Modifier = Modifier,
+    headerTitle: String,
     onHeaderClickHandler: () -> Unit,
     onIconPreviousClickHandler: () -> Unit,
     onIconNextClickHandler: () -> Unit,
-
-    ) {
+) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -252,35 +246,54 @@ private fun MealItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
+                modifier = Modifier.weight(1f),
                 text = meal.name,
                 style = MaterialTheme.typography.titleMedium,
             )
-            Spacer(Modifier.weight(1f))
-            DropDownMenuScaffold(
-                menuItemsTextAndClickHandler = mapOf(
-                    "Edit" to { onEditMealClickHandler(meal.id) })
+            Text(
+                text = meal.totalCaloriesString,
+                style = MaterialTheme.typography.titleMedium,
             )
-            { onExpandMenu ->
-                Icon(
+//            Spacer(Modifier.weight(1f))
+//            DropDownMenuScaffold(
+//                menuItemsTextAndClickHandler = mapOf(
+//                    "Edit" to { onEditMealClickHandler(meal.id) })
+//            )
+//            { onExpandMenu ->
+//                Icon(
+//                    modifier = Modifier
+//                        .clickable {
+//                            onExpandMenu()
+//                        }
+//                        .size(dimensionResource(id = R.dimen.icon_size_medium)),
+//                    painter = painterResource(id = R.drawable.ic_more_horizontal),
+//                    contentDescription = "Icon more"
+//                )
+//            }
+        }
+
+        meal.foods.forEach {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = dimensionResource(id = R.dimen.padding_small)),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
                     modifier = Modifier
-                        .clickable {
-                            onExpandMenu()
-                        }
-                        .size(dimensionResource(id = R.dimen.icon_size_medium)),
-                    painter = painterResource(id = R.drawable.ic_more_horizontal),
-                    contentDescription = "Icon more"
+                        .weight(1f)
+                        .padding(end = dimensionResource(id = R.dimen.padding_small)),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    text = it.food.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Text(
+                    text = it.totalCaloriesString,
+                    style = MaterialTheme.typography.bodyMedium,
                 )
             }
         }
-
-        meal.foods.subList(0, minOf(meal.foods.size, 3))
-            .forEach {
-                Text(
-                    text = it.food.name,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Gray60
-                )
-            }
 
         Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
         StrenFilledButton(
@@ -292,5 +305,62 @@ private fun MealItem(
             onClickHandler = {
                 onButtonAddFoodClickHandler(meal)
             })
+    }
+}
+
+
+@Composable
+private fun TotalCaloriesRow(goalCalories: Float, consumedCalories: Float) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+    ) {
+        val remainingCalories = goalCalories - consumedCalories
+        Column(
+            Modifier.weight(1f),
+            horizontalAlignment = CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Goal",
+                style = MaterialTheme.typography.labelLarge,
+                textAlign = TextAlign.Center,
+                color = Gray60
+            )
+            Text(
+                text = goalCalories.toInt().toString(),
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        StrenPieChart(
+            modifier = Modifier.weight(1f),
+            values = listOf(consumedCalories),
+            goalValue = goalCalories,
+            isShowProgress = true,
+            middleSubTitle = "Remaining",
+            size = PieChartSize.MEDIUM,
+            middleTitle = remainingCalories.toInt().toString(),
+        )
+
+        Column(
+            Modifier.weight(1f),
+            horizontalAlignment = CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Consumed",
+                style = MaterialTheme.typography.labelLarge,
+                textAlign = TextAlign.Center,
+                color = Gray60
+            )
+            Text(
+                text = consumedCalories.toInt().toString(),
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
