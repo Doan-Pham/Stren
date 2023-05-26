@@ -1,6 +1,7 @@
 package com.haidoan.android.stren.core.model
 
 import com.google.firebase.firestore.DocumentId
+import com.haidoan.android.stren.core.model.FoodNutrient.Companion.with
 import java.time.LocalDate
 import java.util.*
 
@@ -10,6 +11,8 @@ data class EatingDay(
     val date: LocalDate,
     val meals: List<Meal> = listOf()
 ) {
+    val totalCalories = this.meals.sumOf { it.totalCalories() }
+
     companion object {
         val undefined = EatingDay(id = "Undefined", date = LocalDate.of(1000, 10, 10))
     }
@@ -36,6 +39,9 @@ data class Meal(
     val name: String = "Undefined Meal name",
     val foods: List<FoodToConsume> = listOf()
 ) {
+    fun totalCalories() = this.foods.sumOf { it.totalCalories() }
+    val totalCaloriesString
+        get() = "${totalCalories()}kcal"
 
     companion object {
         val defaultMeals = listOf(
@@ -47,4 +53,10 @@ data class Meal(
     }
 }
 
-data class FoodToConsume(val food: Food = Food(), val amountInGram: Float = -1f)
+data class FoodToConsume(val food: Food = Food(), val amountInGram: Float = -1f) {
+    fun totalCalories(): Int =
+        this.food.calories.with(foodAmountInGram = amountInGram).amount.toInt()
+
+    val totalCaloriesString
+        get() = "${totalCalories()}kcal"
+}
