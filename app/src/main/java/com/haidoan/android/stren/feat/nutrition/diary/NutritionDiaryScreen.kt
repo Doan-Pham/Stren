@@ -12,9 +12,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Bottom
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -28,6 +32,7 @@ import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.component.*
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.designsystem.theme.Gray90
+import com.haidoan.android.stren.core.model.FoodNutrient
 import com.haidoan.android.stren.core.model.Meal
 import com.haidoan.android.stren.core.utils.DateUtils
 import timber.log.Timber
@@ -49,8 +54,7 @@ internal fun NutritionDiaryRoute(
 
     val trainingHistoryAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons = listOf(
-            IconButtonInfo(
-                drawableResourceId = R.drawable.ic_calendar,
+            IconButtonInfo(drawableResourceId = R.drawable.ic_calendar,
                 description = "MenuItem-Calendar",
                 clickHandler = {
                     shouldShowCalendarDialog = true
@@ -116,8 +120,7 @@ internal fun NutritionDiaryScreen(
                 item {
                     DateHeader(
                         modifier = Modifier.fillMaxWidth(),
-                        headerTitle =
-                        if (selectedDate.isEqual(DateUtils.getCurrentDate())) "Today"
+                        headerTitle = if (selectedDate.isEqual(DateUtils.getCurrentDate())) "Today"
                         else selectedDate.format(
                             DateTimeFormatter.ofLocalizedDate(
                                 FormatStyle.LONG
@@ -129,6 +132,7 @@ internal fun NutritionDiaryScreen(
                     )
                 }
 
+                // Remove hardcoded goal calories
                 val goalCalories = 2000f
                 val consumedCalories = eatingDay.totalCalories
 
@@ -139,39 +143,34 @@ internal fun NutritionDiaryScreen(
                      */
                     @Suppress("RemoveExplicitTypeArguments")
                     val summaryNutrientInfoPages =
-                        listOf<Pair<String, @Composable () -> Unit>>(
-                            Pair("Calories") {
-                                TotalCaloriesRow(
-                                    goalCalories = goalCalories,
-                                    consumedCalories = consumedCalories.toFloat()
-                                )
-                            }, Pair("Macronutrients") {
-                                TotalCaloriesRow(
-                                    goalCalories = goalCalories,
-                                    consumedCalories = consumedCalories.toFloat()
-                                )
-                            }
-                        )
+                        listOf<Pair<String, @Composable () -> Unit>>(Pair("Calories") {
+                            TotalCaloriesRow(
+                                goalCalories = goalCalories,
+                                consumedCalories = consumedCalories.toFloat()
+                            )
+                        }, Pair("Macronutrients") {
+                            MacronutrientsRow(
+                                macronutrientsByGoal = eatingDay.totalMacros()
+                                    .associateWith { 500f }
+                            )
+                        })
 
                     val pagerState = rememberPagerState(initialPage = 0)
                     Text(
                         text = summaryNutrientInfoPages[pagerState.currentPage].first,
                         style = MaterialTheme.typography.titleMedium
                     )
-                    StrenHorizontalPager(
+                    StrenHorizontalPager(pagerState = pagerState,
                         modifier = Modifier
                             .wrapContentHeight()
-                            .fillMaxWidth(), contents = summaryNutrientInfoPages.map { it.second }
-                    )
+                            .fillMaxWidth(),
+                        contents = summaryNutrientInfoPages.map { it.second })
                 }
 
                 items(eatingDay.meals) {
                     MealItem(meal = it, onButtonAddFoodClickHandler = { meal ->
                         onButtonAddFoodClick(
-                            uiState.userId,
-                            uiState.selectedDate,
-                            meal.id,
-                            meal.name
+                            uiState.userId, uiState.selectedDate, meal.id, meal.name
                         )
                     })
                 }
@@ -296,10 +295,9 @@ private fun MealItem(
         }
 
         Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
-        StrenFilledButton(
-            modifier = Modifier
-                .padding(horizontal = dimensionResource(id = R.dimen.padding_extra_large))
-                .align(CenterHorizontally),
+        StrenFilledButton(modifier = Modifier
+            .padding(horizontal = dimensionResource(id = R.dimen.padding_extra_large))
+            .align(CenterHorizontally),
             textStyle = MaterialTheme.typography.bodyMedium,
             text = "Add food",
             onClickHandler = {
@@ -361,6 +359,72 @@ private fun TotalCaloriesRow(goalCalories: Float, consumedCalories: Float) {
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center
             )
+        }
+    }
+}
+
+@Composable
+private fun MacronutrientsRow(macronutrientsByGoal: Map<FoodNutrient, Float>) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = CenterHorizontally
+    ) {
+        var firstColumnWidth by remember { mutableStateOf(0) }
+
+        val widthInDp = with(LocalDensity.current) {
+            firstColumnWidth.toDp()
+        }
+        // TODO: Remove hardcoded macro nutrient goals
+        macronutrientsByGoal.forEach { macronutrientsByGoal ->
+            val macronutrient = macronutrientsByGoal.key
+            val goal = macronutrientsByGoal.value
+
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Bottom) {
+                if (widthInDp == 0.dp)
+                    Text(
+                        modifier = Modifier
+                            .onGloballyPositioned {
+                                firstColumnWidth = it.size.width
+                            },
+                        text = macronutrient.nutrientName,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                else {
+                    Text(
+                        modifier = Modifier.width(width = widthInDp),
+                        text = macronutrient.nutrientName,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
+                Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_small)))
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "${macronutrient.amount.toInt()}${macronutrient.unitName}",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            text = "${goal.toInt()}${macronutrient.unitName}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Gray60
+                        )
+                    }
+                    Spacer(modifier = Modifier.size(4.dp))
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(4.dp),
+                        strokeCap = StrokeCap.Round,
+                        progress = macronutrient.amount / goal,
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = Gray90
+                    )
+                }
+            }
         }
     }
 }
