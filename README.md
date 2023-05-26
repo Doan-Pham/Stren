@@ -30,13 +30,11 @@
 * View workout history
 * Log workout
 * View foods' nutritional value
-### Work in Progress
 * Track nutrition and calories
-### TODO
+### Work in Progress
 * View nutrition and training progress
+### TODO
 * Record body measurements and view progress
-* Log meals and track calories
-* Track training and body measurements progess
 
 ## How To Run
 
@@ -92,6 +90,7 @@ The application's conventions loosely follow the following guidelines:
 - Pagination: [Paging 3](https://developer.android.com/topic/libraries/architecture/paging/v3-overview).
 - Testing: [JUnit](https://junit.org/junit4/).
 - Network: [Retrofit](https://square.github.io/retrofit/), [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization).
+- Chart:  [tehras/charts](https://github.com/tehras/charts)
 - Authentication, Database and Storage: [Firebase](https://firebase.google.com/).
 - Exercise Dataset: [free-exercise-db](https://github.com/yuhonas/free-exercise-db).
 - Food Dataset: [FoodData Central API](https://fdc.nal.usda.gov/api-guide.html).
