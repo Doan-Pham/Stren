@@ -15,32 +15,33 @@ data class EatingDay(
     val meals: List<Meal> = listOf()
 ) {
     val totalCalories = this.meals.sumOf { it.totalCalories() }
-    fun totalMacros(): List<FoodNutrient> {
-        var result = defaultCoreNutrients.toMutableList()
+    val totalMacros: List<FoodNutrient>
+        get() {
+            var result = defaultCoreNutrients.toMutableList()
 
-        this.meals.forEach { meals ->
-            meals.totalMacros().forEach { macronutrient ->
-                Timber.d("Day - macronutrient: $macronutrient ; result - before: $result")
+            this.meals.forEach { meals ->
+                meals.totalMacros().forEach { macronutrient ->
+                    Timber.d("Day - macronutrient: $macronutrient ; result - before: $result")
 
-                if (!result.any { it.nutrientName == macronutrient.nutrientName }) {
-                    result.add(macronutrient)
-                } else {
-                    val oldNutrientAmount =
-                        result.first { it.nutrientName == macronutrient.nutrientName }
-                    result = result.replaceWith(
-                        macronutrient.copy(
-                            amount = oldNutrientAmount.amount + macronutrient
-                                .amount
-                        )
-                    ) { it.nutrientName == macronutrient.nutrientName }.toMutableList()
+                    if (!result.any { it.nutrientName == macronutrient.nutrientName }) {
+                        result.add(macronutrient)
+                    } else {
+                        val oldNutrientAmount =
+                            result.first { it.nutrientName == macronutrient.nutrientName }
+                        result = result.replaceWith(
+                            macronutrient.copy(
+                                amount = oldNutrientAmount.amount + macronutrient
+                                    .amount
+                            )
+                        ) { it.nutrientName == macronutrient.nutrientName }.toMutableList()
+                    }
+                    Timber.d("Day - result - after: $result")
                 }
-                Timber.d("Day - result - after: $result")
             }
-        }
 
-        Timber.d("Day - result - final: $result")
-        return result.sortedBy { it.nutrientName }
-    }
+            Timber.d("Day - result - final: $result")
+            return result.sortedBy { it.nutrientName }
+        }
 
 
     companion object {

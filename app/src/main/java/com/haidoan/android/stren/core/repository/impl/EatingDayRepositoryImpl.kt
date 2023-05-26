@@ -2,7 +2,6 @@ package com.haidoan.android.stren.core.repository.impl
 
 import com.haidoan.android.stren.core.datasource.remote.base.EatingDayRemoteDataSource
 import com.haidoan.android.stren.core.model.EatingDay
-import com.haidoan.android.stren.core.model.Meal
 import com.haidoan.android.stren.core.repository.base.EatingDayRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -28,10 +27,10 @@ class EatingDayRepositoryImpl @Inject constructor(private val eatingDayRemoteDat
         }
     }
 
-    override suspend fun updateEatingDay(userId: String, eatingDayId: String, meals: List<Meal>) {
+    override suspend fun updateEatingDay(userId: String, eatingDay: EatingDay) {
         try {
-            Timber.d("updateWorkout() - userId: $userId; eatingDayId: $eatingDayId")
-            eatingDayRemoteDataSource.updateEatingDay(userId, eatingDayId, meals)
+            Timber.d("updateWorkout() - userId: $userId; eatingDayId: ${eatingDay.id}")
+            eatingDayRemoteDataSource.updateEatingDay(userId, eatingDay)
         } catch (exception: Exception) {
             Timber.e("updateWorkout() - Exception: ${exception.message}")
         }

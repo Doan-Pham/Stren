@@ -6,7 +6,6 @@ import com.haidoan.android.stren.core.datasource.remote.base.EatingDayRemoteData
 import com.haidoan.android.stren.core.datasource.remote.model.FirestoreEatingDay
 import com.haidoan.android.stren.core.datasource.remote.model.toExternalModel
 import com.haidoan.android.stren.core.model.EatingDay
-import com.haidoan.android.stren.core.model.Meal
 import com.haidoan.android.stren.core.utils.DateUtils.toTimeStampDayEnd
 import com.haidoan.android.stren.core.utils.DateUtils.toTimeStampDayStart
 import kotlinx.coroutines.flow.Flow
@@ -37,13 +36,6 @@ class EatingDayFirestoreDataSource @Inject constructor() : EatingDayRemoteDataSo
             ?.toExternalModel()
             ?: EatingDay(date = LocalDate.of(1000, 10, 10))
 
-    override suspend fun updateEatingDay(userId: String, eatingDayId: String, meals: List<Meal>) {
-        firestore.collection("$USER_COLLECTION_PATH/$userId/$EATING_DAY_COLLECTION_PATH")
-            .document(eatingDayId)
-            .update("meals", meals)
-            .await()
-    }
-
     override suspend fun getEatingDayByDate(userId: String, selectedDate: LocalDate): EatingDay =
         firestore.collection("$USER_COLLECTION_PATH/$userId/$EATING_DAY_COLLECTION_PATH")
             .whereGreaterThanOrEqualTo("date", selectedDate.toTimeStampDayStart())
@@ -65,4 +57,10 @@ class EatingDayFirestoreDataSource @Inject constructor() : EatingDayRemoteDataSo
         ).get().await().toObjects(FirestoreEatingDay::class.java).mapNotNull {
             it.toExternalModel().date
         }
+
+    override suspend fun updateEatingDay(userId: String, eatingDay: EatingDay) {
+        firestore.collection("$USER_COLLECTION_PATH/$userId/$EATING_DAY_COLLECTION_PATH")
+            .document(eatingDay.id).set(FirestoreEatingDay.from(eatingDay))
+            .await()
+    }
 }
