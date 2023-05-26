@@ -39,8 +39,22 @@ class StrenAppState(val navController: NavHostController) {
     private val startingTopLevelDestination = TopLevelDestination.DASHBOARD
 
     fun navigateToTopLevelDestination(topLevelDestination: TopLevelDestination) {
+        /**
+         * If the starting top-level destination doesn't have any children, proceed as usual.
+
+        However, if the top-level destination has immediate children, this means the destination
+        is a nested nav graph, and since any navigation to nested graph is actually navigation to
+        the graph's start destination route, need to change "startingRoute" val to this nav graph's start destination.
+
+         */
+        val startingRoute =
+            if (startingTopLevelDestination.startingChildDestinationRoute.isEmpty()) {
+                startingTopLevelDestination.route
+            } else {
+                startingTopLevelDestination.startingChildDestinationRoute
+            }
         navController.navigate(topLevelDestination.route) {
-            popUpTo(startingTopLevelDestination.route) {
+            popUpTo(startingRoute) {
                 saveState = true
             }
             launchSingleTop = true
