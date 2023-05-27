@@ -2,6 +2,8 @@ package com.haidoan.android.stren.core.utils
 
 import com.google.firebase.Timestamp
 import java.time.*
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.time.temporal.TemporalAdjusters
 import java.util.stream.Collectors
 import java.util.stream.IntStream
@@ -13,6 +15,8 @@ object DateUtils {
     private val ZONE_ID = ZoneId.of("Asia/Ho_Chi_Minh")
 
     fun getCurrentDate(): LocalDate = LocalDate.now(ZONE_ID)
+
+
     private fun getMondayFrom(date: LocalDate): LocalDate =
         date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 
@@ -25,6 +29,9 @@ object DateUtils {
     fun LocalDate.toTimeStampDayStart() = Timestamp(
         this.atStartOfDay(ZONE_ID).toEpochSecond(), 0
     )
+
+    fun LocalDate.defaultFormat(): String =
+        this.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
 
     fun LocalDate.toTimeStampDayEnd() = Timestamp(
         this.atTime(LocalTime.MAX)
