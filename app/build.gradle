@@ -127,6 +127,10 @@ dependencies {
 
     // GRAPHS, CHARTS
     implementation "com.github.tehras:charts:$tehras_charts_version"
+    implementation "com.patrykandpatrick.vico:core:$visco_charts_version"
+    implementation "com.patrykandpatrick.vico:compose:$visco_charts_version"
+    implementation "com.patrykandpatrick.vico:compose-m3:$visco_charts_version"
+
     // TEST
     testImplementation 'junit:junit:4.13.2'
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
