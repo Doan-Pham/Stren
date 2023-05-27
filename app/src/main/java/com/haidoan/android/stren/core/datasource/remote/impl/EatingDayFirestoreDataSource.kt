@@ -3,8 +3,10 @@ package com.haidoan.android.stren.core.datasource.remote.impl
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.snapshots
 import com.haidoan.android.stren.core.datasource.remote.base.EatingDayRemoteDataSource
+import com.haidoan.android.stren.core.datasource.remote.model.FirestoreCaloriesOfDate
 import com.haidoan.android.stren.core.datasource.remote.model.FirestoreEatingDay
 import com.haidoan.android.stren.core.datasource.remote.model.toExternalModel
+import com.haidoan.android.stren.core.model.CaloriesOfDate
 import com.haidoan.android.stren.core.model.EatingDay
 import com.haidoan.android.stren.core.utils.DateUtils.toTimeStampDayEnd
 import com.haidoan.android.stren.core.utils.DateUtils.toTimeStampDayStart
@@ -63,4 +65,17 @@ class EatingDayFirestoreDataSource @Inject constructor() : EatingDayRemoteDataSo
             .document(eatingDay.id).set(FirestoreEatingDay.from(eatingDay))
             .await()
     }
+
+    override fun getCaloriesOfDatesStream(
+        userId: String,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Flow<List<CaloriesOfDate>> =
+        firestore.collection("$USER_COLLECTION_PATH/$userId/$EATING_DAY_COLLECTION_PATH")
+            .whereGreaterThanOrEqualTo("date", startDate.toTimeStampDayStart())
+            .whereLessThanOrEqualTo("date", endDate.toTimeStampDayEnd()).snapshots()
+            .mapNotNull { querySnapshot ->
+                querySnapshot.toObjects(FirestoreCaloriesOfDate::class.java)
+                    .mapNotNull { it.toExternalModel() }
+            }
 }
