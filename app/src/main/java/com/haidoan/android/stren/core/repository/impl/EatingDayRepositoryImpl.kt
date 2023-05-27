@@ -1,6 +1,7 @@
 package com.haidoan.android.stren.core.repository.impl
 
 import com.haidoan.android.stren.core.datasource.remote.base.EatingDayRemoteDataSource
+import com.haidoan.android.stren.core.model.CaloriesOfDate
 import com.haidoan.android.stren.core.model.EatingDay
 import com.haidoan.android.stren.core.repository.base.EatingDayRepository
 import kotlinx.coroutines.flow.Flow
@@ -13,7 +14,7 @@ import javax.inject.Inject
 class EatingDayRepositoryImpl @Inject constructor(private val eatingDayRemoteDataSource: EatingDayRemoteDataSource) :
     EatingDayRepository {
 
-    override fun getEatingDayByUserIdAndDate(userId: String, date: LocalDate): Flow<EatingDay> =
+    override suspend fun getEatingDayStream(userId: String, date: LocalDate): Flow<EatingDay> =
         eatingDayRemoteDataSource.getEatingDayStream(userId, date).catch {
             Timber.e("getEatingDayByUserIdAndDate() - Exception: ${it.message}")
         }
@@ -44,6 +45,16 @@ class EatingDayRepositoryImpl @Inject constructor(private val eatingDayRemoteDat
             EatingDay.undefined
         }
     }
+
+    override suspend fun getCaloriesOfDatesStream(
+        userId: String,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Flow<List<CaloriesOfDate>> =
+        eatingDayRemoteDataSource.getCaloriesOfDatesStream(userId, startDate, endDate).catch {
+            Timber.e("getEatingDayBetweenDates() - Exception: ${it.message}")
+        }
+
 
     override suspend fun addEatingDay(userId: String, eatingDay: EatingDay): String {
         return try {
