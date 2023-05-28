@@ -1,6 +1,7 @@
 package com.haidoan.android.stren.core.model
 
 import com.google.firebase.firestore.DocumentId
+import timber.log.Timber
 import java.text.DecimalFormat
 import java.time.LocalDate
 import java.util.*
@@ -14,6 +15,26 @@ data class Workout(
     val trainedExercises: List<TrainedExercise>
 )
 
+fun List<Workout>.getExerciseOneRepMaxes(exerciseId: String): Map<LocalDate, Float> {
+    val result = mutableMapOf<LocalDate, Float>()
+    this.forEach { workout ->
+        if (workout.trainedExercises.any { it.exercise.id == exerciseId }) {
+            val resultExercise =
+                workout.trainedExercises.first { it.exercise.id == exerciseId }
+            var currentMaxRecord = 0f
+            resultExercise.trainingSets.forEach {
+                if (it.maxRecord() > currentMaxRecord) {
+                    currentMaxRecord = it.maxRecord()
+                }
+            }
+            Timber.d("resultExercise: $resultExercise ;currentMaxRecord: $currentMaxRecord")
+            result[workout.date] = currentMaxRecord
+        }
+    }
+    Timber.d("result: $result")
+    return result
+}
+
 /**
  * [id] property: An id solely for differentiating TrainedExercise objects for update purposes
  */
@@ -26,11 +47,12 @@ data class TrainedExercise(
         "TrainedExercise(exerciseName: ${exercise.name}; trainingSets: $trainingSets"
 }
 
+
 fun Exercise.asTrainedExerciseWithOneSet(): TrainedExercise {
     val trainingSets: MutableList<TrainingMeasurementMetrics> = mutableListOf()
 
     when (this.belongedCategory) {
-        ExerciseCategoryWithSpecialMetrics.CARDIO.fieldValue -> {
+        TrainingMeasurementMetrics.ExerciseCategoryWithSpecialMetrics.CARDIO.fieldValue -> {
             trainingSets.add(
                 TrainingMeasurementMetrics.DistanceAndDuration(
                     0.0,
@@ -39,7 +61,7 @@ fun Exercise.asTrainedExerciseWithOneSet(): TrainedExercise {
             )
 
         }
-        ExerciseCategoryWithSpecialMetrics.STRETCHING.fieldValue -> {
+        TrainingMeasurementMetrics.ExerciseCategoryWithSpecialMetrics.STRETCHING.fieldValue -> {
             trainingSets.add(TrainingMeasurementMetrics.DurationOnly(0L))
         }
         else -> {
@@ -77,12 +99,17 @@ fun MutableList<TrainingMeasurementMetrics>.addEmptyTrainingSet() {
 
 sealed class TrainingMeasurementMetrics {
     val id: UUID = UUID.randomUUID()
-
+    abstract fun maxRecord(): Float
     abstract override fun toString(): String
     data class WeightAndRep(
         val weight: Double,
         val repAmount: Long
     ) : TrainingMeasurementMetrics() {
+        override fun maxRecord() = oneRepMax
+
+        private val oneRepMax: Float = (weight / (1.0278 - 0.0278 * repAmount)).toFloat()
+
+
         override fun toString(): String {
             return "$weight kg x $repAmount"
         }
@@ -90,6 +117,8 @@ sealed class TrainingMeasurementMetrics {
 
     data class DurationOnly(val seconds: Long) :
         TrainingMeasurementMetrics() {
+        override fun maxRecord() = seconds.toFloat()
+
         override fun toString(): String {
             if (seconds > 3600) return "${seconds / 3600} hrs"
             if (seconds > 60) return "${seconds / 60} mins"
@@ -99,6 +128,8 @@ sealed class TrainingMeasurementMetrics {
 
     data class DistanceAndDuration(val kilometers: Double, val hours: Double) :
         TrainingMeasurementMetrics() {
+        override fun maxRecord(): Float = (kilometers / hours).toFloat()
+
         override fun toString(): String {
             val distance = if (kilometers < 1) "${kilometers * 1000}m" else "${kilometers}km"
             val duration =
@@ -112,8 +143,9 @@ sealed class TrainingMeasurementMetrics {
             return "$distance x $duration"
         }
     }
+
+    enum class ExerciseCategoryWithSpecialMetrics(val fieldValue: String) {
+        CARDIO("Cardio"), STRETCHING("Stretching"),
+    }
 }
 
-enum class ExerciseCategoryWithSpecialMetrics(val fieldValue: String) {
-    CARDIO("Cardio"), STRETCHING("Stretching"),
-}

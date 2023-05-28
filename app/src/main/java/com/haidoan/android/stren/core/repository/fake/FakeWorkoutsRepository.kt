@@ -42,4 +42,13 @@ class FakeWorkoutsRepository : WorkoutsRepository {
     override suspend fun getAllExercisesTrained(userId: String): List<TrainedExercise> {
         TODO("Not yet implemented")
     }
+
+    override fun getExerciseOneRepMaxesStream(
+        userId: String,
+        exerciseId: String,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Flow<Map<LocalDate, Float>> {
+        TODO("Not yet implemented")
+    }
 }

@@ -13,4 +13,10 @@ interface WorkoutsRepository {
     suspend fun getWorkoutById(workoutId: String): Workout
     suspend fun updateWorkout(userId: String, workout: Workout)
     suspend fun getAllExercisesTrained(userId: String): List<TrainedExercise>
+    fun getExerciseOneRepMaxesStream(
+        userId: String,
+        exerciseId: String,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Flow<Map<LocalDate, Float>>
 }

@@ -5,14 +5,18 @@ import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.ktx.snapshots
 import com.haidoan.android.stren.core.datasource.remote.base.WorkoutRemoteDataSource
 import com.haidoan.android.stren.core.datasource.remote.model.FirestoreTrainedExercise
 import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.Workout
+import com.haidoan.android.stren.core.model.getExerciseOneRepMaxes
 import com.haidoan.android.stren.core.utils.DateUtils.toLocalDate
 import com.haidoan.android.stren.core.utils.DateUtils.toTimeStampDayEnd
 import com.haidoan.android.stren.core.utils.DateUtils.toTimeStampDayStart
 import com.haidoan.android.stren.core.utils.ListUtils.mergeLists
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import java.time.LocalDate
@@ -56,6 +60,24 @@ class WorkoutFirestoreDataSource @Inject constructor() : WorkoutRemoteDataSource
                     })
             }
 
+    override fun getExerciseOneRepMaxesStream(
+        userId: String,
+        exerciseId: String,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Flow<Map<LocalDate, Float>> =
+        firestore.collection(WORKOUT_COLLECTION_PATH)
+            .whereEqualTo("userId", userId)
+            .whereArrayContains("trainedExercisesIds", exerciseId)
+            .whereGreaterThanOrEqualTo("date", startDate.toTimeStampDayStart())
+            .whereLessThanOrEqualTo("date", endDate.toTimeStampDayEnd())
+            .snapshots()
+            .map {
+                Timber.d("snapshots() is fine")
+                it.toWorkoutsList().getExerciseOneRepMaxes(exerciseId)
+            }
+
+
     override suspend fun addWorkout(userId: String, workout: Workout): String =
         firestore.collection(WORKOUT_COLLECTION_PATH)
             .add(FirestoreWorkout.from(userId, workout))
@@ -94,6 +116,7 @@ class WorkoutFirestoreDataSource @Inject constructor() : WorkoutRemoteDataSource
 
     /**
      * Firestore representation of [Workout] class
+     * @param trainedExercisesIds Solely for querying purpose, since Firestore's array-contains query works well for simple array, and not object array like [trainedExercises]
      */
     private data class FirestoreWorkout(
         @DocumentId
@@ -102,6 +125,7 @@ class WorkoutFirestoreDataSource @Inject constructor() : WorkoutRemoteDataSource
         val name: String = "Undefined",
         val note: String = "Undefined",
         val trainedExercises: List<FirestoreTrainedExercise> = listOf(),
+        val trainedExercisesIds: List<String> = trainedExercises.map { it.exerciseId },
         val userId: String = "Undefined",
     ) {
         fun asWorkout(): Workout {
