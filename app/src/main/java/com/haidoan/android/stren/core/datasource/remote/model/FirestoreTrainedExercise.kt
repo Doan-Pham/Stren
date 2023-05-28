@@ -1,9 +1,10 @@
 package com.haidoan.android.stren.core.datasource.remote.model
 
 import com.haidoan.android.stren.core.model.Exercise
-import com.haidoan.android.stren.core.model.ExerciseCategoryWithSpecialMetrics
 import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics
+import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics.ExerciseCategoryWithSpecialMetrics.CARDIO
+import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics.ExerciseCategoryWithSpecialMetrics.STRETCHING
 import timber.log.Timber
 
 /**
@@ -35,7 +36,7 @@ internal data class FirestoreTrainedExercise(
         val trainingSets: MutableList<TrainingMeasurementMetrics> = mutableListOf()
 
         when (this.exerciseCategory) {
-            ExerciseCategoryWithSpecialMetrics.CARDIO.fieldValue -> {
+            CARDIO.fieldValue -> {
                 firestoreTrainingSets.forEach {
                     trainingSets.add(
                         TrainingMeasurementMetrics.DistanceAndDuration(
@@ -45,7 +46,7 @@ internal data class FirestoreTrainedExercise(
                     )
                 }
             }
-            ExerciseCategoryWithSpecialMetrics.STRETCHING.fieldValue -> {
+            STRETCHING.fieldValue -> {
                 firestoreTrainingSets.forEach {
                     trainingSets.add(TrainingMeasurementMetrics.DurationOnly(it.value.toLong()))
                 }
@@ -78,7 +79,7 @@ internal data class FirestoreTrainedExercise(
             val firestoreTrainingSets: MutableMap<String, Double> = mutableMapOf()
 
             when (trainedExercise.exercise.belongedCategory) {
-                ExerciseCategoryWithSpecialMetrics.CARDIO.fieldValue -> {
+                CARDIO.fieldValue -> {
                     iteratedMetricsFrequency.clear()
 
                     trainingSets.forEach {
@@ -96,7 +97,7 @@ internal data class FirestoreTrainedExercise(
                         Timber.d("from(trainedExercise: TrainedExercise) - CARDIO - metricsKeyWithIndex:$metricsKeyWithIndex")
                     }
                 }
-                ExerciseCategoryWithSpecialMetrics.STRETCHING.fieldValue -> {
+                STRETCHING.fieldValue -> {
                     trainingSets.forEachIndexed { index, metrics ->
                         val metricsValue = metrics as TrainingMeasurementMetrics.DurationOnly
                         firestoreTrainingSets[UNDEFINED_KEY + DEFAULT_SEPARATOR_CHAR + (index + 1).toString()] =

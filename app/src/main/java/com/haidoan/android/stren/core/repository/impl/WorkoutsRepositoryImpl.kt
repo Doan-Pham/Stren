@@ -38,6 +38,22 @@ class WorkoutsRepositoryImpl @Inject constructor(private val workoutRemoteDataSo
         }
     }
 
+    override fun getExerciseOneRepMaxesStream(
+        userId: String,
+        exerciseId: String,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Flow<Map<LocalDate, Float>> {
+        Timber.d("getExerciseOneRepMaxesStream() is called; userId: $userId, exerciseId: $exerciseId,startDate: $startDate, endDate: $endDate ")
+
+        return workoutRemoteDataSource
+            .getExerciseOneRepMaxesStream(userId, exerciseId, startDate, endDate)
+            .catch {
+                Timber.e("getExerciseOneRepMaxesStream() - Exception: $it")
+            }
+    }
+
+
     override suspend fun addWorkout(userId: String, workout: Workout): String {
         return try {
             val newWorkoutId = workoutRemoteDataSource.addWorkout(userId, workout)
