@@ -2,8 +2,6 @@ package com.haidoan.android.stren.core.designsystem.component
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -50,28 +48,25 @@ fun ListModalBottomSheet(
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Start
             )
-
-            LazyColumn {
-                items(sheetItems) {
-                    Row(
-                        modifier = Modifier
-                            .clickable { it.onClickHandler() }
-                            .fillMaxWidth()
-                            .padding(dimensionResource(id = R.dimen.padding_medium)),
-                        verticalAlignment = CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(
-                                id = it.imageResId ?: R.drawable.ic_app_logo_no_padding
-                            ), contentDescription = "Icon"
-                        )
-                        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_small)))
-                        Text(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = it.text,
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
+            sheetItems.forEach {
+                Row(
+                    modifier = Modifier
+                        .clickable { it.onClickHandler() }
+                        .fillMaxWidth()
+                        .padding(dimensionResource(id = R.dimen.padding_medium)),
+                    verticalAlignment = CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(
+                            id = it.imageResId ?: R.drawable.ic_app_logo_no_padding
+                        ), contentDescription = "Icon"
+                    )
+                    Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_small)))
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = it.text,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
                 }
             }
         }

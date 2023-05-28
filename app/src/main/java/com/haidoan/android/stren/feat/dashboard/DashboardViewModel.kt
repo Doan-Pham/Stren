@@ -4,12 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.designsystem.component.toCharEntries
 import com.haidoan.android.stren.core.designsystem.component.toCharEntryModelProducer
+import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.repository.base.EatingDayRepository
+import com.haidoan.android.stren.core.repository.base.WorkoutsRepository
 import com.haidoan.android.stren.core.service.AuthenticationService
 import com.haidoan.android.stren.core.utils.DateUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.time.LocalDate
 import javax.inject.Inject
@@ -19,8 +22,11 @@ private const val UNDEFINED_USER_ID = "Undefined User ID"
 @HiltViewModel
 internal class DashboardViewModel @Inject constructor(
     authenticationService: AuthenticationService,
-    private val eatingDayRepository: EatingDayRepository
+    private val eatingDayRepository: EatingDayRepository,
+    private val workoutsRepository: WorkoutsRepository
 ) : ViewModel() {
+
+
     /**
      * Need to initialize userId before init{} block, or the init{} block will access
      * it when it's null and causes NullPointerException
@@ -86,7 +92,7 @@ internal class DashboardViewModel @Inject constructor(
         )
     )
 
-    fun modifyChartEntries(entriesData: List<Pair<LocalDate, Float>>) {
+    private fun modifyChartEntries(entriesData: List<Pair<LocalDate, Float>>) {
         chartEntryModelProducer.setEntries(entriesData.toCharEntries())
     }
 
@@ -94,6 +100,18 @@ internal class DashboardViewModel @Inject constructor(
         Timber.d("startDate: $startDate, endDate: $endDate")
         _dataFetchingTriggers.value =
             _dataFetchingTriggers.value.copy(startDate = startDate, endDate = endDate)
+    }
+
+    private val _allTrainedExercises = MutableStateFlow(listOf<TrainedExercise>())
+    val allTrainedExercises = _allTrainedExercises
+
+    fun refreshAllTrainedExercises() {
+        viewModelScope.launch {
+            _allTrainedExercises.value =
+                workoutsRepository.getAllExercisesTrained(userId = _dataFetchingTriggers.value.userId)
+
+            Timber.d("_allTrainedExercises.value: ${_allTrainedExercises.value}")
+        }
     }
 
     /**
