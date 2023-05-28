@@ -1,6 +1,7 @@
 package com.haidoan.android.stren.core.repository.impl
 
 import com.haidoan.android.stren.core.datasource.remote.base.WorkoutRemoteDataSource
+import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.Workout
 import com.haidoan.android.stren.core.repository.base.WorkoutsRepository
 import kotlinx.coroutines.flow.Flow
@@ -27,6 +28,15 @@ class WorkoutsRepositoryImpl @Inject constructor(private val workoutRemoteDataSo
         }.catch {
             Timber.e("getDatesThatHaveWorkoutByUserId() - Exception: ${it.message}")
         }
+
+    override suspend fun getAllExercisesTrained(userId: String): List<TrainedExercise> {
+        return try {
+            workoutRemoteDataSource.getAllExercisesTrained(userId)
+        } catch (ex: Exception) {
+            Timber.e("getAllExercisesTrained() - Exception: ${ex.message}")
+            emptyList()
+        }
+    }
 
     override suspend fun addWorkout(userId: String, workout: Workout): String {
         return try {
