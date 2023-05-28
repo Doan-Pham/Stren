@@ -199,8 +199,8 @@ fun StrenLineChart(
 ) {
     val axisValueFormatter =
         AxisValueFormatter<AxisPosition.Horizontal.Bottom> { value, chartValues ->
-            (chartValues.chartEntryModel.entries.first()
-                .getOrNull(value.toInt()) as? DateChartEntry)
+            (chartValues.chartEntryModel.entries.firstOrNull()
+                ?.getOrNull(value.toInt()) as? DateChartEntry)
                 ?.localDate
                 ?.run { "$dayOfMonth/$monthValue" }
                 .orEmpty()
