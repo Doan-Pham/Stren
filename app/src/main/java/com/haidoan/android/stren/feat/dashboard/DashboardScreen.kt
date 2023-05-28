@@ -33,6 +33,7 @@ internal fun DashboardRoute(
     viewModel: DashboardViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
 ) {
+    val allTrainedExercises by viewModel.allTrainedExercises.collectAsStateWithLifecycle()
     val trackExercisesBottomSheet = BottomSheetWrapper(
         type = DashBoardBottomSheetType.TRACK_EXERCISE,
         shouldShow = rememberSaveable { mutableStateOf(false) },
@@ -41,24 +42,14 @@ internal fun DashboardRoute(
                 onDismissRequest = onDismiss,
                 bottomSheetState = rememberModalBottomSheetState(),
                 title = "Track exercise",
-                sheetItems = listOf(
+                sheetItems =
+                allTrainedExercises.map {
                     BottomSheetItem(
-                        text = "Bench Press",
+                        text = it.exercise.name,
                         onClickHandler = {
-                        }),
-                    BottomSheetItem(
-                        text = "Cable Row",
-                        onClickHandler = {
-                        }),
-                    BottomSheetItem(
-                        text = "Squat",
-                        onClickHandler = {
-                        }),
-                    BottomSheetItem(
-                        text = "Deadlift",
-                        onClickHandler = {
+                            Timber.d("Exercise click: $it ")
                         })
-                )
+                },
             )
         })
 
@@ -75,6 +66,7 @@ internal fun DashboardRoute(
                         imageResId = R.drawable.ic_training,
                         text = "Exercise",
                         onClickHandler = {
+                            viewModel.refreshAllTrainedExercises()
                             onDismiss()
                             trackExercisesBottomSheet.shouldShow.value = true
                         })
