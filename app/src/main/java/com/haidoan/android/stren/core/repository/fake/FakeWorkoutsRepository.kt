@@ -1,5 +1,6 @@
 package com.haidoan.android.stren.core.repository.fake
 
+import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.Workout
 import com.haidoan.android.stren.core.repository.base.WorkoutsRepository
 import kotlinx.coroutines.channels.BufferOverflow
@@ -35,6 +36,10 @@ class FakeWorkoutsRepository : WorkoutsRepository {
     }
 
     override suspend fun updateWorkout(userId: String, workout: Workout) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getAllExercisesTrained(userId: String): List<TrainedExercise> {
         TODO("Not yet implemented")
     }
 }

@@ -7,10 +7,12 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.haidoan.android.stren.core.datasource.remote.base.WorkoutRemoteDataSource
 import com.haidoan.android.stren.core.datasource.remote.model.FirestoreTrainedExercise
+import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.Workout
 import com.haidoan.android.stren.core.utils.DateUtils.toLocalDate
 import com.haidoan.android.stren.core.utils.DateUtils.toTimeStampDayEnd
 import com.haidoan.android.stren.core.utils.DateUtils.toTimeStampDayStart
+import com.haidoan.android.stren.core.utils.ListUtils.mergeLists
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import java.time.LocalDate
@@ -38,6 +40,21 @@ class WorkoutFirestoreDataSource @Inject constructor() : WorkoutRemoteDataSource
     override suspend fun getDatesThatHaveWorkoutByUserId(userId: String): List<LocalDate> =
         firestore.collection(WORKOUT_COLLECTION_PATH)
             .whereEqualTo("userId", userId).get().await().toWorkoutsList().map { it.date }
+
+    override suspend fun getAllExercisesTrained(userId: String): List<TrainedExercise> =
+        firestore.collection(WORKOUT_COLLECTION_PATH)
+            .whereEqualTo("userId", userId).get().await().toWorkoutsList()
+            .map { it.trainedExercises }.fold(
+                listOf()
+            ) { firstList, secondList ->
+                mergeLists(
+                    firstList = firstList,
+                    secondList = secondList,
+                    areEqual = { ex1, ex2 -> ex1.exercise.id == ex2.exercise.id },
+                    handleConflict = { _, ex2 ->
+                        ex2
+                    })
+            }
 
     override suspend fun addWorkout(userId: String, workout: Workout): String =
         firestore.collection(WORKOUT_COLLECTION_PATH)
