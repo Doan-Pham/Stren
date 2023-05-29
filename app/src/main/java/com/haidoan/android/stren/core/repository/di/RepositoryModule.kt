@@ -26,5 +26,11 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindEatingDayRepository(impl: EatingDayRepositoryImpl): EatingDayRepository
+
+    @Binds
+    abstract fun bindUserRepository(impl: UserRepositoryImpl): UserRepository
+
+    @Binds
+    abstract fun bindDefaultValuesRepository(impl: DefaultValuesRepositoryImpl): DefaultValuesRepository
 }
 
