@@ -3,7 +3,9 @@ package com.haidoan.android.stren.feat.dashboard
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -23,7 +25,6 @@ import com.haidoan.android.stren.core.designsystem.theme.Gray90
 import com.haidoan.android.stren.core.utils.DateUtils
 import com.haidoan.android.stren.core.utils.DateUtils.defaultFormat
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
-import timber.log.Timber
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,7 +48,7 @@ internal fun DashboardRoute(
                     BottomSheetItem(
                         text = it.exercise.name,
                         onClickHandler = {
-                            Timber.d("Exercise click: $it ")
+                            viewModel.showExerciseProgress(it.exercise.id)
                         })
                 },
             )
@@ -85,7 +86,7 @@ internal fun DashboardRoute(
                         drawableResourceId = R.drawable.ic_add,
                         description = "MenuItem-Add",
                         clickHandler = {
-                            bottomSheetWrappers.first().shouldShow.value = true
+                            categoriesBottomSheet.shouldShow.value = true
                         })
                 )
             )
@@ -93,15 +94,17 @@ internal fun DashboardRoute(
         isAppBarConfigured = true
     }
 
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val dataOutputs by viewModel.dataOutputs.collectAsStateWithLifecycle()
+    val dataOutputsAsState = mutableListOf<State<DashboardViewModel.DataOutput>>()
+    dataOutputs.forEach { dataOutputsAsState.add(it.collectAsStateWithLifecycle()) }
+
     DashboardScreen(
         modifier = modifier,
-        chartEntryModelProducer = viewModel.chartEntryModelProducer,
+        chartEntryModelProducers = viewModel.chartEntryModelProducers,
         onDateOptionClick = viewModel::updateDateRange,
-        dataType = uiState,
+        dataOutputsAsState = dataOutputsAsState,
         bottomSheetWrappers = bottomSheetWrappers,
         onDismissBottomSheet = { bottomSheetToDismiss ->
-            Timber.d("bottomSheetToDismiss")
             bottomSheetWrappers
                 .find { it.type == bottomSheetToDismiss.type }
                 ?.shouldShow?.value = false
@@ -112,22 +115,35 @@ internal fun DashboardRoute(
 @Composable
 private fun DashboardScreen(
     modifier: Modifier = Modifier,
-    chartEntryModelProducer: ChartEntryModelProducer,
-    dataType: DashboardViewModel.DataType,
-    onDateOptionClick: (startDate: LocalDate, endDate: LocalDate) -> Unit,
+    chartEntryModelProducers: Map<String, ChartEntryModelProducer>,
+    dataOutputsAsState: List<State<DashboardViewModel.DataOutput>>,
+    onDateOptionClick: (dataSourceId: String, startDate: LocalDate, endDate: LocalDate) -> Unit,
     bottomSheetWrappers: List<BottomSheetWrapper>,
     onDismissBottomSheet: (BottomSheetWrapper) -> Unit
 ) {
     Column(
         modifier = modifier
-            .padding(dimensionResource(id = R.dimen.padding_medium))
+            .verticalScroll(rememberScrollState())
+            .padding(dimensionResource(id = R.dimen.padding_medium)),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
     ) {
+        dataOutputsAsState.forEach { dataOutputAsState ->
+            val dataOutput = dataOutputAsState.value
+            if (chartEntryModelProducers.containsKey(dataOutput.dataSourceId)) {
+                ProgressItem(
+                    chartEntryModelProducer = chartEntryModelProducers[dataOutput.dataSourceId]!!,
+                    onDateOptionClick = { startDate, endDate ->
+                        onDateOptionClick(
+                            dataOutput.dataSourceId,
+                            startDate,
+                            endDate
+                        )
+                    },
+                    dataOutput = dataOutput
+                )
+            }
 
-        ProgressItem(
-            chartEntryModelProducer = chartEntryModelProducer,
-            onDateOptionClick = onDateOptionClick,
-            dataType = dataType
-        )
+        }
     }
     bottomSheetWrappers.forEach {
         if (it.shouldShow.value) {
@@ -139,7 +155,7 @@ private fun DashboardScreen(
 @Composable
 private fun ProgressItem(
     chartEntryModelProducer: ChartEntryModelProducer,
-    dataType: DashboardViewModel.DataType,
+    dataOutput: DashboardViewModel.DataOutput,
     onDateOptionClick: (startDate: LocalDate, endDate: LocalDate) -> Unit
 ) {
     Column(
@@ -155,7 +171,7 @@ private fun ProgressItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Calories",
+                text = dataOutput.title,
                 style = MaterialTheme.typography.titleMedium,
             )
             Spacer(Modifier.weight(1f))
@@ -192,7 +208,7 @@ private fun ProgressItem(
 
         }
         Text(
-            text = "${dataType.startDate.defaultFormat()} - ${dataType.endDate.defaultFormat()}",
+            text = "${dataOutput.startDate.defaultFormat()} - ${dataOutput.endDate.defaultFormat()}",
             style = MaterialTheme.typography.bodyMedium
         )
         StrenLineChart(
