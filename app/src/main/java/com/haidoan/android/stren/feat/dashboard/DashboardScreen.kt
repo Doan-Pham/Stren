@@ -2,6 +2,9 @@ package com.haidoan.android.stren.feat.dashboard
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -97,11 +100,12 @@ internal fun DashboardRoute(
     dataOutputStateFlows.forEach { dataOutputStateFlow ->
         dataOutputsAsState.add(dataOutputStateFlow.collectAsStateWithLifecycle())
     }
+
     DashboardScreen(
         modifier = modifier,
         chartEntryModelProducers = viewModel.chartEntryModelProducers,
-        onDateOptionClick = viewModel::updateDateRange,
         dataOutputsAsState = dataOutputsAsState,
+        onDateOptionClick = viewModel::updateDateRange,
         bottomSheetWrappers = bottomSheetWrappers,
         onDismissBottomSheet = { bottomSheetToDismiss ->
             bottomSheetWrappers
@@ -120,13 +124,14 @@ private fun DashboardScreen(
     bottomSheetWrappers: List<BottomSheetWrapper>,
     onDismissBottomSheet: (BottomSheetWrapper) -> Unit
 ) {
-    Column(
+    val progressItemListState = rememberLazyListState()
+    LazyColumn(
+        state = progressItemListState,
         modifier = modifier
-            .verticalScroll(rememberScrollState())
             .padding(dimensionResource(id = R.dimen.padding_medium)),
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
     ) {
-        dataOutputsAsState.forEach { dataOutputAsState ->
+        items(dataOutputsAsState) { dataOutputAsState ->
             val dataOutput = dataOutputAsState.value
             if (chartEntryModelProducers.containsKey(dataOutput.dataSourceId)) {
                 ProgressItem(
@@ -141,9 +146,16 @@ private fun DashboardScreen(
                     dataOutput = dataOutput
                 )
             }
-
         }
     }
+    var previousDataOutputsSize by rememberSaveable { mutableStateOf(dataOutputsAsState.size) }
+    LaunchedEffect(dataOutputsAsState.size) {
+        if (dataOutputsAsState.size > previousDataOutputsSize) {
+            progressItemListState.animateScrollToItem(dataOutputsAsState.size - 1)
+            previousDataOutputsSize = dataOutputsAsState.size
+        }
+    }
+
     bottomSheetWrappers.forEach {
         if (it.shouldShow.value) {
             it.bottomSheetComposable(onDismiss = { onDismissBottomSheet(it) })
