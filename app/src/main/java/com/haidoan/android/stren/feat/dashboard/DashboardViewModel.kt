@@ -1,6 +1,7 @@
 package com.haidoan.android.stren.feat.dashboard
 
-import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.designsystem.component.toCharEntries
@@ -10,7 +11,6 @@ import com.haidoan.android.stren.core.repository.base.EatingDayRepository
 import com.haidoan.android.stren.core.repository.base.WorkoutsRepository
 import com.haidoan.android.stren.core.service.AuthenticationService
 import com.haidoan.android.stren.core.utils.DateUtils
-import com.haidoan.android.stren.core.utils.ListUtils.replaceWith
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,20 +31,21 @@ internal class DashboardViewModel @Inject constructor(
 ) : ViewModel() {
 
     private var cachedUserId = UNDEFINED_USER_ID
+    private val _allTrainedExercises = MutableStateFlow(listOf<TrainedExercise>())
+    val allTrainedExercises = _allTrainedExercises
+
 
     /**
      * Need to initialize userId before init{} block, or the init{} block will access
      * it when it's null and causes NullPointerException
      */
-    private val _dataFetchingTriggers: MutableStateFlow<List<MutableStateFlow<DataFetchingTrigger>>> =
-        MutableStateFlow(
-            listOf(
-                MutableStateFlow(
-                    DataFetchingTrigger.CaloriesFetchingTrigger(
-                        userId = UNDEFINED_USER_ID,
-                        startDate = DateUtils.getCurrentDate(),
-                        endDate = DateUtils.getCurrentDate(),
-                    )
+    private val _dataFetchingTriggers: SnapshotStateList<MutableStateFlow<DataFetchingTrigger>> =
+        mutableStateListOf(
+            MutableStateFlow(
+                DataFetchingTrigger.CaloriesFetchingTrigger(
+                    userId = UNDEFINED_USER_ID,
+                    startDate = DateUtils.getCurrentDate(),
+                    endDate = DateUtils.getCurrentDate(),
                 )
             )
         )
@@ -53,29 +54,14 @@ internal class DashboardViewModel @Inject constructor(
     val chartEntryModelProducers =
         mutableStateMapOf("DATA_RESULT_ID_CALORIES" to listOf(DateUtils.getCurrentDate() to 0f).toCharEntryModelProducer())
 
-    init {
-        authenticationService.addAuthStateListeners(
-            onUserAuthenticated = { userId ->
-                cachedUserId = userId
-                _dataFetchingTriggers.value.forEach {
-                    it.value = it.value.withUserId(userId)
-                }
 
-                Timber.d("authStateListen - User signed in - userId: $userId")
-            },
-            onUserNotAuthenticated = {
-                cachedUserId = UNDEFINED_USER_ID
-                _dataFetchingTriggers.value.forEach {
-                    it.value = it.value.withUserId(UNDEFINED_USER_ID)
-                }
-                Timber.d("authStateListen - User signed out")
-            })
-
-    }
-
-    val dataOutputs = _dataFetchingTriggers.mapLatest { triggers ->
-        triggers.map {
+    val dataOutputs
+        @Composable
+        get() = _dataFetchingTriggers.map {
+            Timber.d("_dataFetchingTriggers.map() - StateFlowTrigger: $it")
+            Timber.d("_dataFetchingTriggers.map() - Trigger: ${it.value}")
             it.flatMapLatest { trigger ->
+                Timber.d("StateFlowTrigger.flatMapLatest() - StateFlowTrigger: $it - content: $trigger")
                 if (trigger.userId == UNDEFINED_USER_ID) return@flatMapLatest flowOf(
                     DataOutput.EmptyData
                 )
@@ -138,14 +124,32 @@ internal class DashboardViewModel @Inject constructor(
                         }
                     }
                 }
-
             }.stateIn(
                 viewModelScope, SharingStarted.WhileSubscribed(5000), DataOutput.EmptyData
             )
         }
-    }.stateIn(
-        viewModelScope, SharingStarted.WhileSubscribed(5000), listOf()
-    )
+
+
+    init {
+        authenticationService.addAuthStateListeners(
+            onUserAuthenticated = { userId ->
+                cachedUserId = userId
+                _dataFetchingTriggers.forEach {
+                    it.value = it.value.withUserId(userId)
+                }
+
+                Timber.d("authStateListen - User signed in - userId: $userId")
+                Timber.d("_dataFetchingTriggers - $_dataFetchingTriggers")
+            },
+            onUserNotAuthenticated = {
+                cachedUserId = UNDEFINED_USER_ID
+                _dataFetchingTriggers.forEach {
+                    it.value = it.value.withUserId(UNDEFINED_USER_ID)
+                }
+                Timber.d("authStateListen - User signed out")
+            })
+
+    }
 
     private fun ChartEntryModelProducer.updateChartEntries(
         entriesData: List<Pair<LocalDate, Float>>
@@ -155,21 +159,12 @@ internal class DashboardViewModel @Inject constructor(
 
     fun updateDateRange(dataSourceId: String, startDate: LocalDate, endDate: LocalDate) {
         Timber.d("startDate: $startDate, endDate: $endDate")
-        var newFetchingTriggers = _dataFetchingTriggers.value.toList()
-        newFetchingTriggers = newFetchingTriggers.replaceWith(
-            MutableStateFlow(
-                _dataFetchingTriggers.value.first { it.value.dataSourceId == dataSourceId }.value.withStartDate(
-                    startDate
-                ).withEndDate(endDate)
-            )
-        ) {
-            it.value.dataSourceId == dataSourceId
-        }
-        _dataFetchingTriggers.value = newFetchingTriggers
+        _dataFetchingTriggers.first { it.value.dataSourceId == dataSourceId }.value =
+            _dataFetchingTriggers.first { it.value.dataSourceId == dataSourceId }.value.withStartDate(
+                startDate
+            ).withEndDate(endDate)
+        Timber.d("updateDateRange() - _dataFetchingTriggers: $_dataFetchingTriggers")
     }
-
-    private val _allTrainedExercises = MutableStateFlow(listOf<TrainedExercise>())
-    val allTrainedExercises = _allTrainedExercises
 
     fun refreshAllTrainedExercises() {
         viewModelScope.launch {
@@ -181,12 +176,11 @@ internal class DashboardViewModel @Inject constructor(
     }
 
     fun showExerciseProgress(exerciseId: String) {
-        if (!_dataFetchingTriggers.value.any {
+        if (!_dataFetchingTriggers.any {
                 it.value is DataFetchingTrigger.ExerciseFetchingTrigger &&
                         (it.value as DataFetchingTrigger.ExerciseFetchingTrigger).exerciseId == exerciseId
             }) {
-            val updatedTriggers = _dataFetchingTriggers.value.toMutableList()
-            updatedTriggers.add(
+            _dataFetchingTriggers.add(
                 MutableStateFlow(
                     DataFetchingTrigger.ExerciseFetchingTrigger(
                         userId = cachedUserId,
@@ -196,7 +190,6 @@ internal class DashboardViewModel @Inject constructor(
                     )
                 )
             )
-            _dataFetchingTriggers.value = updatedTriggers
         }
 
     }
