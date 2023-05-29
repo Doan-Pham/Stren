@@ -3,7 +3,6 @@ package com.haidoan.android.stren.core.utils
 import com.google.firebase.Timestamp
 import java.time.*
 import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import java.time.temporal.TemporalAdjusters
 import java.util.stream.Collectors
 import java.util.stream.IntStream
@@ -31,7 +30,7 @@ object DateUtils {
     )
 
     fun LocalDate.defaultFormat(): String =
-        this.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
+        this.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
 
     fun LocalDate.toTimeStampDayEnd() = Timestamp(
         this.atTime(LocalTime.MAX)
