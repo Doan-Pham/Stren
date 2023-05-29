@@ -11,7 +11,7 @@ import dagger.hilt.components.SingletonComponent
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class DataSourceModule {
+internal abstract class DataSourceModule {
     @Binds
     abstract fun bindRemoteExercisesDataSource(impl: ExercisesFirestoreDataSource): ExercisesRemoteDataSource
 
@@ -26,4 +26,10 @@ abstract class DataSourceModule {
 
     @Binds
     abstract fun bindEatingDayRemoteDataSource(impl: EatingDayFirestoreDataSource): EatingDayRemoteDataSource
+
+    @Binds
+    abstract fun bindUserRemoteDataSource(impl: UserFirestoreDataSource): UserRemoteDataSource
+
+    @Binds
+    abstract fun bindDefaultValuesRemoteDataSource(impl: DefaultValuesFirestoreDataSource): DefaultValuesRemoteDataSource
 }
