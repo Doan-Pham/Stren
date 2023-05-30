@@ -7,6 +7,7 @@ import com.haidoan.android.stren.core.repository.base.UserRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import timber.log.Timber
+import java.time.LocalDate
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteDataSource) :
@@ -22,6 +23,19 @@ class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteD
 
         } catch (ex: Exception) {
             Timber.e("trackCategory() - userId: $userId, category: $category - Exception: $ex")
+        }
+    }
+
+    override suspend fun updateTrackCategory(
+        userId: String,
+        dataSourceId: String,
+        newStartDate: LocalDate,
+        newEndDate: LocalDate
+    ) {
+        try {
+            dataSource.updateTrackCategory(userId, dataSourceId, newStartDate, newEndDate)
+        } catch (ex: Exception) {
+            Timber.e("updateTrackCategory() - userId: $userId, dataSourceId: $dataSourceId - Exception: $ex")
         }
     }
 }

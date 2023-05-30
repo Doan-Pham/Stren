@@ -13,14 +13,16 @@ import com.haidoan.android.stren.core.utils.DateUtils.toLocalDate
 import com.haidoan.android.stren.core.utils.DateUtils.toTimeStampDayStart
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.tasks.await
 import timber.log.Timber
+import java.time.LocalDate
 import javax.inject.Inject
 
 private const val USER_COLLECTION_PATH = "User"
 
 class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
-    private val collectionReference =
-        FirebaseFirestore.getInstance().collection(USER_COLLECTION_PATH)
+    private val db = FirebaseFirestore.getInstance()
+    private val collectionReference = db.collection(USER_COLLECTION_PATH)
 
     override fun getUserStream(userId: String): Flow<User> =
         collectionReference.document(userId).snapshots().map { it.toUser() }
@@ -28,6 +30,31 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
     override suspend fun trackCategory(userId: String, category: TrackedCategory) {
         collectionReference.document(userId)
             .update("trackedCategories", FieldValue.arrayUnion(category.toFirestoreObject()))
+    }
+
+    override suspend fun updateTrackCategory(
+        userId: String, dataSourceId: String, newStartDate: LocalDate, newEndDate: LocalDate
+    ) {
+        db.runTransaction { transaction ->
+            val documentRef = collectionReference.document(userId)
+            val snapshot = transaction.get(documentRef)
+            Timber.d("snapshot: $snapshot")
+
+            @Suppress("UNCHECKED_CAST")
+            val oldValue =
+                (snapshot["trackedCategories"] as List<Map<String, *>>)
+                    .first { it.containsValue(dataSourceId) }
+            Timber.d("oldValue: $oldValue")
+
+            val newValue =
+                snapshot.toUser().trackedCategories.first { it.dataSourceId == dataSourceId }
+                    .withStartDate(newStartDate)
+                    .withEndDate(newEndDate)
+                    .toFirestoreObject()
+
+            transaction.update(documentRef, "trackedCategories", FieldValue.arrayRemove(oldValue))
+            transaction.update(documentRef, "trackedCategories", FieldValue.arrayUnion(newValue))
+        }.await()
     }
 
     private fun TrackedCategory.toFirestoreObject() = when (this) {
@@ -45,7 +72,8 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
                 "categoryType" to this.categoryType,
                 "startDate" to this.startDate.toTimeStampDayStart(),
                 "endDate" to this.endDate.toTimeStampDayStart(),
-                "exerciseId" to this.exerciseId
+                "exerciseId" to this.exerciseId,
+                "exerciseName" to this.exerciseName
             )
         }
     }
@@ -53,8 +81,8 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
     private fun DocumentSnapshot.toUser(): User {
         Timber.d("document: $this")
 
-        @Suppress("UNCHECKED_CAST")
-        val trackedCategoriesRawData = this.get("trackedCategories") as List<Map<String, Any>>
+        @Suppress("UNCHECKED_CAST") val trackedCategoriesRawData =
+            this.get("trackedCategories") as List<Map<String, Any>>
         val trackedCategories = mutableListOf<TrackedCategory>()
 
         for (category in trackedCategoriesRawData) {
@@ -64,9 +92,7 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
             when (category["categoryType"]) {
                 TrackedCategoryType.CALORIES.name -> trackedCategories.add(
                     TrackedCategory.Calories(
-                        dataSourceId = dataSourceId,
-                        startDate = startDate,
-                        endDate = endDate
+                        dataSourceId = dataSourceId, startDate = startDate, endDate = endDate
                     )
                 )
                 TrackedCategoryType.EXERCISE_1RM.name -> trackedCategories.add(
@@ -81,9 +107,7 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
             }
         }
         return User(
-            id = this.id,
-            email = this["email"] as String,
-            trackedCategories = trackedCategories
+            id = this.id, email = this["email"] as String, trackedCategories = trackedCategories
         )
     }
 }

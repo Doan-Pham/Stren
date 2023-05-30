@@ -16,13 +16,18 @@ sealed class TrackedCategory {
     abstract val dataSourceId: String
     abstract val startDate: LocalDate
     abstract val endDate: LocalDate
-
+    abstract fun withStartDate(startDate: LocalDate): TrackedCategory
+    abstract fun withEndDate(endDate: LocalDate): TrackedCategory
     data class Calories(
         override val dataSourceId: String = DataSourceBaseId.DATA_SOURCE_ID_CALORIES.toString(),
         override val startDate: LocalDate = DateUtils.getCurrentDate().minusWeeks(1),
         override val endDate: LocalDate = DateUtils.getCurrentDate(),
         override val categoryType: TrackedCategoryType = TrackedCategoryType.CALORIES
     ) : TrackedCategory() {
+        override fun withStartDate(startDate: LocalDate): TrackedCategory =
+            this.copy(startDate = startDate)
+
+        override fun withEndDate(endDate: LocalDate): TrackedCategory = this.copy(endDate = endDate)
     }
 
 
@@ -34,7 +39,12 @@ sealed class TrackedCategory {
         val exerciseName: String,
         override val dataSourceId: String =
             DataSourceBaseId.DATA_SOURCE_ID_EXERCISE_1RM.toString() + "_" + exerciseId
-    ) : TrackedCategory()
+    ) : TrackedCategory() {
+        override fun withStartDate(startDate: LocalDate): TrackedCategory =
+            this.copy(startDate = startDate)
+
+        override fun withEndDate(endDate: LocalDate): TrackedCategory = this.copy(endDate = endDate)
+    }
 }
 
 enum class TrackedCategoryType {
