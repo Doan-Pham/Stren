@@ -1,27 +1,32 @@
 package com.haidoan.android.stren.core.domain
 
+import com.haidoan.android.stren.core.datasource.remote.di.IoDispatcher
 import com.haidoan.android.stren.core.model.User
 import com.haidoan.android.stren.core.repository.base.DefaultValuesRepository
 import com.haidoan.android.stren.core.repository.base.UserRepository
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class GetUserFullDataUseCase @Inject constructor(
     private val userRepository: UserRepository,
-    private val defaultValuesRepository: DefaultValuesRepository
+    private val defaultValuesRepository: DefaultValuesRepository,
+    @IoDispatcher
+    private val dispatcher: CoroutineDispatcher
 ) {
-    operator fun invoke(
+    suspend operator fun invoke(
         userId: String,
-    ): Flow<User> =
-        userRepository.getUserStream(userId).map { user ->
+    ): Flow<User> {
+        withContext(dispatcher) {
+            val user = userRepository.getUser(userId)
             val defaultTrackedCategories = defaultValuesRepository.getDefaultTrackedCategories()
-            val resultTrackedCategories = user.trackedCategories.toMutableList()
             defaultTrackedCategories.forEach { defaultCategory ->
                 if (!user.trackedCategories.any { it.dataSourceId == defaultCategory.dataSourceId }) {
-                    resultTrackedCategories.add(defaultCategory)
+                    userRepository.trackCategory(userId, defaultCategory)
                 }
             }
-            user.copy(trackedCategories = resultTrackedCategories)
         }
+        return userRepository.getUserStream(userId)
+    }
 }
