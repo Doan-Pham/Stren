@@ -56,20 +56,19 @@ internal class DashboardViewModel @Inject constructor(
         if (userId == UNDEFINED_USER_ID) return@flatMapLatest flowOf(listOf())
         getUserFullDataUseCase(userId).map { user ->
             cachedTrackedCategories = user.trackedCategories
-
             Timber.d("getUserFullDataUseCase() - trackedCategories: $cachedTrackedCategories")
 
-            user.trackedCategories.map { category ->
-                when (category) {
-                    is TrackedCategory.Calories -> {
-                        eatingDayRepository.getCaloriesOfDatesStream(
-                            userId = userId,
-                            startDate = category.startDate,
-                            endDate = category.endDate
-                        ).flatMapLatest { caloriesOfDates ->
-                            val chartData = caloriesOfDates.map { caloriesOfDate ->
-                                Pair(
-                                    caloriesOfDate.date,
+           val dataOutputsStateFlows = user.trackedCategories.map { category ->
+               when (category) {
+                   is TrackedCategory.Calories -> {
+                       eatingDayRepository.getCaloriesOfDatesStream(
+                           userId = userId,
+                           startDate = category.startDate,
+                           endDate = category.endDate
+                       ).flatMapLatest { caloriesOfDates ->
+                           val chartData = caloriesOfDates.map { caloriesOfDate ->
+                               Pair(
+                                   caloriesOfDate.date,
                                     caloriesOfDate.calories.toFloat()
                                 )
                             }
@@ -131,8 +130,15 @@ internal class DashboardViewModel @Inject constructor(
                             DataOutput.EmptyData
                         )
                     }
-                }
-            }
+               }
+           }
+            // Assigning "isUpdating" any where else will result in a situation where
+            // composables that depend on "isUpdating" are recomposed before data from backend
+            // even arrives (Ex: A list that's supposed to scroll to old position after updating,
+            // if assign "isUpdating" anywhere else, the list will scroll before the list is
+            // even updated)
+            isUpdating = true
+            dataOutputsStateFlows
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
 
@@ -164,7 +170,7 @@ internal class DashboardViewModel @Inject constructor(
                 newStartDate = startDate,
                 newEndDate = endDate
             )
-            isUpdating = true
+            //isUpdating = true
         }
     }
 
