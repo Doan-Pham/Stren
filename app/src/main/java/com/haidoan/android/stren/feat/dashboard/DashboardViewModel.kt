@@ -38,7 +38,16 @@ internal class DashboardViewModel @Inject constructor(
     private var cachedTrackedCategories = listOf<TrackedCategory>()
 
     private val _allTrainedExercises = MutableStateFlow(listOf<TrainedExercise>())
-    val allTrainedExercises = _allTrainedExercises
+
+    //TODO: This only works for exercises' 1RM and not other exercises-related metrics
+    val exercisesToTrack = _allTrainedExercises.mapLatest { allTrainedExercises ->
+        val alreadyTrackedExercisesIds =
+            cachedTrackedCategories.filterIsInstance(TrackedCategory.ExerciseOneRepMax::class.java)
+                .map {
+                    it.exerciseId
+                }
+        allTrainedExercises.filter { it.exercise.id !in alreadyTrackedExercisesIds }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
 
     val chartEntryModelProducers = mutableStateMapOf<String, ChartEntryModelProducer>()
 
