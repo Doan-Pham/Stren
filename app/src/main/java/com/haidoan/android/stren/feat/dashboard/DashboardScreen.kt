@@ -48,7 +48,7 @@ internal fun DashboardRoute(
                     BottomSheetItem(
                         text = it.exercise.name,
                         onClickHandler = {
-                            viewModel.showExerciseProgress(it.exercise.id)
+                            viewModel.trackExerciseProgress(it.exercise.id)
                             onDismiss()
                         })
                 },

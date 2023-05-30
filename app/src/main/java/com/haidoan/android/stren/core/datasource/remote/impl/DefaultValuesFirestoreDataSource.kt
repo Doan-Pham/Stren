@@ -5,6 +5,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.haidoan.android.stren.core.datasource.remote.base.DefaultValuesRemoteDataSource
 import com.haidoan.android.stren.core.model.TrackedCategory
+import com.haidoan.android.stren.core.model.TrackedCategoryType
 import com.haidoan.android.stren.core.utils.DateUtils
 import com.haidoan.android.stren.core.utils.DateUtils.toLocalDate
 import kotlinx.coroutines.tasks.await
@@ -35,19 +36,20 @@ internal class DefaultValuesFirestoreDataSource @Inject constructor() :
                 (category["startDate"] as Timestamp?)?.toLocalDate() ?: DateUtils.getCurrentDate()
 
             when (category["categoryType"]) {
-                "CALORIES" -> trackedCategories.add(
+                TrackedCategoryType.CALORIES.name -> trackedCategories.add(
                     TrackedCategory.Calories(
                         dataSourceId = dataSourceId,
                         startDate = startDate,
                         endDate = endDate
                     )
                 )
-                "EXERCISE_1RM" -> trackedCategories.add(
+                TrackedCategoryType.EXERCISE_1RM.name -> trackedCategories.add(
                     TrackedCategory.ExerciseOneRepMax(
                         dataSourceId = dataSourceId,
                         startDate = startDate,
                         endDate = endDate,
-                        exerciseId = (category["exerciseId"] as String?) ?: ""
+                        exerciseId = (category["exerciseId"] as String?) ?: "",
+                        exerciseName = (category["exerciseName"] as String?) ?: ""
                     )
                 )
             }
