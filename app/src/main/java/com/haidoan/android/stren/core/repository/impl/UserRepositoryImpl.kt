@@ -25,7 +25,6 @@ class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteD
             User.undefined
         }
 
-
     override suspend fun trackCategory(userId: String, category: TrackedCategory) {
         try {
             dataSource.trackCategory(userId, category)
@@ -45,6 +44,16 @@ class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteD
             dataSource.updateTrackCategory(userId, dataSourceId, newStartDate, newEndDate)
         } catch (ex: Exception) {
             Timber.e("updateTrackCategory() - userId: $userId, dataSourceId: $dataSourceId - Exception: $ex")
+        }
+    }
+
+    override suspend fun stopTrackingCategory(
+        userId: String, dataSourceId: String
+    ) {
+        try {
+            dataSource.stopTrackingCategory(userId, dataSourceId)
+        } catch (ex: Exception) {
+            Timber.e("stopTrackingCategory() - userId: $userId, dataSourceId: $dataSourceId - Exception: $ex")
         }
     }
 }

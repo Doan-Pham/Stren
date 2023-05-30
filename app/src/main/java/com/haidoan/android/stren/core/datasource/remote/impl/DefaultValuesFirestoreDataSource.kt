@@ -20,9 +20,9 @@ internal class DefaultValuesFirestoreDataSource @Inject constructor() :
         FirebaseFirestore.getInstance().collection(DEFAULT_TRACKED_CATEGORY_COLLECTION_PATH)
 
     override suspend fun getDefaultTrackedCategories(): List<TrackedCategory> =
-        defaultCategoriesCollection.get().await().toTrackedCategories()
+        defaultCategoriesCollection.get().await().toDefaultTrackedCategories()
 
-    private fun QuerySnapshot.toTrackedCategories(): List<TrackedCategory> {
+    private fun QuerySnapshot.toDefaultTrackedCategories(): List<TrackedCategory> {
         val trackedCategories = mutableListOf<TrackedCategory>()
 
         for (document in this.documents) {
@@ -40,7 +40,8 @@ internal class DefaultValuesFirestoreDataSource @Inject constructor() :
                     TrackedCategory.Calories(
                         dataSourceId = dataSourceId,
                         startDate = startDate,
-                        endDate = endDate
+                        endDate = endDate,
+                        isDefaultCategory = true
                     )
                 )
                 TrackedCategoryType.EXERCISE_1RM.name -> trackedCategories.add(
@@ -49,7 +50,8 @@ internal class DefaultValuesFirestoreDataSource @Inject constructor() :
                         startDate = startDate,
                         endDate = endDate,
                         exerciseId = (category["exerciseId"] as String?) ?: "",
-                        exerciseName = (category["exerciseName"] as String?) ?: ""
+                        exerciseName = (category["exerciseName"] as String?) ?: "",
+                        isDefaultCategory = true
                     )
                 )
             }

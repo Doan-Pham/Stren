@@ -1,6 +1,7 @@
 package com.haidoan.android.stren.core.model
 
 import com.google.firebase.firestore.DocumentId
+import com.google.firebase.firestore.PropertyName
 import com.haidoan.android.stren.core.utils.DateUtils
 import java.time.LocalDate
 
@@ -16,6 +17,8 @@ data class User(
 }
 
 sealed class TrackedCategory {
+    @get:PropertyName("isDefaultCategory")
+    abstract val isDefaultCategory: Boolean
     abstract val categoryType: TrackedCategoryType
     abstract val dataSourceId: String
     abstract val startDate: LocalDate
@@ -26,7 +29,8 @@ sealed class TrackedCategory {
         override val dataSourceId: String = DataSourceBaseId.DATA_SOURCE_ID_CALORIES.toString(),
         override val startDate: LocalDate = DateUtils.getCurrentDate().minusWeeks(1),
         override val endDate: LocalDate = DateUtils.getCurrentDate(),
-        override val categoryType: TrackedCategoryType = TrackedCategoryType.CALORIES
+        override val categoryType: TrackedCategoryType = TrackedCategoryType.CALORIES,
+        override val isDefaultCategory: Boolean
     ) : TrackedCategory() {
         override fun withStartDate(startDate: LocalDate): TrackedCategory =
             this.copy(startDate = startDate)
@@ -42,7 +46,8 @@ sealed class TrackedCategory {
         val exerciseId: String,
         val exerciseName: String,
         override val dataSourceId: String =
-            DataSourceBaseId.DATA_SOURCE_ID_EXERCISE_1RM.toString() + "_" + exerciseId
+            DataSourceBaseId.DATA_SOURCE_ID_EXERCISE_1RM.toString() + "_" + exerciseId,
+        override val isDefaultCategory: Boolean
     ) : TrackedCategory() {
         override fun withStartDate(startDate: LocalDate): TrackedCategory =
             this.copy(startDate = startDate)
