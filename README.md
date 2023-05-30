@@ -31,9 +31,8 @@
 * Log workout
 * View foods' nutritional value
 * Track nutrition and calories
+* View training and nutrition progress
 ### Work in Progress
-* View nutrition and training progress
-### TODO
 * Record body measurements and view progress
 
 ## How To Run
@@ -83,15 +82,22 @@ The application's conventions loosely follow the following guidelines:
 - Git Commit Message: [Contributing to Angular](https://github.com/angular/angular/blob/22b96b9/CONTRIBUTING.md#-commit-message-guidelines).
 
 ## Framework, Libraries, Tools and Resources
+### Core Framework and Libraries
 - Framework: [Android](https://www.android.com/) ([Kotlin](https://kotlinlang.org/)).
-- UI Toolkit: [Jetpack Compose](https://developer.android.com/jetpack/compose?gclid=Cj0KCQjw6cKiBhD5ARIsAKXUdyb-Ol7pdUNLEEqp8HC9iHwudsHWUp-2Ppta7Kv9tT78WbryuKQEz4EaAkF9EALw_wcB&gclsrc=aw.ds).
-- UI Design: [Figma](https://www.figma.com/) and [Material Design 3](https://m3.material.io/).
-- Dependency Injection: [Hilt](https://dagger.dev/hilt/).
-- Pagination: [Paging 3](https://developer.android.com/topic/libraries/architecture/paging/v3-overview).
-- Testing: [JUnit](https://junit.org/junit4/).
-- Network: [Retrofit](https://square.github.io/retrofit/), [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization).
-- Chart:  [tehras/charts](https://github.com/tehras/charts)
+- UI Toolkit: [Jetpack Compose](https://developer.android.com/jetpack/compose?gclid=Cj0KCQjw6cKiBhD5ARIsAKXUdyb-Ol7pdUNLEEqp8HC9iHwudsHWUp-2Ppta7Kv9tT78WbryuKQEz4EaAkF9EALw_wcB&gclsrc=aw.ds), [Material Design 3](https://m3.material.io/).
 - Authentication, Database and Storage: [Firebase](https://firebase.google.com/).
+- Dependency Injection: [Hilt](https://dagger.dev/hilt/).
+- Testing: [JUnit](https://junit.org/junit4/).
+- Pagination: [Paging 3](https://developer.android.com/topic/libraries/architecture/paging/v3-overview).
+- Network: [Retrofit](https://square.github.io/retrofit/), [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization).
+- Logging: [Timber](https://github.com/JakeWharton/timber).
+### Other Libraries
+- UI Design: [Figma](https://www.figma.com/) 
+- Chart and Graph UI Components: [charts](https://github.com/tehras/charts), [vico](https://github.com/patrykandpatrick/vico)
+- Calendar UI Component: [Calendar](https://github.com/kizitonwose/Calendar)
+- Navigation Transition: [Accompanist](https://github.com/google/accompanist)
+- Image Loader: [Coil](https://github.com/coil-kt/coil)
+### Resources
 - Exercise Dataset: [free-exercise-db](https://github.com/yuhonas/free-exercise-db).
 - Food Dataset: [FoodData Central API](https://fdc.nal.usda.gov/api-guide.html).
 - Upload Dataset to Firebase: [firestore-backup-restore](https://github.com/dalenguyen/firestore-backup-restore).
