@@ -6,8 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.designsystem.component.toCharEntries
 import com.haidoan.android.stren.core.designsystem.component.toCharEntryModelProducer
+import com.haidoan.android.stren.core.domain.GetUserFullDataUseCase
+import com.haidoan.android.stren.core.model.TrackedCategory
 import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.repository.base.EatingDayRepository
+import com.haidoan.android.stren.core.repository.base.UserRepository
 import com.haidoan.android.stren.core.repository.base.WorkoutsRepository
 import com.haidoan.android.stren.core.service.AuthenticationService
 import com.haidoan.android.stren.core.utils.DateUtils
@@ -27,7 +30,9 @@ private const val UNDEFINED_USER_ID = "Undefined User ID"
 internal class DashboardViewModel @Inject constructor(
     authenticationService: AuthenticationService,
     private val eatingDayRepository: EatingDayRepository,
-    private val workoutsRepository: WorkoutsRepository
+    private val workoutsRepository: WorkoutsRepository,
+    private val userRepository: UserRepository,
+    private val getUserFullDataUseCase: GetUserFullDataUseCase
 ) : ViewModel() {
 
     private var cachedUserId = UNDEFINED_USER_ID
@@ -41,18 +46,18 @@ internal class DashboardViewModel @Inject constructor(
      */
     private val _dataFetchingTriggers: SnapshotStateList<MutableStateFlow<DataFetchingTrigger>> =
         mutableStateListOf(
-            MutableStateFlow(
-                DataFetchingTrigger.CaloriesFetchingTrigger(
-                    userId = UNDEFINED_USER_ID,
-                    startDate = DateUtils.getCurrentDate(),
-                    endDate = DateUtils.getCurrentDate(),
-                )
-            )
+//            MutableStateFlow(
+//                DataFetchingTrigger.CaloriesFetchingTrigger(
+//                    userId = UNDEFINED_USER_ID,
+//                    startDate = DateUtils.getCurrentDate(),
+//                    endDate = DateUtils.getCurrentDate(),
+//                )
+//            )
         )
 
 
     val chartEntryModelProducers =
-        mutableStateMapOf("DATA_RESULT_ID_CALORIES" to listOf(DateUtils.getCurrentDate() to 0f).toCharEntryModelProducer())
+        mutableStateMapOf("DATA_SOURCE_ID_CALORIES" to listOf(DateUtils.getCurrentDate() to 0f).toCharEntryModelProducer())
 
 
     val dataOutputs
@@ -103,7 +108,6 @@ internal class DashboardViewModel @Inject constructor(
                             exerciseId = trigger.exerciseId
                         ).map { rawData ->
                             val chartData = rawData.toList()
-                            Timber.d("getExerciseOneRepMaxesStream() - collect -it: $it")
                             Timber.d("chartData: $chartData")
                             if (chartEntryModelProducers.containsKey(trigger.dataSourceId)) {
                                 chartEntryModelProducers[trigger.dataSourceId]?.updateChartEntries(
@@ -118,8 +122,11 @@ internal class DashboardViewModel @Inject constructor(
                                 startDate = trigger.startDate,
                                 endDate = trigger.endDate,
                                 dataSourceId = trigger.dataSourceId,
-                                title = _allTrainedExercises.value.find { it.exercise.id == trigger.exerciseId }?.exercise?.name
-                                    ?: "Unknown Exercise"
+                                title = _allTrainedExercises.value
+                                    .find { trainedExercise ->
+                                        trainedExercise.exercise.id == trigger.exerciseId
+                                    }
+                                    ?.exercise?.name ?: "Unknown Exercise"
                             )
                         }
                     }
@@ -129,13 +136,27 @@ internal class DashboardViewModel @Inject constructor(
             )
         }
 
-
     init {
         authenticationService.addAuthStateListeners(
             onUserAuthenticated = { userId ->
                 cachedUserId = userId
                 _dataFetchingTriggers.forEach {
                     it.value = it.value.withUserId(userId)
+                }
+                viewModelScope.launch {
+                    getUserFullDataUseCase(userId).collect { user ->
+                        for (category in user.trackedCategories) {
+                            if (!_dataFetchingTriggers
+                                    .any { it.value.dataSourceId == category.dataSourceId }
+                            ) {
+                                _dataFetchingTriggers.add(
+                                    MutableStateFlow(
+                                        category.toDataFetchingTrigger()
+                                    )
+                                )
+                            }
+                        }
+                    }
                 }
 
                 Timber.d("authStateListen - User signed in - userId: $userId")
@@ -175,24 +196,51 @@ internal class DashboardViewModel @Inject constructor(
         }
     }
 
-    fun showExerciseProgress(exerciseId: String) {
+    fun trackExerciseProgress(exerciseId: String) {
         if (!_dataFetchingTriggers.any {
                 it.value is DataFetchingTrigger.ExerciseFetchingTrigger &&
                         (it.value as DataFetchingTrigger.ExerciseFetchingTrigger).exerciseId == exerciseId
             }) {
-            _dataFetchingTriggers.add(
-                MutableStateFlow(
-                    DataFetchingTrigger.ExerciseFetchingTrigger(
-                        userId = cachedUserId,
-                        startDate = DateUtils.getCurrentDate().minusMonths(1),
-                        endDate = DateUtils.getCurrentDate(),
-                        exerciseId = exerciseId
+//            _dataFetchingTriggers.add(
+//                MutableStateFlow(
+//                    DataFetchingTrigger.ExerciseFetchingTrigger(
+//                        userId = cachedUserId,
+//                        startDate = DateUtils.getCurrentDate().minusMonths(1),
+//                        endDate = DateUtils.getCurrentDate(),
+//                        exerciseId = exerciseId
+//                    )
+//                )
+//            )
+            viewModelScope.launch {
+                userRepository.trackCategory(
+                    userId = cachedUserId, category = TrackedCategory.ExerciseOneRepMax(
+                        exerciseId = exerciseId,
+                        exerciseName = _allTrainedExercises.value.first { it.exercise.id == exerciseId }.exercise.name
                     )
                 )
-            )
+            }
+
         }
 
     }
+
+    private fun TrackedCategory.toDataFetchingTrigger(): DataFetchingTrigger =
+        when (this) {
+            is TrackedCategory.Calories -> DataFetchingTrigger.CaloriesFetchingTrigger(
+                dataSourceId = this.dataSourceId,
+                startDate = this.startDate,
+                endDate = this.endDate,
+                userId = cachedUserId
+            )
+            is TrackedCategory.ExerciseOneRepMax -> DataFetchingTrigger.ExerciseFetchingTrigger(
+                dataSourceId = this.dataSourceId,
+                startDate = this.startDate,
+                endDate = this.endDate,
+                userId = cachedUserId,
+                exerciseId = this.exerciseId
+            )
+        }
+
 
     /**
      * Kotlin Flow's flatMapLatest() can collect a flow and flatMap it whenever it changes, but
@@ -211,7 +259,7 @@ internal class DashboardViewModel @Inject constructor(
         abstract fun withEndDate(endDate: LocalDate): DataFetchingTrigger
 
         data class CaloriesFetchingTrigger(
-            override val dataSourceId: String = "DATA_RESULT_ID_CALORIES",
+            override val dataSourceId: String,
             override val userId: String,
             override val startDate: LocalDate,
             override val endDate: LocalDate,
@@ -224,13 +272,13 @@ internal class DashboardViewModel @Inject constructor(
         }
 
         data class ExerciseFetchingTrigger(
+            override val dataSourceId: String,
             override val userId: String,
             override val startDate: LocalDate,
             override val endDate: LocalDate,
             val exerciseId: String
         ) : DataFetchingTrigger() {
 
-            override val dataSourceId: String = "DATA_RESULT_ID_EXERCISE_$exerciseId"
 
             override fun withUserId(userId: String) = this.copy(userId = userId)
 
