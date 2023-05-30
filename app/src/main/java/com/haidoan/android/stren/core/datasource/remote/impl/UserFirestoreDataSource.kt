@@ -57,6 +57,9 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         }.await()
     }
 
+    override suspend fun getUser(userId: String): User =
+        collectionReference.document(userId).get().await().toUser()
+
     private fun TrackedCategory.toFirestoreObject() = when (this) {
         is TrackedCategory.Calories -> {
             mapOf(

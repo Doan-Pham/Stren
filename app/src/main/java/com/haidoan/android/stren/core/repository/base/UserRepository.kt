@@ -15,4 +15,6 @@ interface UserRepository {
         newStartDate: LocalDate,
         newEndDate: LocalDate
     )
+
+    suspend fun getUser(userId: String): User
 }

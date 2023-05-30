@@ -14,4 +14,6 @@ interface UserRemoteDataSource {
         newStartDate: LocalDate,
         newEndDate: LocalDate
     )
+
+    suspend fun getUser(userId: String): User
 }

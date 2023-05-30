@@ -9,7 +9,11 @@ data class User(
     val id: String,
     val email: String,
     val trackedCategories: List<TrackedCategory> = listOf()
-)
+) {
+    companion object {
+        val undefined = User("Undefined", "Undefined")
+    }
+}
 
 sealed class TrackedCategory {
     abstract val categoryType: TrackedCategoryType
