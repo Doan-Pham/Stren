@@ -1,7 +1,6 @@
 package com.haidoan.android.stren.feat.dashboard
 
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.designsystem.component.toCharEntries
@@ -35,48 +34,31 @@ internal class DashboardViewModel @Inject constructor(
     private val getUserFullDataUseCase: GetUserFullDataUseCase
 ) : ViewModel() {
 
-    private var cachedUserId = UNDEFINED_USER_ID
+    private var currentUserId = MutableStateFlow(UNDEFINED_USER_ID)
+    private var cachedTrackedCategories = listOf<TrackedCategory>()
+
     private val _allTrainedExercises = MutableStateFlow(listOf<TrainedExercise>())
     val allTrainedExercises = _allTrainedExercises
 
+    val chartEntryModelProducers = mutableStateMapOf<String, ChartEntryModelProducer>()
 
-    /**
-     * Need to initialize userId before init{} block, or the init{} block will access
-     * it when it's null and causes NullPointerException
-     */
-    private val _dataFetchingTriggers: SnapshotStateList<MutableStateFlow<DataFetchingTrigger>> =
-        mutableStateListOf(
-//            MutableStateFlow(
-//                DataFetchingTrigger.CaloriesFetchingTrigger(
-//                    userId = UNDEFINED_USER_ID,
-//                    startDate = DateUtils.getCurrentDate(),
-//                    endDate = DateUtils.getCurrentDate(),
-//                )
-//            )
-        )
+    val dataOutputs = currentUserId.flatMapLatest { userId ->
+        Timber.d("currentUserId.flatMapLatest() - userId: $userId")
 
+        if (userId == UNDEFINED_USER_ID) return@flatMapLatest flowOf(listOf())
+        getUserFullDataUseCase(userId).map { user ->
+            cachedTrackedCategories = user.trackedCategories
 
-    val chartEntryModelProducers =
-        mutableStateMapOf("DATA_SOURCE_ID_CALORIES" to listOf(DateUtils.getCurrentDate() to 0f).toCharEntryModelProducer())
+            Timber.d("getUserFullDataUseCase() - trackedCategories: $cachedTrackedCategories")
 
-
-    val dataOutputs
-        @Composable
-        get() = _dataFetchingTriggers.map {
-            Timber.d("_dataFetchingTriggers.map() - StateFlowTrigger: $it")
-            Timber.d("_dataFetchingTriggers.map() - Trigger: ${it.value}")
-            it.flatMapLatest { trigger ->
-                Timber.d("StateFlowTrigger.flatMapLatest() - StateFlowTrigger: $it - content: $trigger")
-                if (trigger.userId == UNDEFINED_USER_ID) return@flatMapLatest flowOf(
-                    DataOutput.EmptyData
-                )
-                when (trigger) {
-                    is DataFetchingTrigger.CaloriesFetchingTrigger -> {
+            user.trackedCategories.map { category ->
+                when (category) {
+                    is TrackedCategory.Calories -> {
                         eatingDayRepository.getCaloriesOfDatesStream(
-                            userId = trigger.userId,
-                            startDate = trigger.startDate,
-                            endDate = trigger.endDate
-                        ).map { caloriesOfDates ->
+                            userId = userId,
+                            startDate = category.startDate,
+                            endDate = category.endDate
+                        ).flatMapLatest { caloriesOfDates ->
                             val chartData = caloriesOfDates.map { caloriesOfDate ->
                                 Pair(
                                     caloriesOfDate.date,
@@ -84,89 +66,74 @@ internal class DashboardViewModel @Inject constructor(
                                 )
                             }
                             Timber.d("chartData: $chartData")
-                            if (chartEntryModelProducers.containsKey(trigger.dataSourceId)) {
-                                chartEntryModelProducers[trigger.dataSourceId]?.updateChartEntries(
+                            if (chartEntryModelProducers.containsKey(category.dataSourceId)) {
+                                chartEntryModelProducers[category.dataSourceId]?.updateChartEntries(
                                     chartData
                                 )
                             } else {
-                                chartEntryModelProducers[trigger.dataSourceId] =
-                                    chartData.toList().toCharEntryModelProducer()
+                                chartEntryModelProducers[category.dataSourceId] =
+                                    chartData.toCharEntryModelProducer()
                             }
 
-                            DataOutput.Calories(
-                                startDate = trigger.startDate,
-                                endDate = trigger.endDate,
-                                dataSourceId = trigger.dataSourceId
+                            flowOf(
+                                DataOutput.Calories(
+                                    startDate = category.startDate,
+                                    endDate = category.endDate,
+                                    dataSourceId = category.dataSourceId
+                                )
                             )
-                        }
+                        }.stateIn(
+                            viewModelScope,
+                            SharingStarted.WhileSubscribed(5000),
+                            DataOutput.EmptyData
+                        )
                     }
-                    is DataFetchingTrigger.ExerciseFetchingTrigger -> {
+                    is TrackedCategory.ExerciseOneRepMax -> {
                         workoutsRepository.getExerciseOneRepMaxesStream(
-                            userId = trigger.userId,
-                            startDate = trigger.startDate,
-                            endDate = trigger.endDate,
-                            exerciseId = trigger.exerciseId
-                        ).map { rawData ->
+                            userId = userId,
+                            startDate = category.startDate,
+                            endDate = category.endDate,
+                            exerciseId = category.exerciseId
+                        ).flatMapLatest { rawData ->
                             val chartData = rawData.toList()
                             Timber.d("chartData: $chartData")
-                            if (chartEntryModelProducers.containsKey(trigger.dataSourceId)) {
-                                chartEntryModelProducers[trigger.dataSourceId]?.updateChartEntries(
+
+                            if (chartEntryModelProducers.containsKey(category.dataSourceId)) {
+                                chartEntryModelProducers[category.dataSourceId]?.updateChartEntries(
                                     chartData
                                 )
                             } else {
-                                chartEntryModelProducers[trigger.dataSourceId] =
-                                    chartData.toList().toCharEntryModelProducer()
+                                chartEntryModelProducers[category.dataSourceId] =
+                                    chartData.toCharEntryModelProducer()
                             }
 
-                            DataOutput.Exercise(
-                                startDate = trigger.startDate,
-                                endDate = trigger.endDate,
-                                dataSourceId = trigger.dataSourceId,
-                                title = _allTrainedExercises.value
-                                    .find { trainedExercise ->
-                                        trainedExercise.exercise.id == trigger.exerciseId
-                                    }
-                                    ?.exercise?.name ?: "Unknown Exercise"
+                            flowOf(
+                                DataOutput.Exercise(
+                                    startDate = category.startDate,
+                                    endDate = category.endDate,
+                                    dataSourceId = category.dataSourceId,
+                                    title = category.exerciseName
+                                )
                             )
-                        }
+                        }.stateIn(
+                            viewModelScope,
+                            SharingStarted.WhileSubscribed(5000),
+                            DataOutput.EmptyData
+                        )
                     }
                 }
-            }.stateIn(
-                viewModelScope, SharingStarted.WhileSubscribed(5000), DataOutput.EmptyData
-            )
+            }
         }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
 
     init {
         authenticationService.addAuthStateListeners(
             onUserAuthenticated = { userId ->
-                cachedUserId = userId
-                _dataFetchingTriggers.forEach {
-                    it.value = it.value.withUserId(userId)
-                }
-                viewModelScope.launch {
-                    getUserFullDataUseCase(userId).collect { user ->
-                        for (category in user.trackedCategories) {
-                            if (!_dataFetchingTriggers
-                                    .any { it.value.dataSourceId == category.dataSourceId }
-                            ) {
-                                _dataFetchingTriggers.add(
-                                    MutableStateFlow(
-                                        category.toDataFetchingTrigger()
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-
+                currentUserId.update { userId }
                 Timber.d("authStateListen - User signed in - userId: $userId")
-                Timber.d("_dataFetchingTriggers - $_dataFetchingTriggers")
             },
             onUserNotAuthenticated = {
-                cachedUserId = UNDEFINED_USER_ID
-                _dataFetchingTriggers.forEach {
-                    it.value = it.value.withUserId(UNDEFINED_USER_ID)
-                }
+                currentUserId.value = UNDEFINED_USER_ID
                 Timber.d("authStateListen - User signed out")
             })
 
@@ -180,40 +147,33 @@ internal class DashboardViewModel @Inject constructor(
 
     fun updateDateRange(dataSourceId: String, startDate: LocalDate, endDate: LocalDate) {
         Timber.d("startDate: $startDate, endDate: $endDate")
-        _dataFetchingTriggers.first { it.value.dataSourceId == dataSourceId }.value =
-            _dataFetchingTriggers.first { it.value.dataSourceId == dataSourceId }.value.withStartDate(
-                startDate
-            ).withEndDate(endDate)
-        Timber.d("updateDateRange() - _dataFetchingTriggers: $_dataFetchingTriggers")
+        viewModelScope.launch {
+            userRepository.updateTrackCategory(
+                userId = currentUserId.value,
+                dataSourceId = dataSourceId,
+                newStartDate = startDate,
+                newEndDate = endDate
+            )
+        }
     }
 
     fun refreshAllTrainedExercises() {
         viewModelScope.launch {
             _allTrainedExercises.value =
-                workoutsRepository.getAllExercisesTrained(userId = cachedUserId)
+                workoutsRepository.getAllExercisesTrained(userId = currentUserId.value)
 
             Timber.d("_allTrainedExercises.value: ${_allTrainedExercises.value}")
         }
     }
 
     fun trackExerciseProgress(exerciseId: String) {
-        if (!_dataFetchingTriggers.any {
-                it.value is DataFetchingTrigger.ExerciseFetchingTrigger &&
-                        (it.value as DataFetchingTrigger.ExerciseFetchingTrigger).exerciseId == exerciseId
+        if (!cachedTrackedCategories.any {
+                it is TrackedCategory.ExerciseOneRepMax && it.exerciseId == exerciseId
             }) {
-//            _dataFetchingTriggers.add(
-//                MutableStateFlow(
-//                    DataFetchingTrigger.ExerciseFetchingTrigger(
-//                        userId = cachedUserId,
-//                        startDate = DateUtils.getCurrentDate().minusMonths(1),
-//                        endDate = DateUtils.getCurrentDate(),
-//                        exerciseId = exerciseId
-//                    )
-//                )
-//            )
             viewModelScope.launch {
                 userRepository.trackCategory(
-                    userId = cachedUserId, category = TrackedCategory.ExerciseOneRepMax(
+                    userId = currentUserId.value,
+                    category = TrackedCategory.ExerciseOneRepMax(
                         exerciseId = exerciseId,
                         exerciseName = _allTrainedExercises.value.first { it.exercise.id == exerciseId }.exercise.name
                     )
@@ -222,70 +182,6 @@ internal class DashboardViewModel @Inject constructor(
 
         }
 
-    }
-
-    private fun TrackedCategory.toDataFetchingTrigger(): DataFetchingTrigger =
-        when (this) {
-            is TrackedCategory.Calories -> DataFetchingTrigger.CaloriesFetchingTrigger(
-                dataSourceId = this.dataSourceId,
-                startDate = this.startDate,
-                endDate = this.endDate,
-                userId = cachedUserId
-            )
-            is TrackedCategory.ExerciseOneRepMax -> DataFetchingTrigger.ExerciseFetchingTrigger(
-                dataSourceId = this.dataSourceId,
-                startDate = this.startDate,
-                endDate = this.endDate,
-                userId = cachedUserId,
-                exerciseId = this.exerciseId
-            )
-        }
-
-
-    /**
-     * Kotlin Flow's flatMapLatest() can collect a flow and flatMap it whenever it changes, but
-     * it only works with 1 input flow.
-     *
-     * By wrapping inside this class all the different data objects that should triggers flatMapLatest()
-     * when they change, developer can indirectly use flatMapLatest() with more than 1 input
-     */
-    private sealed class DataFetchingTrigger {
-        abstract val dataSourceId: String
-        abstract val userId: String
-        abstract val startDate: LocalDate
-        abstract val endDate: LocalDate
-        abstract fun withUserId(userId: String): DataFetchingTrigger
-        abstract fun withStartDate(startDate: LocalDate): DataFetchingTrigger
-        abstract fun withEndDate(endDate: LocalDate): DataFetchingTrigger
-
-        data class CaloriesFetchingTrigger(
-            override val dataSourceId: String,
-            override val userId: String,
-            override val startDate: LocalDate,
-            override val endDate: LocalDate,
-        ) : DataFetchingTrigger() {
-            override fun withUserId(userId: String) = this.copy(userId = userId)
-
-            override fun withStartDate(startDate: LocalDate) = this.copy(startDate = startDate)
-
-            override fun withEndDate(endDate: LocalDate) = this.copy(endDate = endDate)
-        }
-
-        data class ExerciseFetchingTrigger(
-            override val dataSourceId: String,
-            override val userId: String,
-            override val startDate: LocalDate,
-            override val endDate: LocalDate,
-            val exerciseId: String
-        ) : DataFetchingTrigger() {
-
-
-            override fun withUserId(userId: String) = this.copy(userId = userId)
-
-            override fun withStartDate(startDate: LocalDate) = this.copy(startDate = startDate)
-
-            override fun withEndDate(endDate: LocalDate) = this.copy(endDate = endDate)
-        }
     }
 
     sealed interface DataOutput {

@@ -95,9 +95,9 @@ internal fun DashboardRoute(
         isAppBarConfigured = true
     }
 
-    val dataOutputStateFlows = viewModel.dataOutputs
+    val dataOutputStateFlows = viewModel.dataOutputs.collectAsStateWithLifecycle()
     val dataOutputsAsState = mutableListOf<State<DashboardViewModel.DataOutput>>()
-    dataOutputStateFlows.forEach { dataOutputStateFlow ->
+    dataOutputStateFlows.value.forEach { dataOutputStateFlow ->
         dataOutputsAsState.add(dataOutputStateFlow.collectAsStateWithLifecycle())
     }
 
