@@ -34,7 +34,7 @@ internal fun DashboardRoute(
     viewModel: DashboardViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
 ) {
-    val allTrainedExercises by viewModel.allTrainedExercises.collectAsStateWithLifecycle()
+    val exercisesToTrack by viewModel.exercisesToTrack.collectAsStateWithLifecycle()
     val trackExercisesBottomSheet = BottomSheetWrapper(
         type = DashBoardBottomSheetType.TRACK_EXERCISE,
         shouldShow = rememberSaveable { mutableStateOf(false) },
@@ -44,7 +44,7 @@ internal fun DashboardRoute(
                 bottomSheetState = rememberModalBottomSheetState(),
                 title = "Track exercise",
                 sheetItems =
-                allTrainedExercises.map {
+                exercisesToTrack.map {
                     BottomSheetItem(
                         text = it.exercise.name,
                         onClickHandler = {
