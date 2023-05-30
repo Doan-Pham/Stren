@@ -25,6 +25,9 @@ import com.haidoan.android.stren.core.designsystem.theme.Gray90
 import com.haidoan.android.stren.core.utils.DateUtils
 import com.haidoan.android.stren.core.utils.DateUtils.defaultFormat
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -169,14 +172,18 @@ private fun DashboardScreen(
                         ProgressItem(
                             chartEntryModelProducer = chartEntryModelProducers[dataOutput.dataSourceId]!!,
                             onDateOptionClick = { startDate, endDate ->
+
+                                val itemToUpdateIndex = dataOutputsAsState
+                                    .indexOfFirst { it.value.dataSourceId == dataOutput.dataSourceId }
+
+                                previousFirstVisibleItemIndex = itemToUpdateIndex
+
+
                                 onDateOptionClick(
                                     dataOutput.dataSourceId,
                                     startDate,
                                     endDate
                                 )
-                                previousFirstVisibleItemIndex =
-                                    dataOutputsAsState
-                                        .indexOfFirst { it.value.dataSourceId == dataOutput.dataSourceId }
                             },
                             dataOutput = dataOutput,
                             onRemoveOptionClick = {
@@ -203,20 +210,29 @@ private fun DashboardScreen(
             onRemoveItemClick(dataSourceIdToDelete)
         }
     }
+
+    val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(dataOutputsAsState.size) {
         if (dataOutputsAsState.size > previousDataOutputsSize) {
-            progressItemListState.animateScrollToItem(dataOutputsAsState.size - 1)
-            previousDataOutputsSize = dataOutputsAsState.size
-        } else if (dataOutputsAsState.size < previousDataOutputsSize) {
-            progressItemListState.animateScrollToItem(previousFirstVisibleItemIndex)
-            previousDataOutputsSize = dataOutputsAsState.size
+            coroutineScope.launch {
+                previousFirstVisibleItemIndex = dataOutputsAsState.size - 1
+                previousDataOutputsSize = dataOutputsAsState.size
+            }
         }
     }
     LaunchedEffect(isUpdating) {
+        Timber.d("LaunchedEffect(isUpdating) - isUpdating: $isUpdating")
         if (isUpdating) {
-            progressItemListState.animateScrollToItem(previousFirstVisibleItemIndex)
+            coroutineScope.launch {
+                // Delay a bit to wait for the list to be completely updated before
+                // scrolling, or else the scrolling will happen on an incomplete list
+                // TODO: This is very brittle, and more like a workaround
+                delay(1000)
+                progressItemListState.animateScrollToItem(previousFirstVisibleItemIndex)
+            }
             onUpdateComplete()
         }
+
     }
 
     bottomSheetWrappers.forEach {
