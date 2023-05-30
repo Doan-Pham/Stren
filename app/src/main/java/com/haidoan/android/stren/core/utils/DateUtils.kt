@@ -14,7 +14,12 @@ object DateUtils {
     private val ZONE_ID = ZoneId.of("Asia/Ho_Chi_Minh")
 
     fun getCurrentDate(): LocalDate = LocalDate.now(ZONE_ID)
-
+    fun getCurrentTimeAsTimestamp(): Timestamp {
+        return Timestamp(
+            LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(DEFAULT_TIMEZONE_OFFSET_IN_HOURS)),
+            0
+        )
+    }
 
     private fun getMondayFrom(date: LocalDate): LocalDate =
         date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))

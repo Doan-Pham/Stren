@@ -9,6 +9,7 @@ import com.haidoan.android.stren.core.datasource.remote.base.UserRemoteDataSourc
 import com.haidoan.android.stren.core.model.TrackedCategory
 import com.haidoan.android.stren.core.model.TrackedCategoryType
 import com.haidoan.android.stren.core.model.User
+import com.haidoan.android.stren.core.utils.DateUtils.getCurrentTimeAsTimestamp
 import com.haidoan.android.stren.core.utils.DateUtils.toLocalDate
 import com.haidoan.android.stren.core.utils.DateUtils.toTimeStampDayStart
 import kotlinx.coroutines.flow.Flow
@@ -51,6 +52,10 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
                     .withStartDate(newStartDate)
                     .withEndDate(newEndDate)
                     .toFirestoreObject()
+                    .toMutableMap()
+
+            // Updating a value shouldn't change the time at which it was first created
+            newValue["createdAt"] = oldValue["createdAt"] as Timestamp
 
             transaction.update(documentRef, "trackedCategories", FieldValue.arrayRemove(oldValue))
             transaction.update(documentRef, "trackedCategories", FieldValue.arrayUnion(newValue))
@@ -60,32 +65,35 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
     override suspend fun getUser(userId: String): User =
         collectionReference.document(userId).get().await().toUser()
 
-    private fun TrackedCategory.toFirestoreObject() = when (this) {
-        is TrackedCategory.Calories -> {
-            mapOf(
-                "dataSourceId" to this.dataSourceId,
-                "categoryType" to this.categoryType,
-                "startDate" to this.startDate.toTimeStampDayStart(),
-                "endDate" to this.endDate.toTimeStampDayStart(),
-            )
+    private fun TrackedCategory.toFirestoreObject(): Map<String, Any> {
+        val result = mutableMapOf<String, Any>()
+        result["dataSourceId"] = this.dataSourceId
+        result["categoryType"] = this.categoryType
+        result["startDate"] = this.startDate.toTimeStampDayStart()
+        result["endDate"] = this.endDate.toTimeStampDayStart()
+        result["createdAt"] = getCurrentTimeAsTimestamp()
+        when (this) {
+            is TrackedCategory.Calories -> {
+            }
+            is TrackedCategory.ExerciseOneRepMax -> {
+                result["exerciseId"] = this.exerciseId
+                result["exerciseName"] = this.exerciseName
+            }
         }
-        is TrackedCategory.ExerciseOneRepMax -> {
-            mapOf(
-                "dataSourceId" to this.dataSourceId,
-                "categoryType" to this.categoryType,
-                "startDate" to this.startDate.toTimeStampDayStart(),
-                "endDate" to this.endDate.toTimeStampDayStart(),
-                "exerciseId" to this.exerciseId,
-                "exerciseName" to this.exerciseName
-            )
-        }
+        return result
     }
 
     private fun DocumentSnapshot.toUser(): User {
         Timber.d("document: $this")
 
-        @Suppress("UNCHECKED_CAST") val trackedCategoriesRawData =
-            this.get("trackedCategories") as List<Map<String, Any>>
+        @Suppress("UNCHECKED_CAST")
+        // The categories should be sorted by the time they were created to guarantee
+        // a consistent and logical order
+        val trackedCategoriesRawData =
+            (this.get("trackedCategories") as List<Map<String, Any>>)
+                .sortedBy { it["createdAt"] as Timestamp }
+
+
         val trackedCategories = mutableListOf<TrackedCategory>()
 
         for (category in trackedCategoriesRawData) {
