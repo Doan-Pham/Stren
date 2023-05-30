@@ -95,9 +95,9 @@ internal fun DashboardRoute(
         isAppBarConfigured = true
     }
 
-    val dataOutputStateFlows = viewModel.dataOutputs.collectAsStateWithLifecycle()
+    val dataOutputStateFlows by viewModel.dataOutputs.collectAsStateWithLifecycle()
     val dataOutputsAsState = mutableListOf<State<DashboardViewModel.DataOutput>>()
-    dataOutputStateFlows.value.forEach { dataOutputStateFlow ->
+    dataOutputStateFlows.forEach { dataOutputStateFlow ->
         dataOutputsAsState.add(dataOutputStateFlow.collectAsStateWithLifecycle())
     }
 
@@ -182,10 +182,10 @@ private fun ProgressItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
+                modifier = Modifier.weight(1f),
                 text = dataOutput.title,
                 style = MaterialTheme.typography.titleMedium,
             )
-            Spacer(Modifier.weight(1f))
             val currentDate = DateUtils.getCurrentDate()
             DropDownMenuScaffold(
                 menuItemsTextAndClickHandler = mapOf(
