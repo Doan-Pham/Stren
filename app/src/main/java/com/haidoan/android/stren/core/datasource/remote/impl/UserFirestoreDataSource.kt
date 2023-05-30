@@ -62,6 +62,24 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         }.await()
     }
 
+    override suspend fun stopTrackingCategory(
+        userId: String, dataSourceId: String
+    ) {
+        db.runTransaction { transaction ->
+            val documentRef = collectionReference.document(userId)
+            val snapshot = transaction.get(documentRef)
+            Timber.d("snapshot: $snapshot")
+
+            @Suppress("UNCHECKED_CAST")
+            val oldValue =
+                (snapshot["trackedCategories"] as List<Map<String, *>>)
+                    .first { it.containsValue(dataSourceId) }
+            transaction.update(
+                documentRef, "trackedCategories", FieldValue.arrayRemove(oldValue)
+            )
+        }.await()
+    }
+
     override suspend fun getUser(userId: String): User =
         collectionReference.document(userId).get().await().toUser()
 
@@ -72,6 +90,7 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         result["startDate"] = this.startDate.toTimeStampDayStart()
         result["endDate"] = this.endDate.toTimeStampDayStart()
         result["createdAt"] = getCurrentTimeAsTimestamp()
+        result["isDefaultCategory"] = this.isDefaultCategory
         when (this) {
             is TrackedCategory.Calories -> {
             }
@@ -103,7 +122,8 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
             when (category["categoryType"]) {
                 TrackedCategoryType.CALORIES.name -> trackedCategories.add(
                     TrackedCategory.Calories(
-                        dataSourceId = dataSourceId, startDate = startDate, endDate = endDate
+                        dataSourceId = dataSourceId, startDate = startDate, endDate = endDate,
+                        isDefaultCategory = category["isDefaultCategory"] as Boolean
                     )
                 )
                 TrackedCategoryType.EXERCISE_1RM.name -> trackedCategories.add(
@@ -112,7 +132,8 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
                         startDate = startDate,
                         endDate = endDate,
                         exerciseId = category["exerciseId"] as String,
-                        exerciseName = (category["exerciseName"] as String?) ?: ""
+                        exerciseName = (category["exerciseName"] as String?) ?: "",
+                        isDefaultCategory = category["isDefaultCategory"] as Boolean
                     )
                 )
             }
