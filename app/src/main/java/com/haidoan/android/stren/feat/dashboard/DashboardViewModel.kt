@@ -43,8 +43,6 @@ internal class DashboardViewModel @Inject constructor(
     val chartEntryModelProducers = mutableStateMapOf<String, ChartEntryModelProducer>()
 
     val dataOutputs = currentUserId.flatMapLatest { userId ->
-        Timber.d("currentUserId.flatMapLatest() - userId: $userId")
-
         if (userId == UNDEFINED_USER_ID) return@flatMapLatest flowOf(listOf())
         getUserFullDataUseCase(userId).map { user ->
             cachedTrackedCategories = user.trackedCategories
@@ -79,7 +77,8 @@ internal class DashboardViewModel @Inject constructor(
                                 DataOutput.Calories(
                                     startDate = category.startDate,
                                     endDate = category.endDate,
-                                    dataSourceId = category.dataSourceId
+                                    dataSourceId = category.dataSourceId,
+                                    isDefaultCategory = category.isDefaultCategory
                                 )
                             )
                         }.stateIn(
@@ -112,7 +111,8 @@ internal class DashboardViewModel @Inject constructor(
                                     startDate = category.startDate,
                                     endDate = category.endDate,
                                     dataSourceId = category.dataSourceId,
-                                    title = category.exerciseName
+                                    title = category.exerciseName,
+                                    isDefaultCategory = category.isDefaultCategory,
                                 )
                             )
                         }.stateIn(
@@ -175,22 +175,33 @@ internal class DashboardViewModel @Inject constructor(
                     userId = currentUserId.value,
                     category = TrackedCategory.ExerciseOneRepMax(
                         exerciseId = exerciseId,
-                        exerciseName = _allTrainedExercises.value.first { it.exercise.id == exerciseId }.exercise.name
+                        exerciseName = _allTrainedExercises.value.first { it.exercise.id == exerciseId }.exercise.name,
+                        isDefaultCategory = false
                     )
                 )
             }
-
         }
+    }
 
+    fun stopTrackingCategory(dataSourceId: String) {
+        viewModelScope.launch {
+            userRepository.stopTrackingCategory(
+                userId = currentUserId.value,
+                dataSourceId = dataSourceId
+            )
+        }
     }
 
     sealed interface DataOutput {
+        val isDefaultCategory: Boolean
         val startDate: LocalDate
         val endDate: LocalDate
         val dataSourceId: String
         val title: String
 
         object EmptyData : DataOutput {
+            override val isDefaultCategory: Boolean
+                get() = true
             override val startDate: LocalDate
                 get() = DateUtils.getCurrentDate()
             override val endDate: LocalDate
@@ -203,12 +214,14 @@ internal class DashboardViewModel @Inject constructor(
 
         data class Calories(
             override val startDate: LocalDate, override val endDate: LocalDate,
-            override val dataSourceId: String, override val title: String = "Calories"
+            override val dataSourceId: String, override val title: String = "Calories",
+            override val isDefaultCategory: Boolean
         ) : DataOutput
 
         data class Exercise(
             override val startDate: LocalDate, override val endDate: LocalDate,
-            override val dataSourceId: String, override val title: String
+            override val dataSourceId: String, override val title: String,
+            override val isDefaultCategory: Boolean
         ) : DataOutput
     }
 }

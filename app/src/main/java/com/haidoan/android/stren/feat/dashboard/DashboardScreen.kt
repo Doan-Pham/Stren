@@ -111,7 +111,8 @@ internal fun DashboardRoute(
             bottomSheetWrappers
                 .find { it.type == bottomSheetToDismiss.type }
                 ?.shouldShow?.value = false
-        }
+        },
+        onRemoveItemClick = viewModel::stopTrackingCategory
     )
 }
 
@@ -122,59 +123,87 @@ private fun DashboardScreen(
     dataOutputsAsState: List<State<DashboardViewModel.DataOutput>>,
     onDateOptionClick: (dataSourceId: String, startDate: LocalDate, endDate: LocalDate) -> Unit,
     bottomSheetWrappers: List<BottomSheetWrapper>,
-    onDismissBottomSheet: (BottomSheetWrapper) -> Unit
+    onDismissBottomSheet: (BottomSheetWrapper) -> Unit,
+    onRemoveItemClick: (dataSourceId: String) -> Unit
 ) {
+    var shouldShowConfirmDialog by remember { mutableStateOf(false) }
+    var dataSourceIdToDelete by remember { mutableStateOf("") }
+    var dataSourceTitleToDelete by remember { mutableStateOf("") }
+
     val progressItemListState = rememberLazyListState()
+    var previousFirstVisibleItemIndex by
+    rememberSaveable { mutableStateOf(progressItemListState.firstVisibleItemIndex) }
+    var previousDataOutputsSize by rememberSaveable { mutableStateOf(dataOutputsAsState.size) }
+
     if (dataOutputsAsState.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             LoadingAnimation()
         }
-    } else {
-        LazyColumn(
-            state = progressItemListState,
-            modifier = modifier
-                .padding(dimensionResource(id = R.dimen.padding_medium)),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
-        ) {
-            items(dataOutputsAsState) { dataOutputAsState ->
-                when (val dataOutput = dataOutputAsState.value) {
-                    is DashboardViewModel.DataOutput.EmptyData -> {
-                        Box(
-                            modifier = Modifier
-                                .fillParentMaxWidth()
-                                .height(dimensionResource(id = R.dimen.icon_size_large)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            LoadingAnimation()
-                        }
+        return
+    }
+    LazyColumn(
+        state = progressItemListState,
+        modifier = modifier
+            .padding(dimensionResource(id = R.dimen.padding_medium)),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+    ) {
+        items(dataOutputsAsState) { dataOutputAsState ->
+            when (val dataOutput = dataOutputAsState.value) {
+                is DashboardViewModel.DataOutput.EmptyData -> {
+                    Box(
+                        modifier = Modifier
+                            .fillParentMaxWidth()
+                            .height(dimensionResource(id = R.dimen.icon_size_large)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        LoadingAnimation()
                     }
-                    is DashboardViewModel.DataOutput.Calories,
-                    is DashboardViewModel.DataOutput.Exercise -> {
-                        if (chartEntryModelProducers.containsKey(dataOutput.dataSourceId)) {
-                            ProgressItem(
-                                chartEntryModelProducer = chartEntryModelProducers[dataOutput.dataSourceId]!!,
-                                onDateOptionClick = { startDate, endDate ->
-                                    onDateOptionClick(
-                                        dataOutput.dataSourceId,
-                                        startDate,
-                                        endDate
-                                    )
-                                },
-                                dataOutput = dataOutput
-                            )
-                        }
+                }
+                is DashboardViewModel.DataOutput.Calories,
+                is DashboardViewModel.DataOutput.Exercise -> {
+                    if (chartEntryModelProducers.containsKey(dataOutput.dataSourceId)) {
+                        ProgressItem(
+                            chartEntryModelProducer = chartEntryModelProducers[dataOutput.dataSourceId]!!,
+                            onDateOptionClick = { startDate, endDate ->
+                                onDateOptionClick(
+                                    dataOutput.dataSourceId,
+                                    startDate,
+                                    endDate
+                                )
+                                previousFirstVisibleItemIndex =
+                                    dataOutputsAsState
+                                        .indexOfFirst { it.value.dataSourceId == dataOutput.dataSourceId }
+                            },
+                            dataOutput = dataOutput,
+                            onRemoveOptionClick = {
+                                dataSourceIdToDelete = dataOutput.dataSourceId
+                                dataSourceTitleToDelete = dataOutput.title
+                                shouldShowConfirmDialog = true
+                            }
+                        )
                     }
                 }
             }
         }
     }
 
-    var previousDataOutputsSize by rememberSaveable { mutableStateOf(dataOutputsAsState.size) }
+    if (shouldShowConfirmDialog) {
+        SimpleConfirmationDialog(
+            onDismissDialog = { shouldShowConfirmDialog = false },
+            title = "Stop tracking category",
+            body = "Are you sure you want to stop tracking this category: $dataSourceTitleToDelete"
+        ) {
+            onRemoveItemClick(dataSourceIdToDelete)
+        }
+    }
     LaunchedEffect(dataOutputsAsState.size) {
         if (dataOutputsAsState.size > previousDataOutputsSize) {
             progressItemListState.animateScrollToItem(dataOutputsAsState.size - 1)
             previousDataOutputsSize = dataOutputsAsState.size
         }
+    }
+    LaunchedEffect(previousFirstVisibleItemIndex) {
+        progressItemListState.animateScrollToItem(previousFirstVisibleItemIndex)
     }
 
     bottomSheetWrappers.forEach {
@@ -188,7 +217,8 @@ private fun DashboardScreen(
 private fun ProgressItem(
     chartEntryModelProducer: ChartEntryModelProducer,
     dataOutput: DashboardViewModel.DataOutput,
-    onDateOptionClick: (startDate: LocalDate, endDate: LocalDate) -> Unit
+    onDateOptionClick: (startDate: LocalDate, endDate: LocalDate) -> Unit,
+    onRemoveOptionClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -238,6 +268,22 @@ private fun ProgressItem(
                     contentDescription = "Icon more")
             }
 
+            if (!dataOutput.isDefaultCategory) {
+                DropDownMenuScaffold(
+                    menuItemsTextAndClickHandler = mapOf(
+                        "Remove" to {
+                            onRemoveOptionClick()
+                        }
+                    )) { onExpandMenu ->
+                    Icon(modifier = Modifier
+                        .clickable {
+                            onExpandMenu()
+                        }
+                        .size(dimensionResource(id = R.dimen.icon_size_medium)),
+                        painter = painterResource(id = R.drawable.ic_more_vertical),
+                        contentDescription = "Icon more")
+                }
+            }
         }
         Text(
             text = "${dataOutput.startDate.defaultFormat()} - ${dataOutput.endDate.defaultFormat()}",
