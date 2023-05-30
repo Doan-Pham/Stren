@@ -125,29 +125,50 @@ private fun DashboardScreen(
     onDismissBottomSheet: (BottomSheetWrapper) -> Unit
 ) {
     val progressItemListState = rememberLazyListState()
-    LazyColumn(
-        state = progressItemListState,
-        modifier = modifier
-            .padding(dimensionResource(id = R.dimen.padding_medium)),
-        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
-    ) {
-        items(dataOutputsAsState) { dataOutputAsState ->
-            val dataOutput = dataOutputAsState.value
-            if (chartEntryModelProducers.containsKey(dataOutput.dataSourceId)) {
-                ProgressItem(
-                    chartEntryModelProducer = chartEntryModelProducers[dataOutput.dataSourceId]!!,
-                    onDateOptionClick = { startDate, endDate ->
-                        onDateOptionClick(
-                            dataOutput.dataSourceId,
-                            startDate,
-                            endDate
-                        )
-                    },
-                    dataOutput = dataOutput
-                )
+    if (dataOutputsAsState.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            LoadingAnimation()
+        }
+    } else {
+        LazyColumn(
+            state = progressItemListState,
+            modifier = modifier
+                .padding(dimensionResource(id = R.dimen.padding_medium)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+        ) {
+            items(dataOutputsAsState) { dataOutputAsState ->
+                when (val dataOutput = dataOutputAsState.value) {
+                    is DashboardViewModel.DataOutput.EmptyData -> {
+                        Box(
+                            modifier = Modifier
+                                .fillParentMaxWidth()
+                                .height(dimensionResource(id = R.dimen.icon_size_large)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            LoadingAnimation()
+                        }
+                    }
+                    is DashboardViewModel.DataOutput.Calories,
+                    is DashboardViewModel.DataOutput.Exercise -> {
+                        if (chartEntryModelProducers.containsKey(dataOutput.dataSourceId)) {
+                            ProgressItem(
+                                chartEntryModelProducer = chartEntryModelProducers[dataOutput.dataSourceId]!!,
+                                onDateOptionClick = { startDate, endDate ->
+                                    onDateOptionClick(
+                                        dataOutput.dataSourceId,
+                                        startDate,
+                                        endDate
+                                    )
+                                },
+                                dataOutput = dataOutput
+                            )
+                        }
+                    }
+                }
             }
         }
     }
+
     var previousDataOutputsSize by rememberSaveable { mutableStateOf(dataOutputsAsState.size) }
     LaunchedEffect(dataOutputsAsState.size) {
         if (dataOutputsAsState.size > previousDataOutputsSize) {
