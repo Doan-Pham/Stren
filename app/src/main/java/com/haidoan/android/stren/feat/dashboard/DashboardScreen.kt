@@ -103,6 +103,8 @@ internal fun DashboardRoute(
 
     DashboardScreen(
         modifier = modifier,
+        isUpdating = viewModel.isUpdating,
+        onUpdateComplete = { viewModel.isUpdating = false },
         chartEntryModelProducers = viewModel.chartEntryModelProducers,
         dataOutputsAsState = dataOutputsAsState,
         onDateOptionClick = viewModel::updateDateRange,
@@ -119,6 +121,8 @@ internal fun DashboardRoute(
 @Composable
 private fun DashboardScreen(
     modifier: Modifier = Modifier,
+    isUpdating: Boolean,
+    onUpdateComplete: () -> Unit,
     chartEntryModelProducers: Map<String, ChartEntryModelProducer>,
     dataOutputsAsState: List<State<DashboardViewModel.DataOutput>>,
     onDateOptionClick: (dataSourceId: String, startDate: LocalDate, endDate: LocalDate) -> Unit,
@@ -193,6 +197,9 @@ private fun DashboardScreen(
             title = "Stop tracking category",
             body = "Are you sure you want to stop tracking this category: $dataSourceTitleToDelete"
         ) {
+            val itemToRemoveIndex = dataOutputsAsState
+                .indexOfFirst { it.value.dataSourceId == dataSourceIdToDelete }
+            previousFirstVisibleItemIndex = itemToRemoveIndex - 1
             onRemoveItemClick(dataSourceIdToDelete)
         }
     }
@@ -200,10 +207,16 @@ private fun DashboardScreen(
         if (dataOutputsAsState.size > previousDataOutputsSize) {
             progressItemListState.animateScrollToItem(dataOutputsAsState.size - 1)
             previousDataOutputsSize = dataOutputsAsState.size
+        } else if (dataOutputsAsState.size < previousDataOutputsSize) {
+            progressItemListState.animateScrollToItem(previousFirstVisibleItemIndex)
+            previousDataOutputsSize = dataOutputsAsState.size
         }
     }
-    LaunchedEffect(previousFirstVisibleItemIndex) {
-        progressItemListState.animateScrollToItem(previousFirstVisibleItemIndex)
+    LaunchedEffect(isUpdating) {
+        if (isUpdating) {
+            progressItemListState.animateScrollToItem(previousFirstVisibleItemIndex)
+            onUpdateComplete()
+        }
     }
 
     bottomSheetWrappers.forEach {

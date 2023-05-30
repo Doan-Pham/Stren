@@ -34,6 +34,7 @@ internal class DashboardViewModel @Inject constructor(
     private val getUserFullDataUseCase: GetUserFullDataUseCase
 ) : ViewModel() {
 
+    var isUpdating by mutableStateOf(false)
     private var currentUserId = MutableStateFlow(UNDEFINED_USER_ID)
     private var cachedTrackedCategories = listOf<TrackedCategory>()
 
@@ -163,6 +164,7 @@ internal class DashboardViewModel @Inject constructor(
                 newStartDate = startDate,
                 newEndDate = endDate
             )
+            isUpdating = true
         }
     }
 
