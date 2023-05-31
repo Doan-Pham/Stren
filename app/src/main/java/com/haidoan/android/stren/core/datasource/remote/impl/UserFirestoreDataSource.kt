@@ -83,6 +83,12 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
     override suspend fun getUser(userId: String): User =
         collectionReference.document(userId).get().await().toUser()
 
+//    override suspend fun createUser(user: User): User =
+//        collectionReference.add(user).await()
+
+    override suspend fun isUserExists(userId: String): Boolean =
+        collectionReference.document(userId).get().await().exists()
+
     private fun TrackedCategory.toFirestoreObject(): Map<String, Any> {
         val result = mutableMapOf<String, Any>()
         result["dataSourceId"] = this.dataSourceId

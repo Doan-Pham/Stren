@@ -25,6 +25,15 @@ class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteD
             User.undefined
         }
 
+    override suspend fun isUserExists(userId: String): Boolean =
+        try {
+            dataSource.isUserExists(userId = userId)
+        } catch (ex: Exception) {
+            Timber.e("isUserExists() - Exception: $ex")
+            false
+        }
+
+
     override suspend fun trackCategory(userId: String, category: TrackedCategory) {
         try {
             dataSource.trackCategory(userId, category)
