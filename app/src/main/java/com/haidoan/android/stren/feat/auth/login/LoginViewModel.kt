@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.facebook.AccessToken
 import com.haidoan.android.stren.core.service.AuthenticationService
+import com.haidoan.android.stren.core.service.UnverifiedEmailException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
@@ -38,11 +39,16 @@ class LoginViewModel @Inject constructor(private val authService: Authentication
 
     fun onSignInClick() {
         viewModelScope.launch(CoroutineExceptionHandler { _, throwable ->
-            Timber.e(TAG, "onSignInClick - exception: ${throwable.message}")
+            Timber.e(TAG, "onSignInClick - exception: $throwable")
+            var errorMessage = "Invalid input. Please try again!"
+
+            if (throwable is UnverifiedEmailException) {
+                errorMessage = "Please verify your email then try again!"
+            }
             uiState.value = uiState.value.copy(
                 isAuthFailed = true,
                 isLoading = false,
-                errorMessage = "Invalid input. Please try again!"
+                errorMessage = errorMessage
             )
         }, block = {
             authService.authenticate(uiState.value.email, uiState.value.password)

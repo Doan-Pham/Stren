@@ -14,7 +14,10 @@ import com.facebook.CallbackManager
 import com.haidoan.android.stren.app.LocalFacebookCallbackManager
 import com.haidoan.android.stren.app.StrenAppViewModel
 import com.haidoan.android.stren.app.ui.StrenApp
+import com.haidoan.android.stren.core.datasource.remote.impl.UserFirestoreDataSource
 import com.haidoan.android.stren.core.designsystem.theme.StrenTheme
+import com.haidoan.android.stren.core.domain.HandleUserCreationUseCase
+import com.haidoan.android.stren.core.repository.impl.UserRepositoryImpl
 import com.haidoan.android.stren.core.service.FakeAuthenticationServiceImpl
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -24,6 +27,10 @@ class NavigationTestActivity : ComponentActivity() {
     private var facebookCallbackManager = CallbackManager.Factory.create()
     var isUserSignedIn by mutableStateOf(false)
     private val fakeAuthenticationServiceImpl = FakeAuthenticationServiceImpl()
+    private val handleUserCreationUseCase = HandleUserCreationUseCase(
+        UserRepositoryImpl(UserFirestoreDataSource()),
+        fakeAuthenticationServiceImpl
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -31,7 +38,7 @@ class NavigationTestActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val viewModel: StrenAppViewModel by viewModels {
             StrenAppViewModel.Factory(
-                fakeAuthenticationServiceImpl
+                handleUserCreationUseCase
             )
         }
         setContent {

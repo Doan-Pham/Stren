@@ -3,39 +3,41 @@ package com.haidoan.android.stren.app
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.haidoan.android.stren.core.service.AuthenticationService
+import androidx.lifecycle.viewModelScope
+import com.haidoan.android.stren.core.domain.HandleUserCreationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class StrenAppViewModel @Inject constructor(
-    authenticationService: AuthenticationService
+    handleUserCreationUseCase: HandleUserCreationUseCase
 ) : ViewModel() {
     var isUserSignedIn = mutableStateOf(false)
         private set
 
     init {
-        authenticationService.addAuthStateListeners(
-            onUserAuthenticated = {
-                isUserSignedIn.value = true
-                Timber.d("stateListen - isUserSignedIn: ${isUserSignedIn.value}")
+        handleUserCreationUseCase(
+            onUserCreatedOrAuthenticated = { currentUser, isUserSignedIn ->
+                this.isUserSignedIn.value = isUserSignedIn
+                Timber.d(" handleUserCreationUseCase.invoke() - onUserCreated is called - user: $currentUser")
             },
             onUserNotAuthenticated = {
                 isUserSignedIn.value = false
-                Timber.d("stateListen - isUserSignedIn: ${isUserSignedIn.value}")
-
-            })
+                Timber.d(" handleUserCreationUseCase.invoke() - onUserNotAuthenticated is called")
+            },
+            coroutineScope = viewModelScope
+        )
     }
 
     class Factory(
-        private val authenticationService: AuthenticationService
+        private val handleUserCreationUseCase: HandleUserCreationUseCase
     ) :
         ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(StrenAppViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                return StrenAppViewModel(authenticationService) as T
+                return StrenAppViewModel(handleUserCreationUseCase) as T
             }
             throw IllegalArgumentException("Unable to construct viewmodel")
         }
