@@ -60,7 +60,7 @@ internal fun SignupScreen(
         LaunchedEffect(key1 = true) {
             coroutineScope.launch {
                 snackbarHostState.showSnackbar(
-                    message = "Creating new account success!",
+                    message = "A verification email has been sent!",
                     withDismissAction = true,
                     duration = SnackbarDuration.Short
                 )
