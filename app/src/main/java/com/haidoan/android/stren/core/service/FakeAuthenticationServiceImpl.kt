@@ -2,7 +2,9 @@ package com.haidoan.android.stren.core.service
 
 import androidx.annotation.VisibleForTesting
 import com.facebook.AccessToken
+import com.haidoan.android.stren.core.service.model.UserAuthState
 import com.haidoan.android.stren.feat.training.history.UNDEFINED_USER_ID
+import kotlinx.coroutines.flow.Flow
 import timber.log.Timber
 
 @VisibleForTesting
@@ -61,4 +63,13 @@ class FakeAuthenticationServiceImpl : AuthenticationService {
     override suspend fun authenticateWithGoogle(tokenId: String) {
         TODO("Not yet implemented")
     }
+
+    override fun getUserAuthStateStream(): Flow<UserAuthState?> {
+        TODO("Not yet implemented")
+    }
+
+    override fun signOut() {
+        TODO("Not yet implemented")
+    }
+
 }
