@@ -9,6 +9,7 @@ data class User(
     @DocumentId
     val id: String,
     val email: String,
+    val shouldShowOnboarding: Boolean = true,
     val trackedCategories: List<TrackedCategory> = listOf()
 ) {
     companion object {

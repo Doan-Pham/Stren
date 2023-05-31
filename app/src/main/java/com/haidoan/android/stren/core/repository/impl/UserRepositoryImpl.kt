@@ -33,6 +33,12 @@ class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteD
             false
         }
 
+    override suspend fun addUser(user: User) = try {
+        dataSource.addUser(user)
+    } catch (ex: Exception) {
+        Timber.e("addUser() - Exception: $ex")
+    }
+
 
     override suspend fun trackCategory(userId: String, category: TrackedCategory) {
         try {

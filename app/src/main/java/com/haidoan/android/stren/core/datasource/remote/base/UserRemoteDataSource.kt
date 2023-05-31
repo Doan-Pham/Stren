@@ -18,4 +18,5 @@ interface UserRemoteDataSource {
     suspend fun getUser(userId: String): User
     suspend fun stopTrackingCategory(userId: String, dataSourceId: String)
     suspend fun isUserExists(userId: String): Boolean
+    suspend fun addUser(user: User)
 }
