@@ -30,6 +30,7 @@ fun StrenApp(
     appState: StrenAppState = rememberStrenAppState()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    val userId by rememberSaveable { viewModel.userId }
     val isUserSignedIn by rememberSaveable { viewModel.isUserSignedIn }
     val shouldShowOnboarding by rememberSaveable { viewModel.shouldShowOnboarding }
 
@@ -66,6 +67,7 @@ fun StrenApp(
                 modifier = Modifier.padding(it),
                 navController = appState.navController,
                 isUserSignedIn = isUserSignedIn,
+                userId = userId,
                 shouldShowOnboarding = shouldShowOnboarding,
                 appBarConfigurationChangeHandler = { newConfiguration ->
                     appState.previousAppBarConfiguration = appState.currentAppBarConfiguration
