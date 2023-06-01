@@ -14,12 +14,13 @@ import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.firebase.auth.FirebaseAuth
-import com.haidoan.android.stren.core.designsystem.component.DummyBoxWithText
 import com.haidoan.android.stren.feat.auth.NAV_ROUTE_AUTH
 import com.haidoan.android.stren.feat.auth.authenticationGraph
 import com.haidoan.android.stren.feat.auth.navigateToAuthentication
 import com.haidoan.android.stren.feat.dashboard.dashboardGraph
 import com.haidoan.android.stren.feat.nutrition.nutritionGraph
+import com.haidoan.android.stren.feat.onboarding.navigateToOnboarding
+import com.haidoan.android.stren.feat.onboarding.onboardingGraph
 import com.haidoan.android.stren.feat.training.trainingGraph
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -31,8 +32,7 @@ fun StrenNavHost(
     shouldShowOnboarding: Boolean,
     startDestination: String = NAV_ROUTE_AUTH,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {},
-
-    ) {
+) {
     AnimatedNavHost(
         navController = navController,
         startDestination = startDestination,
@@ -63,9 +63,7 @@ fun StrenNavHost(
         }
     ) {
         authenticationGraph(navController)
-        composable(route = "Onboarding") {
-            DummyBoxWithText(text = "Onboarding")
-        }
+        onboardingGraph()
         dashboardGraph(navController, appBarConfigurationChangeHandler)
         trainingGraph(navController, appBarConfigurationChangeHandler)
         nutritionGraph(navController, appBarConfigurationChangeHandler)
@@ -92,7 +90,7 @@ fun StrenNavHost(
     LaunchedEffect(key1 = isUserSignedIn, block = {
         if (isUserSignedIn) {
             if (shouldShowOnboarding) {
-                navController.navigate("Onboarding") {
+                navController.navigateToOnboarding {
                     popUpTo(0)
                 }
             } else {
