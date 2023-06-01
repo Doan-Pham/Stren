@@ -149,7 +149,8 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
             }
         }
         return User(
-            id = this.id, email = this["email"] as String, trackedCategories = trackedCategories
+            id = this.id, email = this["email"] as String, trackedCategories = trackedCategories,
+            shouldShowOnboarding = this["shouldShowOnboarding"] as Boolean
         )
     }
 }

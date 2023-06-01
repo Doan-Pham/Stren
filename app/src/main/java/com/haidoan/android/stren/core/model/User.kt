@@ -9,11 +9,11 @@ data class User(
     @DocumentId
     val id: String,
     val email: String,
-    val shouldShowOnboarding: Boolean = true,
+    val shouldShowOnboarding: Boolean,
     val trackedCategories: List<TrackedCategory> = listOf()
 ) {
     companion object {
-        val undefined = User("Undefined", "Undefined")
+        val undefined = User("Undefined", "Undefined", true)
     }
 }
 
