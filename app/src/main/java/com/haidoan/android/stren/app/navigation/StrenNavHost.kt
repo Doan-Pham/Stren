@@ -29,6 +29,7 @@ fun StrenNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     isUserSignedIn: Boolean,
+    userId: String,
     shouldShowOnboarding: Boolean,
     startDestination: String = NAV_ROUTE_AUTH,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {},
@@ -90,7 +91,7 @@ fun StrenNavHost(
     LaunchedEffect(key1 = isUserSignedIn, block = {
         if (isUserSignedIn) {
             if (shouldShowOnboarding) {
-                navController.navigateToOnboarding {
+                navController.navigateToOnboarding(userId) {
                     popUpTo(0)
                 }
             } else {
