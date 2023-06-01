@@ -16,6 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.haidoan.android.stren.R
+import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.designsystem.theme.Red40
 import com.haidoan.android.stren.core.designsystem.theme.Red50
 
@@ -24,9 +25,15 @@ fun StrenTextButton(
     modifier: Modifier = Modifier,
     text: String,
     textStyle: TextStyle = MaterialTheme.typography.titleMedium,
+    enabled: Boolean = true,
     onClickHandler: () -> Unit
 ) {
-    TextButton(modifier = modifier, onClick = onClickHandler, shape = RectangleShape) {
+    TextButton(
+        modifier = modifier,
+        onClick = onClickHandler,
+        shape = RectangleShape,
+        enabled = enabled
+    ) {
         Text(
             text = text,
             color = MaterialTheme.colorScheme.primary,
@@ -40,25 +47,27 @@ fun StrenTextButton(
 fun StrenFilledButton(
     modifier: Modifier = Modifier,
     text: String,
+    enabled: Boolean = true,
     onClickHandler: () -> Unit,
-    textStyle: TextStyle = MaterialTheme.typography.titleMedium
-) {
+    textStyle: TextStyle = MaterialTheme.typography.titleMedium,
+
+    ) {
+    val backgroundBrush = if (enabled) {
+        Brush.horizontalGradient(colors = listOf(Red40, Red50))
+    } else {
+        Brush.linearGradient(colors = listOf(Gray60, Color.Gray))
+    }
     Button(
         modifier = modifier,
         shape = RoundedCornerShape(15),
         onClick = onClickHandler,
         contentPadding = PaddingValues(),
-        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+        enabled = enabled
     ) {
         Box(
             modifier = Modifier
-                .background(
-                    Brush.horizontalGradient(
-                        colors = listOf(
-                            Red40, Red50
-                        )
-                    )
-                )
+                .background(backgroundBrush)
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             contentAlignment = Alignment.Center

@@ -21,16 +21,18 @@ import com.haidoan.android.stren.core.designsystem.theme.Gray60
 @Composable
 fun StrenHorizontalPager(
     modifier: Modifier,
+    userScrollEnabled: Boolean = true,
     pagerState: PagerState = rememberPagerState(),
     contents: List<@Composable () -> Unit>
 ) {
     val pageCount = contents.size
-    Column {
+    Column(modifier = modifier) {
         HorizontalPager(
+            modifier = Modifier.weight(1f),
             pageCount = pageCount,
+            userScrollEnabled = userScrollEnabled,
             state = pagerState,
             verticalAlignment = Alignment.Top,
-            modifier = modifier
         ) { page ->
             // Our page content
             contents[page]()
