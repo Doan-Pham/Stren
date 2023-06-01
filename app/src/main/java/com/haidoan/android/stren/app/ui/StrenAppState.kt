@@ -8,7 +8,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.TopLevelDestination
-import com.haidoan.android.stren.feat.auth.NAV_ROUTE_AUTH
 
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -67,7 +66,9 @@ class StrenAppState(val navController: NavHostController) {
         @Composable get() = currentDestination.isTopLevelOrTopLevelImmediateChild()
 
     val shouldShowTopBar: Boolean
-        @Composable get() = currentDestination?.parent?.route != NAV_ROUTE_AUTH
+        @Composable get() =
+            currentDestination?.parent?.route in TopLevelDestination.values()
+                .map { it.route }
 
 
     var currentAppBarConfiguration by mutableStateOf<AppBarConfiguration>(AppBarConfiguration.NavigationAppBar())
