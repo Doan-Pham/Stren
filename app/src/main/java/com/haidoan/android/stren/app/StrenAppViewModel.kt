@@ -15,11 +15,14 @@ class StrenAppViewModel @Inject constructor(
 ) : ViewModel() {
     var isUserSignedIn = mutableStateOf(false)
         private set
+    var shouldShowOnboarding = mutableStateOf(false)
+        private set
 
     init {
         handleUserCreationUseCase(
             onUserCreatedOrAuthenticated = { currentUser, isUserSignedIn ->
                 this.isUserSignedIn.value = isUserSignedIn
+                this.shouldShowOnboarding.value = currentUser.shouldShowOnboarding
                 Timber.d(" handleUserCreationUseCase.invoke() - onUserCreated is called - user: $currentUser")
             },
             onUserNotAuthenticated = {
