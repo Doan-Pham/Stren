@@ -39,7 +39,8 @@ class AuthenticationServiceImpl @Inject constructor() : AuthenticationService {
                         UserAuthState(
                             user = User(
                                 id = it.currentUser!!.uid,
-                                email = it.currentUser!!.email ?: "NOT_USE_EMAIL"
+                                email = it.currentUser!!.email ?: "NOT_USE_EMAIL",
+                                shouldShowOnboarding = true
                             ),
                             isUserSigningUp = !it.currentUser!!.isEmailVerified
                         )
