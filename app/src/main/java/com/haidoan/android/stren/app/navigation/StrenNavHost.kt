@@ -14,6 +14,7 @@ import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.firebase.auth.FirebaseAuth
+import com.haidoan.android.stren.core.designsystem.component.DummyBoxWithText
 import com.haidoan.android.stren.feat.auth.NAV_ROUTE_AUTH
 import com.haidoan.android.stren.feat.auth.authenticationGraph
 import com.haidoan.android.stren.feat.auth.navigateToAuthentication
@@ -27,9 +28,11 @@ fun StrenNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     isUserSignedIn: Boolean,
+    shouldShowOnboarding: Boolean,
     startDestination: String = NAV_ROUTE_AUTH,
-    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {}
-) {
+    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {},
+
+    ) {
     AnimatedNavHost(
         navController = navController,
         startDestination = startDestination,
@@ -60,7 +63,9 @@ fun StrenNavHost(
         }
     ) {
         authenticationGraph(navController)
-
+        composable(route = "Onboarding") {
+            DummyBoxWithText(text = "Onboarding")
+        }
         dashboardGraph(navController, appBarConfigurationChangeHandler)
         trainingGraph(navController, appBarConfigurationChangeHandler)
         nutritionGraph(navController, appBarConfigurationChangeHandler)
@@ -86,8 +91,14 @@ fun StrenNavHost(
 
     LaunchedEffect(key1 = isUserSignedIn, block = {
         if (isUserSignedIn) {
-            navController.navigate(TopLevelDestination.DASHBOARD.route) {
-                popUpTo(0)
+            if (shouldShowOnboarding) {
+                navController.navigate("Onboarding") {
+                    popUpTo(0)
+                }
+            } else {
+                navController.navigate(TopLevelDestination.DASHBOARD.route) {
+                    popUpTo(0)
+                }
             }
         } else {
             navController.navigateToAuthentication {

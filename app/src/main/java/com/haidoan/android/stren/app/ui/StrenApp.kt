@@ -31,6 +31,8 @@ fun StrenApp(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val isUserSignedIn by rememberSaveable { viewModel.isUserSignedIn }
+    val shouldShowOnboarding by rememberSaveable { viewModel.shouldShowOnboarding }
+
     Timber.d("isUserSignedIn: $isUserSignedIn")
     Timber.d("appState.currentAppBarConfiguration: ${appState.currentAppBarConfiguration}")
 
@@ -64,6 +66,7 @@ fun StrenApp(
                 modifier = Modifier.padding(it),
                 navController = appState.navController,
                 isUserSignedIn = isUserSignedIn,
+                shouldShowOnboarding = shouldShowOnboarding,
                 appBarConfigurationChangeHandler = { newConfiguration ->
                     appState.previousAppBarConfiguration = appState.currentAppBarConfiguration
                     appState.currentAppBarConfiguration = newConfiguration
