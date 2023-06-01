@@ -191,6 +191,7 @@ internal fun LogWorkoutScreen(
                 )
 
                 ExposedDropDownMenuTextField(
+                    modifier = Modifier.fillMaxWidth(),
                     textFieldLabel = "Choose routine",
                     selectedText = routines.firstOrNull { it.id == selectedRoutineId }?.name
                         ?: NO_SELECTION_ROUTINE_NAME,
