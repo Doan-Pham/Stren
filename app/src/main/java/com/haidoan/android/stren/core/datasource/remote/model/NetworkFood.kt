@@ -1,6 +1,7 @@
 package com.haidoan.android.stren.core.datasource.remote.model
 
 import com.haidoan.android.stren.core.datasource.remote.impl.relevantNutrientNameByNumber
+import com.haidoan.android.stren.core.model.CoreNutrient
 import com.haidoan.android.stren.core.model.Food
 import com.haidoan.android.stren.core.model.FoodNutrient
 import com.haidoan.android.stren.core.model.FoodNutrient.Companion.undefinedFoodNutrient
@@ -126,8 +127,8 @@ sealed interface NetworkFoodNutrient {
  * shortening them
  */
 private val nutrientNameMapping = mapOf(
-    "Total lipid (fat)" to "Fat",
-    "Carbohydrate" to "Carb",
+    "Total lipid (fat)" to CoreNutrient.FAT.nutrientName,
+    "Carbohydrate" to CoreNutrient.CARB.nutrientName,
     "Energy" to "Calories"
 )
 
@@ -152,13 +153,23 @@ fun NetworkFoodNutrient.asExternalModel(): FoodNutrient {
 
     val df = DecimalFormat("#.#")
     df.roundingMode = RoundingMode.DOWN
+    if (CoreNutrient.values().any { it.nutrientName == nutrientName }) {
+        return FoodNutrient(
+            id = CoreNutrient.valueOf(nutrientName).id,
+            nutrientName = nutrientName,
+            amount =
+            df.format(amount).toFloatOrNull() ?: 0f,
+            unitName = unitName
+        )
+    } else {
+        return FoodNutrient(
+            nutrientName = nutrientName,
+            amount =
+            df.format(amount).toFloatOrNull() ?: 0f,
+            unitName = unitName
+        )
+    }
 
-    return FoodNutrient(
-        nutrientName = nutrientName,
-        amount =
-        df.format(amount).toFloatOrNull() ?: 0f,
-        unitName = unitName
-    )
 }
 
 
