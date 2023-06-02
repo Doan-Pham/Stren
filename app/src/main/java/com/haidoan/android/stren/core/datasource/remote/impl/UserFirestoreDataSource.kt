@@ -6,9 +6,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.snapshots
 import com.haidoan.android.stren.core.datasource.remote.base.UserRemoteDataSource
-import com.haidoan.android.stren.core.model.TrackedCategory
-import com.haidoan.android.stren.core.model.TrackedCategoryType
-import com.haidoan.android.stren.core.model.User
+import com.haidoan.android.stren.core.model.*
 import com.haidoan.android.stren.core.utils.DateUtils.getCurrentTimeAsTimestamp
 import com.haidoan.android.stren.core.utils.DateUtils.toLocalDate
 import com.haidoan.android.stren.core.utils.DateUtils.toTimeStampDayStart
@@ -20,16 +18,29 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 private const val USER_COLLECTION_PATH = "User"
+private const val BIOMETRICS_RECORD_COLLECTION_PATH = "BiometricsRecord"
 
 class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
     private val db = FirebaseFirestore.getInstance()
-    private val collectionReference = db.collection(USER_COLLECTION_PATH)
+    private val userCollectionReference = db.collection(USER_COLLECTION_PATH)
+    private fun biometricsRecordCollectionRef(userId: String) =
+        db.collection("$USER_COLLECTION_PATH/$userId/$BIOMETRICS_RECORD_COLLECTION_PATH")
 
     override fun getUserStream(userId: String): Flow<User> =
-        collectionReference.document(userId).snapshots().map { it.toUser() }
+        userCollectionReference.document(userId).snapshots().map { it.toUser() }
+
+    override suspend fun getUser(userId: String): User =
+        userCollectionReference.document(userId).get().await().toUser()
+
+    override suspend fun isUserExists(userId: String): Boolean =
+        userCollectionReference.document(userId).get().await().exists()
+
+    override suspend fun addUser(user: User) {
+        userCollectionReference.document(user.id).set(user).await()
+    }
 
     override suspend fun trackCategory(userId: String, category: TrackedCategory) {
-        collectionReference.document(userId)
+        userCollectionReference.document(userId)
             .update("trackedCategories", FieldValue.arrayUnion(category.toFirestoreObject()))
     }
 
@@ -37,7 +48,7 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         userId: String, dataSourceId: String, newStartDate: LocalDate, newEndDate: LocalDate
     ) {
         db.runTransaction { transaction ->
-            val documentRef = collectionReference.document(userId)
+            val documentRef = userCollectionReference.document(userId)
             val snapshot = transaction.get(documentRef)
             Timber.d("snapshot: $snapshot")
 
@@ -66,7 +77,7 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         userId: String, dataSourceId: String
     ) {
         db.runTransaction { transaction ->
-            val documentRef = collectionReference.document(userId)
+            val documentRef = userCollectionReference.document(userId)
             val snapshot = transaction.get(documentRef)
             Timber.d("snapshot: $snapshot")
 
@@ -80,17 +91,41 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         }.await()
     }
 
-    override suspend fun getUser(userId: String): User =
-        collectionReference.document(userId).get().await().toUser()
+    override suspend fun addBiometricsRecord(
+        userId: String,
+        biometricsRecords: List<BiometricsRecord>
+    ) {
+        val batch = db.batch()
+        biometricsRecords.forEach { biometricsRecord ->
+            val docRef = biometricsRecordCollectionRef(userId).document()
+            batch.set(docRef, biometricsRecord.toFirestoreObject())
+        }
+        batch.commit().await()
+    }
 
-//    override suspend fun createUser(user: User): User =
-//        collectionReference.add(user).await()
+    override suspend fun addGoals(userId: String, goals: List<Goal>) {
+        // Since FieldValue.arrayUnion() accepts a vararg parameter
+        // Need to convert goals to vararg
+        // Reference: https://stackoverflow.com/questions/51161558/kotlin-convert-list-to-vararg
+        userCollectionReference
+            .document(userId)
+            .update("goals", FieldValue.arrayUnion(*goals.map { it }.toTypedArray()))
+            .await()
+    }
 
-    override suspend fun isUserExists(userId: String): Boolean =
-        collectionReference.document(userId).get().await().exists()
+    override suspend fun completeOnboarding(userId: String) {
+        userCollectionReference.document(userId).update("shouldShowOnboarding", false).await()
+    }
 
-    override suspend fun addUser(user: User) {
-        collectionReference.document(user.id).set(user).await()
+    private fun BiometricsRecord.toFirestoreObject(): Map<String, Any> {
+        val result = mutableMapOf<String, Any>()
+        result["biometricsId"] = this.biometricsId
+        result["recordDate"] = this.recordDate.toTimeStampDayStart()
+        result["measurementUnit"] = this.measurementUnit
+        result["value"] = this.value
+
+        Timber.d("BiometricsRecord.toFirestoreObject() - result: $result")
+        return result
     }
 
     private fun TrackedCategory.toFirestoreObject(): Map<String, Any> {
@@ -122,7 +157,6 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
             (this.get("trackedCategories") as List<Map<String, Any>>)
                 .sortedBy { it["createdAt"] as Timestamp }
 
-
         val trackedCategories = mutableListOf<TrackedCategory>()
 
         for (category in trackedCategoriesRawData) {
@@ -148,9 +182,32 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
                 )
             }
         }
+
+        @Suppress("UNCHECKED_CAST")
+        val goalsRawData = this.get("goals") as List<Map<String, Any>>
+        val goals = mutableListOf<Goal>()
+        for (goal in goalsRawData) {
+            val id = goal["id"] as String
+            val value = goal["value"] as Float
+            val name = goal["name"] as String
+            when (goal["type"]) {
+                GoalType.FOOD_NUTRIENT.name -> goals.add(
+                    Goal.FoodNutrientGoal(
+                        id = id,
+                        name = name,
+                        value = value,
+                        foodNutrientId = goal["foodNutrientId"] as String
+                    )
+                )
+            }
+        }
+
         return User(
-            id = this.id, email = this["email"] as String, trackedCategories = trackedCategories,
-            shouldShowOnboarding = this["shouldShowOnboarding"] as Boolean
+            id = this.id,
+            email = this["email"] as String,
+            trackedCategories = trackedCategories,
+            shouldShowOnboarding = this["shouldShowOnboarding"] as Boolean,
+            goals = goals
         )
     }
 }
