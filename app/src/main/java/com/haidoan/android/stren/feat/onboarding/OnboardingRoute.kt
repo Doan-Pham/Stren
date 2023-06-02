@@ -14,7 +14,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.core.designsystem.component.*
+import com.haidoan.android.stren.core.domain.ActivityLevel
+import com.haidoan.android.stren.core.domain.WeightGoal
 import kotlinx.coroutines.launch
+
+internal const val USER_ID_ONBOARDING_NAV_ARG = "USER_ID_ONBOARDING_NAV_ARG"
 
 @Composable
 internal fun OnboardingRoute(
@@ -23,13 +27,20 @@ internal fun OnboardingRoute(
 ) {
     OnboardingScreen(
         modifier = modifier,
+        uiState = viewModel.uiState,
+        onUiStateChange = { viewModel.uiState = it },
+        onCompleteOnboarding = viewModel::completeOnboarding
     )
 }
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun OnboardingScreen(
     modifier: Modifier = Modifier,
+    uiState: OnboardingUiState,
+    onUiStateChange: (OnboardingUiState) -> Unit,
+    onCompleteOnboarding: () -> Unit
 ) {
     Column(modifier = modifier.fillMaxSize()) {
         val pagerState = rememberPagerState()
@@ -40,10 +51,23 @@ private fun OnboardingScreen(
 
         val onboardingScreensComposables =
             listOf<@Composable () -> Unit>(
-                { BasicProfileOnboardingScreen(onErrorStatusChange = { isError = it }) },
-                { ActivityLevelOnboardingScreen() },
-                { GoalOnboardingScreen() })
-
+                {
+                    BasicProfileOnboardingScreen(
+                        onErrorStatusChange = { isError = it },
+                        uiState = uiState,
+                        onUiStateChange = { onUiStateChange(it) }
+                    )
+                },
+                {
+                    ActivityLevelOnboardingScreen(
+                        activityLevels = uiState.activityLevels,
+                        onSelectActivityLevel = { onUiStateChange(uiState.copy(selectedActivityLevel = it)) })
+                },
+                {
+                    GoalOnboardingScreen(
+                        weightGoals = uiState.weightGoals,
+                        onSelectWeightGoal = { onUiStateChange(uiState.copy(selectedWeightGoal = it)) })
+                })
 
         StrenHorizontalPager(
             modifier = Modifier.weight(1f),
@@ -78,6 +102,8 @@ private fun OnboardingScreen(
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(pagerState.currentPage + 1)
                         }
+                    } else {
+                        onCompleteOnboarding()
                     }
                 }, text = "Next", textStyle = MaterialTheme.typography.bodyMedium,
                 enabled = !isError
@@ -90,7 +116,13 @@ private fun OnboardingScreen(
 private fun BasicProfileOnboardingScreen(
     modifier: Modifier = Modifier,
     onErrorStatusChange: (Boolean) -> Unit,
+    uiState: OnboardingUiState,
+    onUiStateChange: (OnboardingUiState) -> Unit,
 ) {
+    val weight = uiState.weight
+    val height = uiState.height
+    val age = uiState.age
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -108,31 +140,28 @@ private fun BasicProfileOnboardingScreen(
         ExposedDropDownMenuTextField(
             modifier = Modifier.fillMaxWidth(),
             textFieldLabel = "Sex",
-            selectedText = "Male",
-            menuItemsTextAndClickHandler = mapOf("Male" to {
-                // TODO
-            }, "Female" to {
-                // TODO
-            })
+            selectedText = uiState.sex.name,
+            menuItemsTextAndClickHandler = uiState.sexes.associate {
+                it.name to { onUiStateChange(uiState.copy(sex = it)) }
+            }
         )
-        var age by remember { mutableStateOf(20L) }
-
         OutlinedNumberTextField(
             modifier = Modifier.fillMaxWidth(),
             number = age,
-            onValueChange = { age = it.toLong() },
+            onValueChange = {
+                onUiStateChange(uiState.copy(age = it.toLong()))
+            },
             label = "Age",
             isError = age == 0L,
             errorText = "Field can't be empty"
         )
 
-        var weight by remember { mutableStateOf(65.5F) }
-        var height by remember { mutableStateOf(170L) }
-
         OutlinedNumberTextField(
             modifier = Modifier.fillMaxWidth(),
             number = weight,
-            onValueChange = { weight = it.toFloat() },
+            onValueChange = {
+                onUiStateChange(uiState.copy(weight = it.toFloat()))
+            },
             label = "Weight",
             suffixText = "kg",
             isError = weight == 0F,
@@ -141,37 +170,25 @@ private fun BasicProfileOnboardingScreen(
         OutlinedNumberTextField(
             modifier = Modifier.fillMaxWidth(),
             number = height,
-            onValueChange = { height = it.toLong() },
+            onValueChange = {
+                onUiStateChange(uiState.copy(height = it.toFloat()))
+            },
             label = "Height",
             suffixText = "cm",
-            isError = height == 0L,
+            isError = height == 0F,
             errorText = "Field can't be empty"
         )
-        val isError = weight == 0f || height == 0L || age == 0L
+        val isError = weight == 0f || height == 0F || age == 0L
         onErrorStatusChange(isError)
     }
 }
 
 
-private val activityLevelsAndDescription = listOf(
-    "Sedentary" to "Little or no exercise",
-    "Lightly Active" to "Light exercise/sports 1-3 days/week",
-    "Moderately Active" to "Moderate exercise/sports 3-5 days/week",
-    "Very Active" to "Hard exercise/sports 6-7 days a week",
-    "Athlete" to "Very hard exercise/sports & physical job or training 2x per day"
-
-)
-private val weightGoals = listOf(
-    "Lose Weight" to "(-0.5kg/week)",
-    "Lose Weight" to "(-0.25kg/week)",
-    "Maintain Weight" to "",
-    "Gain Weight" to "(+0.25kg/week)",
-    "Gain Weight" to "(+0.5kg/week)"
-)
-
 @Composable
 private fun ActivityLevelOnboardingScreen(
     modifier: Modifier = Modifier,
+    activityLevels: List<ActivityLevel>,
+    onSelectActivityLevel: (ActivityLevel) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -192,24 +209,29 @@ private fun ActivityLevelOnboardingScreen(
         }
         RadioGroup(
             modifier = Modifier.fillMaxWidth(),
-            radioOptions = activityLevelsAndDescription.map { activityLevelAndDescription ->
+            radioOptions = activityLevels.map { activityLevel ->
                 { modifier ->
                     TitleAndSubtitleColumn(
                         modifier = modifier,
-                        title = activityLevelAndDescription.first,
-                        subtitle = activityLevelAndDescription.second
+                        title = activityLevel.name,
+                        subtitle = activityLevel.description
                     )
                 }
 
             },
             selectedOptionIndex = selectedIndex,
-            onOptionSelected = { selectedIndex = it })
+            onOptionSelected = {
+                selectedIndex = it
+                onSelectActivityLevel(activityLevels[it])
+            })
     }
 }
 
 @Composable
 private fun GoalOnboardingScreen(
     modifier: Modifier = Modifier,
+    weightGoals: List<WeightGoal>,
+    onSelectWeightGoal: (WeightGoal) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -230,18 +252,21 @@ private fun GoalOnboardingScreen(
         }
         RadioGroup(
             modifier = Modifier.fillMaxWidth(),
-            radioOptions = weightGoals.map { goalAndDescription ->
+            radioOptions = weightGoals.map { goal ->
                 { modifier ->
                     TitleAndSubtitleColumn(
                         modifier = modifier,
-                        title = goalAndDescription.first,
-                        subtitle = goalAndDescription.second
+                        title = goal.name,
+                        subtitle = goal.description
                     )
                 }
 
             },
             selectedOptionIndex = selectedIndex,
-            onOptionSelected = { selectedIndex = it })
+            onOptionSelected = {
+                selectedIndex = it
+                onSelectWeightGoal(weightGoals[it])
+            })
 
         Text(
             modifier = Modifier
