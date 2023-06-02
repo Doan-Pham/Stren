@@ -117,6 +117,13 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         userCollectionReference.document(userId).update("shouldShowOnboarding", false).await()
     }
 
+    override suspend fun modifyUserProfile(userId: String, age: Long, sex: String) {
+
+        userCollectionReference.document(userId).update(
+            mapOf("age" to age, "sex" to sex)
+        ).await()
+    }
+
     private fun BiometricsRecord.toFirestoreObject(): Map<String, Any> {
         val result = mutableMapOf<String, Any>()
         result["biometricsId"] = this.biometricsId
@@ -188,7 +195,7 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         val goals = mutableListOf<Goal>()
         for (goal in goalsRawData) {
             val id = goal["id"] as String
-            val value = goal["value"] as Float
+            val value = (goal["value"] as Double).toFloat()
             val name = goal["name"] as String
             when (goal["type"]) {
                 GoalType.FOOD_NUTRIENT.name -> goals.add(
