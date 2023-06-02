@@ -3,17 +3,11 @@ package com.haidoan.android.stren.app.navigation
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.composable
-import com.google.firebase.auth.FirebaseAuth
 import com.haidoan.android.stren.feat.auth.NAV_ROUTE_AUTH
 import com.haidoan.android.stren.feat.auth.authenticationGraph
 import com.haidoan.android.stren.feat.auth.navigateToAuthentication
@@ -21,6 +15,7 @@ import com.haidoan.android.stren.feat.dashboard.dashboardGraph
 import com.haidoan.android.stren.feat.nutrition.nutritionGraph
 import com.haidoan.android.stren.feat.onboarding.navigateToOnboarding
 import com.haidoan.android.stren.feat.onboarding.onboardingGraph
+import com.haidoan.android.stren.feat.profile.profileGraph
 import com.haidoan.android.stren.feat.training.trainingGraph
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -72,24 +67,7 @@ fun StrenNavHost(
         dashboardGraph(navController, appBarConfigurationChangeHandler)
         trainingGraph(navController, appBarConfigurationChangeHandler)
         nutritionGraph(navController, appBarConfigurationChangeHandler)
-        composable(route = TopLevelDestination.PROFILE.route) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color = Color.Green)
-                    .clickable {
-                        FirebaseAuth
-                            .getInstance()
-                            .signOut()
-                    }
-            ) {
-                var isAppBarConfigured by remember { mutableStateOf(false) }
-                if (!isAppBarConfigured) {
-                    appBarConfigurationChangeHandler(AppBarConfiguration.NavigationAppBar())
-                    isAppBarConfigured = true
-                }
-            }
-        }
+        profileGraph(navController, appBarConfigurationChangeHandler)
     }
 
     LaunchedEffect(key1 = isUserSignedIn, block = {

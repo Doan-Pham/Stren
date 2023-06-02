@@ -85,7 +85,7 @@ fun StrenFilledButton(
 fun StrenOutlinedButton(
     modifier: Modifier = Modifier,
     text: String,
-    leadingIconResId: Int,
+    leadingIconResId: Int?,
     color: Color = MaterialTheme.colorScheme.primary,
     onClick: () -> Unit,
     textStyle: TextStyle = MaterialTheme.typography.bodySmall
@@ -97,12 +97,14 @@ fun StrenOutlinedButton(
         border = BorderStroke(width = (1.5).dp, color = color),
         contentPadding = PaddingValues(horizontal = dimensionResource(id = R.dimen.padding_small))
     ) {
-        Icon(
-            painter = painterResource(id = leadingIconResId),
-            contentDescription = "",
-            tint = color
-        )
-        Spacer(modifier = Modifier.size(4.dp))
+        if (leadingIconResId != null) {
+            Icon(
+                painter = painterResource(id = leadingIconResId),
+                contentDescription = "",
+                tint = color
+            )
+            Spacer(modifier = Modifier.size(4.dp))
+        }
         Text(text = text, style = textStyle, color = color)
     }
 }
