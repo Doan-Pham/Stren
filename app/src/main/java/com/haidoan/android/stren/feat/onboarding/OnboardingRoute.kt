@@ -24,7 +24,11 @@ internal const val USER_ID_ONBOARDING_NAV_ARG = "USER_ID_ONBOARDING_NAV_ARG"
 internal fun OnboardingRoute(
     modifier: Modifier = Modifier,
     viewModel: OnboardingViewModel = hiltViewModel(),
+    onCompleteOnboarding: () -> Unit,
 ) {
+    if (viewModel.isOnboardingComplete) {
+        onCompleteOnboarding()
+    }
     OnboardingScreen(
         modifier = modifier,
         uiState = viewModel.uiState,

@@ -18,13 +18,13 @@ fun NavController.navigateToOnboarding(
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.onboardingGraph() {
+fun NavGraphBuilder.onboardingGraph(onCompleteOnboarding: () -> Unit) {
     composable(
         route = ONBOARDING_GRAPH_ROUTE +
                 "/" + "{$USER_ID_ONBOARDING_NAV_ARG}",
         arguments = listOf(
             navArgument(USER_ID_ONBOARDING_NAV_ARG) { type = NavType.StringType })
     ) {
-        OnboardingRoute()
+        OnboardingRoute(onCompleteOnboarding = onCompleteOnboarding)
     }
 }
