@@ -43,7 +43,12 @@ internal class OnboardingViewModel @Inject constructor(
                 val tasks = mutableMapOf<String, Deferred<Unit>>()
 
                 tasks["modifyUserProfileTask"] = async {
-                    userRepository.modifyUserProfile(userId, uiState.age, uiState.sex.name)
+                    userRepository.modifyUserProfile(
+                        userId,
+                        uiState.displayName,
+                        uiState.age,
+                        uiState.sex.name
+                    )
                 }
                 tasks["addBiometricsTask"] = async {
                     userRepository.addBiometricsRecord(
@@ -101,6 +106,7 @@ internal class OnboardingViewModel @Inject constructor(
 }
 
 internal data class OnboardingUiState(
+    val displayName: String = "",
     val age: Long = 20,
     val sex: Sex = Sex.MALE,
     val weight: Float = 68F,

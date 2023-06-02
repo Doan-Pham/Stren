@@ -117,10 +117,15 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         userCollectionReference.document(userId).update("shouldShowOnboarding", false).await()
     }
 
-    override suspend fun modifyUserProfile(userId: String, age: Long, sex: String) {
+    override suspend fun modifyUserProfile(
+        userId: String,
+        displayName: String,
+        age: Long,
+        sex: String
+    ) {
 
         userCollectionReference.document(userId).update(
-            mapOf("age" to age, "sex" to sex)
+            mapOf("displayName" to displayName, "age" to age, "sex" to sex)
         ).await()
     }
 
@@ -211,6 +216,7 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
 
         return User(
             id = this.id,
+            displayName = this["displayName"] as String,
             email = this["email"] as String,
             trackedCategories = trackedCategories,
             shouldShowOnboarding = this["shouldShowOnboarding"] as Boolean,
