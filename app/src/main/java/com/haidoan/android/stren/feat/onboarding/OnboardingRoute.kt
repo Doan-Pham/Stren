@@ -53,25 +53,17 @@ private fun OnboardingScreen(
         }
         val coroutineScope = rememberCoroutineScope()
 
-        val onboardingScreensComposables =
-            listOf<@Composable () -> Unit>(
-                {
-                    BasicProfileOnboardingScreen(
-                        onErrorStatusChange = { isError = it },
-                        uiState = uiState,
-                        onUiStateChange = { onUiStateChange(it) }
-                    )
-                },
-                {
-                    ActivityLevelOnboardingScreen(
-                        activityLevels = uiState.activityLevels,
-                        onSelectActivityLevel = { onUiStateChange(uiState.copy(selectedActivityLevel = it)) })
-                },
-                {
-                    GoalOnboardingScreen(
-                        weightGoals = uiState.weightGoals,
-                        onSelectWeightGoal = { onUiStateChange(uiState.copy(selectedWeightGoal = it)) })
-                })
+        val onboardingScreensComposables = listOf<@Composable () -> Unit>({
+            BasicProfileOnboardingScreen(onErrorStatusChange = { isError = it },
+                uiState = uiState,
+                onUiStateChange = { onUiStateChange(it) })
+        }, {
+            ActivityLevelOnboardingScreen(activityLevels = uiState.activityLevels,
+                onSelectActivityLevel = { onUiStateChange(uiState.copy(selectedActivityLevel = it)) })
+        }, {
+            GoalOnboardingScreen(weightGoals = uiState.weightGoals,
+                onSelectWeightGoal = { onUiStateChange(uiState.copy(selectedWeightGoal = it)) })
+        })
 
         StrenHorizontalPager(
             modifier = Modifier.weight(1f),
@@ -101,7 +93,8 @@ private fun OnboardingScreen(
             }
 
             StrenFilledButton(
-                modifier = Modifier.weight(1f), onClickHandler = {
+                modifier = Modifier.weight(1f),
+                onClickHandler = {
                     if (pagerState.currentPage != onboardingScreensComposables.size - 1) {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(pagerState.currentPage + 1)
@@ -109,7 +102,9 @@ private fun OnboardingScreen(
                     } else {
                         onCompleteOnboarding()
                     }
-                }, text = "Next", textStyle = MaterialTheme.typography.bodyMedium,
+                },
+                text = "Next",
+                textStyle = MaterialTheme.typography.bodyMedium,
                 enabled = !isError
             )
         }
@@ -126,12 +121,13 @@ private fun BasicProfileOnboardingScreen(
     val weight = uiState.weight
     val height = uiState.height
     val age = uiState.age
+    val displayName = uiState.displayName
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(dimensionResource(id = R.dimen.padding_medium)),
-        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+        verticalArrangement = Arrangement.SpaceEvenly
     ) {
         Text(
             modifier = Modifier
@@ -141,8 +137,17 @@ private fun BasicProfileOnboardingScreen(
             style = MaterialTheme.typography.headlineMedium,
             textAlign = TextAlign.Center
         )
-        ExposedDropDownMenuTextField(
-            modifier = Modifier.fillMaxWidth(),
+        StrenOutlinedTextField(
+            text = displayName,
+            onTextChange = {
+                onUiStateChange(uiState.copy(displayName = it))
+            },
+            label = "Name",
+            isError = displayName.isBlank(),
+            errorText = "Field can't be empty"
+        )
+
+        ExposedDropDownMenuTextField(modifier = Modifier.fillMaxWidth(),
             textFieldLabel = "Sex",
             selectedText = uiState.sex.name,
             menuItemsTextAndClickHandler = uiState.sexes.associate {

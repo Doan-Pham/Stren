@@ -24,5 +24,5 @@ interface UserRemoteDataSource {
     suspend fun addBiometricsRecord(userId: String, biometricsRecords: List<BiometricsRecord>)
     suspend fun addGoals(userId: String, goals: List<Goal>)
     suspend fun completeOnboarding(userId: String)
-    suspend fun modifyUserProfile(userId: String, age: Long, sex: String)
+    suspend fun modifyUserProfile(userId: String, displayName: String, age: Long, sex: String)
 }

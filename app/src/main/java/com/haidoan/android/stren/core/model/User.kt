@@ -8,6 +8,7 @@ import java.time.LocalDate
 data class User(
     @DocumentId
     val id: String,
+    val displayName: String,
     val email: String,
     val shouldShowOnboarding: Boolean,
     val biometricsRecords: List<BiometricsRecord> = listOf(),
@@ -15,7 +16,7 @@ data class User(
     val trackedCategories: List<TrackedCategory> = listOf()
 ) {
     companion object {
-        val undefined = User("Undefined", "Undefined", true, listOf())
+        val undefined = User("Undefined", "Undefined", "Undefined", true, listOf())
     }
 }
 

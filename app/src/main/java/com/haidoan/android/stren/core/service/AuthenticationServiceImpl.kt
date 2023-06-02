@@ -39,6 +39,7 @@ class AuthenticationServiceImpl @Inject constructor() : AuthenticationService {
                         UserAuthState(
                             user = User(
                                 id = it.currentUser!!.uid,
+                                displayName = it.currentUser!!.displayName ?: "Undefined",
                                 email = it.currentUser!!.email ?: "NOT_USE_EMAIL",
                                 shouldShowOnboarding = true
                             ),
