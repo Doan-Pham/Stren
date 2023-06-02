@@ -1,6 +1,8 @@
 package com.haidoan.android.stren.core.repository.impl
 
 import com.haidoan.android.stren.core.datasource.remote.base.UserRemoteDataSource
+import com.haidoan.android.stren.core.model.BiometricsRecord
+import com.haidoan.android.stren.core.model.Goal
 import com.haidoan.android.stren.core.model.TrackedCategory
 import com.haidoan.android.stren.core.model.User
 import com.haidoan.android.stren.core.repository.base.UserRepository
@@ -39,7 +41,6 @@ class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteD
         Timber.e("addUser() - Exception: $ex")
     }
 
-
     override suspend fun trackCategory(userId: String, category: TrackedCategory) {
         try {
             dataSource.trackCategory(userId, category)
@@ -69,6 +70,34 @@ class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteD
             dataSource.stopTrackingCategory(userId, dataSourceId)
         } catch (ex: Exception) {
             Timber.e("stopTrackingCategory() - userId: $userId, dataSourceId: $dataSourceId - Exception: $ex")
+        }
+    }
+
+    override suspend fun addBiometricsRecord(
+        userId: String, biometricsRecords: List<BiometricsRecord>
+    ) {
+        try {
+            dataSource.addBiometricsRecord(userId, biometricsRecords)
+        } catch (ex: Exception) {
+            Timber.e("addBiometricsRecord() - userId: $userId - Exception: $ex")
+        }
+    }
+
+    override suspend fun addGoals(
+        userId: String, goals: List<Goal>
+    ) {
+        try {
+            dataSource.addGoals(userId, goals)
+        } catch (ex: Exception) {
+            Timber.e("addGoals() - userId: $userId - Exception: $ex")
+        }
+    }
+
+    override suspend fun completeOnboarding(userId: String) {
+        try {
+            dataSource.completeOnboarding(userId)
+        } catch (ex: Exception) {
+            Timber.e("completeOnboarding() - userId: $userId - Exception: $ex")
         }
     }
 }
