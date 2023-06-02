@@ -100,4 +100,12 @@ class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteD
             Timber.e("completeOnboarding() - userId: $userId - Exception: $ex")
         }
     }
+
+    override suspend fun modifyUserProfile(userId: String, age: Long, sex: String) {
+        try {
+            dataSource.modifyUserProfile(userId, age, sex)
+        } catch (ex: Exception) {
+            Timber.e("modifyUserProfile() - userId: $userId - Exception: $ex")
+        }
+    }
 }
