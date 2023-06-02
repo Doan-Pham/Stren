@@ -2,10 +2,9 @@ package com.haidoan.android.stren.feat.nutrition.diary
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.haidoan.android.stren.core.model.DefaultMeal
-import com.haidoan.android.stren.core.model.EatingDay
-import com.haidoan.android.stren.core.model.FoodToConsume
-import com.haidoan.android.stren.core.model.Meal
+import com.haidoan.android.stren.core.domain.GetUserNutrientGoalsUseCase
+import com.haidoan.android.stren.core.domain.GetUserNutrientGoalsUseCase.Companion.getGoalByFoodNutrients
+import com.haidoan.android.stren.core.model.*
 import com.haidoan.android.stren.core.repository.base.EatingDayRepository
 import com.haidoan.android.stren.core.service.AuthenticationService
 import com.haidoan.android.stren.core.utils.DateUtils
@@ -21,7 +20,8 @@ const val UNDEFINED_USER_ID = "Undefined User ID"
 @HiltViewModel
 internal class NutritionDiaryViewModel @Inject constructor(
     authenticationService: AuthenticationService,
-    private val eatingDayRepository: EatingDayRepository
+    private val eatingDayRepository: EatingDayRepository,
+    private val getUserNutrientGoalsUseCase: GetUserNutrientGoalsUseCase
 ) : ViewModel() {
 
     /**
@@ -64,10 +64,15 @@ internal class NutritionDiaryViewModel @Inject constructor(
                 ) { eatingDay, datesTracked ->
                     currentEatingDay = eatingDay.addMeals(Meal.defaultMeals)
                     NutritionDiaryUiState.LoadComplete(
-                        userId,
-                        currentEatingDay,
-                        selectedDate,
-                        datesTracked
+                        userId = userId,
+                        eatingDay = currentEatingDay,
+                        selectedDate = selectedDate,
+                        datesTracked = datesTracked,
+                        goalsByMacronutrient = getGoalByFoodNutrients(
+                            eatingDay.totalMacros,
+                            nutrientGoals
+                        ),
+                        goalCalories = nutrientGoals.first { it.foodNutrientId == FOOD_NUTRIENT_ID_CALORIES }.value
                     )
                 }
             } else {

@@ -36,6 +36,7 @@ import com.haidoan.android.stren.core.model.FoodNutrient
 import com.haidoan.android.stren.core.model.FoodToConsume
 import com.haidoan.android.stren.core.model.Meal
 import com.haidoan.android.stren.core.utils.DateUtils
+import com.haidoan.android.stren.core.utils.StringFormatUtils.capitalizeFirstChar
 import timber.log.Timber
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -144,9 +145,11 @@ internal fun NutritionDiaryScreen(
                 }
 
                 // Remove hardcoded goal calories
-                val goalCalories = 2000f
+                val goalCalories = uiState.goalCalories
                 val consumedCalories = eatingDay.totalCalories
 
+                Timber.d("goalCalories: $goalCalories")
+                Timber.d("uiState.goalsByMacronutrient: ${uiState.goalsByMacronutrient}")
                 item {
                     /**
                      * For some reason, defining the variable's type causes type inference error,
@@ -161,8 +164,7 @@ internal fun NutritionDiaryScreen(
                             )
                         }, Pair("Macronutrients") {
                             MacronutrientsRow(
-                                macronutrientsByGoal = eatingDay.totalMacros
-                                    .associateWith { 500f }
+                                macronutrientsByGoal = uiState.goalsByMacronutrient
                             )
                         })
 
@@ -377,7 +379,7 @@ private fun TotalCaloriesRow(goalCalories: Float, consumedCalories: Float) {
 private fun MacronutrientsRow(macronutrientsByGoal: Map<FoodNutrient, Float>) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small)),
         horizontalAlignment = CenterHorizontally
     ) {
         var firstColumnWidth by remember { mutableStateOf(0) }
@@ -385,31 +387,32 @@ private fun MacronutrientsRow(macronutrientsByGoal: Map<FoodNutrient, Float>) {
         val widthInDp = with(LocalDensity.current) {
             firstColumnWidth.toDp()
         }
-        // TODO: Remove hardcoded macro nutrient goals
         macronutrientsByGoal.forEach { macronutrientsByGoal ->
             val macronutrient = macronutrientsByGoal.key
             val goal = macronutrientsByGoal.value
 
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Bottom) {
-                if (widthInDp == 0.dp)
+                if (widthInDp == 0.dp) {
                     Text(
                         modifier = Modifier
                             .onGloballyPositioned {
                                 firstColumnWidth = it.size.width
                             },
-                        text = macronutrient.nutrientName,
+                        text = macronutrient.nutrientName.capitalizeFirstChar(),
                         style = MaterialTheme.typography.titleMedium,
                     )
-                else {
+                } else {
                     Text(
                         modifier = Modifier.width(width = widthInDp),
-                        text = macronutrient.nutrientName,
+                        text = macronutrient.nutrientName.capitalizeFirstChar(),
                         style = MaterialTheme.typography.titleMedium,
                     )
                 }
                 Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_small)))
                 Column(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .align(Bottom)
                 ) {
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Text(
@@ -423,7 +426,6 @@ private fun MacronutrientsRow(macronutrientsByGoal: Map<FoodNutrient, Float>) {
                             color = Gray60
                         )
                     }
-                    Spacer(modifier = Modifier.size(4.dp))
                     LinearProgressIndicator(
                         modifier = Modifier
                             .fillMaxWidth()
