@@ -28,7 +28,7 @@ fun StrenHorizontalPager(
     val pageCount = contents.size
     Column(modifier = modifier) {
         HorizontalPager(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.wrapContentSize(),
             pageCount = pageCount,
             userScrollEnabled = userScrollEnabled,
             state = pagerState,
