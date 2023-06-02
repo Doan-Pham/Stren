@@ -64,7 +64,11 @@ fun StrenNavHost(
         }
     ) {
         authenticationGraph(navController)
-        onboardingGraph()
+        onboardingGraph(onCompleteOnboarding = {
+            navController.navigate(TopLevelDestination.DASHBOARD.route) {
+                popUpTo(0)
+            }
+        })
         dashboardGraph(navController, appBarConfigurationChangeHandler)
         trainingGraph(navController, appBarConfigurationChangeHandler)
         nutritionGraph(navController, appBarConfigurationChangeHandler)

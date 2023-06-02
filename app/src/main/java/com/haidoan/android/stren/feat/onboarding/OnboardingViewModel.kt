@@ -30,6 +30,7 @@ internal class OnboardingViewModel @Inject constructor(
     private val userRepository: UserRepository
 ) :
     ViewModel() {
+    var isOnboardingComplete by mutableStateOf(false)
     var userId: String = checkNotNull(savedStateHandle[USER_ID_ONBOARDING_NAV_ARG])
     var uiState by mutableStateOf(OnboardingUiState())
     fun completeOnboarding() {
@@ -40,7 +41,11 @@ internal class OnboardingViewModel @Inject constructor(
             // Reference: https://www.youtube.com/watch?v=w0kfnydnFWI&ab_channel=JetBrains
             supervisorScope {
                 val tasks = mutableMapOf<String, Deferred<Unit>>()
-                val addBiometricsTask = async {
+
+                tasks["modifyUserProfileTask"] = async {
+                    userRepository.modifyUserProfile(userId, uiState.age, uiState.sex.name)
+                }
+                tasks["addBiometricsTask"] = async {
                     userRepository.addBiometricsRecord(
                         userId = userId,
                         biometricsRecords = listOf(
@@ -55,9 +60,7 @@ internal class OnboardingViewModel @Inject constructor(
                         )
                     )
                 }
-                tasks["addBiometricsTask"] = addBiometricsTask
-
-                val addGoalsTask = async {
+                tasks["addGoalsTask"] = async {
                     val caloriesGoal =
                         calculateCaloriesGoal(
                             weightInKg = uiState.weight,
@@ -80,7 +83,9 @@ internal class OnboardingViewModel @Inject constructor(
                         )
                     )
                 }
-                tasks["addGoalsTask"] = addGoalsTask
+                tasks["markUserAsOnboardingCompleteTask"] = async {
+                    userRepository.completeOnboarding(userId)
+                }
 
                 tasks.forEach {
                     try {
@@ -89,8 +94,7 @@ internal class OnboardingViewModel @Inject constructor(
                         Timber.e("completeOnboarding() - ${it.key} fails with exception: $e")
                     }
                 }
-
-                userRepository.completeOnboarding(userId)
+                isOnboardingComplete = true
             }
         }
     }
