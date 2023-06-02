@@ -14,23 +14,55 @@ data class Food(
     val brandName: String = "",
 ) {
     companion object {
-        val defaultCoreNutrients = listOf(
-            FoodNutrient("Protein", 0f, "g"),
-            FoodNutrient("Carb", 0f, "g"),
-            FoodNutrient("Fat", 0f, "g"),
-        )
+        val defaultCoreNutrients = CoreNutrient.values().map {
+            FoodNutrient(
+                id = it.id,
+                nutrientName = it.name,
+                amount = 0f,
+                unitName = it.measurementUnit,
+            )
+        }
+
         val undefinedFood = Food(
-            "Undefined",
-            "Undefined",
-            undefinedFoodNutrient,
-            listOf(),
-            listOf()
+            "Undefined", "Undefined", undefinedFoodNutrient, listOf(), listOf()
         )
     }
 }
 
+const val FOOD_NUTRIENT_ID_CALORIES = "FOOD_NUTRIENT_ID_CALORIES"
+
+enum class CoreNutrient(
+    val id: String,
+    val energyPerGram: Float,
+    val nutrientName: String,
+    val measurementUnit: String,
+    val defaultRatioInEatingPlan: Float,
+) {
+    PROTEIN(
+        id = "FOOD_NUTRIENT_ID_PROTEIN",
+        nutrientName = "Protein",
+        energyPerGram = 4F,
+        measurementUnit = "g",
+        defaultRatioInEatingPlan = 1f
+    ),
+    CARB(
+        id = "FOOD_NUTRIENT_ID_CARB",
+        nutrientName = "Carb",
+        energyPerGram = 4F,
+        measurementUnit = "g",
+        defaultRatioInEatingPlan = 1.15f
+    ),
+    FAT(
+        id = "FOOD_NUTRIENT_ID_FAT",
+        nutrientName = "Fat",
+        energyPerGram = 9F,
+        measurementUnit = "g",
+        defaultRatioInEatingPlan = 1.15f
+    );
+}
 
 data class FoodNutrient(
+    val id: String = "Undefined Id",
     val nutrientName: String = "Undefined",
     val amount: Float = -1f,
     val unitName: String = "Undefined"
@@ -41,14 +73,13 @@ data class FoodNutrient(
          */
         const val DEFAULT_FOOD_AMOUNT_IN_GRAM = 100f
 
-        val undefinedFoodNutrient = FoodNutrient("Undefined", -1F, "Undefined")
+        val undefinedFoodNutrient = FoodNutrient("Undefined Id", "Undefined", -1F, "Undefined")
 
         fun FoodNutrient.with(foodAmountInGram: Float): FoodNutrient {
             val df = DecimalFormat("#.#")
             df.roundingMode = RoundingMode.DOWN
             val newAmount =
-                df.format(amount * foodAmountInGram / DEFAULT_FOOD_AMOUNT_IN_GRAM)
-                    .toFloat()
+                df.format(amount * foodAmountInGram / DEFAULT_FOOD_AMOUNT_IN_GRAM).toFloat()
             return this.copy(amount = newAmount)
         }
     }
