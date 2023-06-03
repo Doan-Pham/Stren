@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 interface UserRepository {
+    /**
+     * The result [User] only includes the latest biometricsRecords (not all of them)
+     */
     fun getUserStream(userId: String): Flow<User>
 
     suspend fun trackCategory(userId: String, category: TrackedCategory)
@@ -18,6 +21,9 @@ interface UserRepository {
         newEndDate: LocalDate
     )
 
+    /**
+     * The result [User] only includes the latest biometricsRecords (not all of them)
+     */
     suspend fun getUser(userId: String): User
     suspend fun stopTrackingCategory(userId: String, dataSourceId: String)
     suspend fun isUserExists(userId: String): Boolean

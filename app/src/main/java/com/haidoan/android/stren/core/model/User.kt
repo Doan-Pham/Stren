@@ -10,33 +10,39 @@ data class User(
     val id: String,
     val displayName: String,
     val email: String,
+    val age: Long,
+    val sex: String,
     val shouldShowOnboarding: Boolean,
     val biometricsRecords: List<BiometricsRecord> = listOf(),
     val goals: List<Goal> = listOf(),
     val trackedCategories: List<TrackedCategory> = listOf()
 ) {
     companion object {
-        val undefined = User("Undefined", "Undefined", "Undefined", true, listOf())
+        val undefined = User("Undefined", "Undefined", "Undefined", -1, "Undefined", true, listOf())
     }
 }
 
-enum class CommonBiometricsIds {
-    BIOMETRICS_ID_WEIGHT,
-    BIOMETRICS_ID_HEIGHT
+enum class CommonBiometrics(val id: String, val biometricsName: String) {
+    WEIGHT(id = "BIOMETRICS_ID_WEIGHT", biometricsName = "Weight"),
+    HEIGHT(id = "BIOMETRICS_ID_HEIGHT", biometricsName = "Height"),
 }
 
 data class BiometricsRecord(
     @DocumentId
     val id: String = "Undefined Document Id",
     val biometricsId: String,
+    val biometricsName: String,
     val recordDate: LocalDate,
     val measurementUnit: String,
     val value: Float
 ) {
     companion object {
+
+
         fun createWeightBiometrics(weightInKg: Float, date: LocalDate) =
             BiometricsRecord(
-                biometricsId = CommonBiometricsIds.BIOMETRICS_ID_WEIGHT.toString(),
+                biometricsId = CommonBiometrics.WEIGHT.id,
+                biometricsName = CommonBiometrics.WEIGHT.biometricsName,
                 recordDate = date,
                 measurementUnit = "kg",
                 value = weightInKg
@@ -44,7 +50,8 @@ data class BiometricsRecord(
 
         fun createHeightBiometrics(heightInCm: Float, date: LocalDate) =
             BiometricsRecord(
-                biometricsId = CommonBiometricsIds.BIOMETRICS_ID_HEIGHT.toString(),
+                biometricsId = CommonBiometrics.HEIGHT.id,
+                biometricsName = CommonBiometrics.HEIGHT.biometricsName,
                 recordDate = date,
                 measurementUnit = "cm",
                 value = heightInCm
@@ -52,6 +59,25 @@ data class BiometricsRecord(
     }
 
 }
+
+/**
+ * Return a list of the latest records for each biometricsId
+ */
+fun List<BiometricsRecord>.filterLatest(): List<BiometricsRecord> {
+    val latestRecordByBiometricsId = mutableMapOf<String, Pair<String, LocalDate>>()
+    this.forEach { biometricsRecord ->
+        val recordId = biometricsRecord.id
+        val biometricsId = biometricsRecord.biometricsId
+        val recordDate = biometricsRecord.recordDate
+        if (!latestRecordByBiometricsId.containsKey(biometricsId) ||
+            recordDate.isAfter(latestRecordByBiometricsId[biometricsId]?.second)
+        ) {
+            latestRecordByBiometricsId[biometricsId] = Pair(recordId, recordDate)
+        }
+    }
+    return this.filter { it.id in latestRecordByBiometricsId.values.map { it.first } }
+}
+
 
 const val GOAL_ID_CALORIES = "GOAL_ID_CALORIES"
 private fun createCalorieGoal(amountInKcal: Float) =
