@@ -4,6 +4,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.snapshots
 import com.haidoan.android.stren.core.datasource.remote.base.UserRemoteDataSource
 import com.haidoan.android.stren.core.model.*
@@ -11,7 +12,7 @@ import com.haidoan.android.stren.core.utils.DateUtils.getCurrentTimeAsTimestamp
 import com.haidoan.android.stren.core.utils.DateUtils.toLocalDate
 import com.haidoan.android.stren.core.utils.DateUtils.toTimeStampDayStart
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import java.time.LocalDate
@@ -23,14 +24,30 @@ private const val BIOMETRICS_RECORD_COLLECTION_PATH = "BiometricsRecord"
 class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
     private val db = FirebaseFirestore.getInstance()
     private val userCollectionReference = db.collection(USER_COLLECTION_PATH)
-    private fun biometricsRecordCollectionRef(userId: String) =
+    private fun biometricsRecordsCollectionRef(userId: String) =
         db.collection("$USER_COLLECTION_PATH/$userId/$BIOMETRICS_RECORD_COLLECTION_PATH")
 
-    override fun getUserStream(userId: String): Flow<User> =
-        userCollectionReference.document(userId).snapshots().map { it.toUser() }
 
-    override suspend fun getUser(userId: String): User =
-        userCollectionReference.document(userId).get().await().toUser()
+    override fun getUserStream(userId: String): Flow<User> =
+        combine(
+            userCollectionReference.document(userId).snapshots(),
+            biometricsRecordsCollectionRef(userId).snapshots()
+        ) { userBasicInfoSnapshot, biometricsRecordsSnapshot ->
+            val userBasicInfo = userBasicInfoSnapshot.toUser()
+            val biometricsRecords = biometricsRecordsSnapshot.toBiometricsRecords().filterLatest()
+            Timber.d("userBasicInfo: $userBasicInfo")
+            Timber.d("biometricsRecords: $biometricsRecords")
+            userBasicInfo.copy(biometricsRecords = biometricsRecords)
+        }
+
+    override suspend fun getUser(userId: String): User {
+        val userBasicInfo = userCollectionReference.document(userId).get().await().toUser()
+        val biometricsRecords =
+            biometricsRecordsCollectionRef(userId).get().await().toBiometricsRecords()
+                .filterLatest()
+        return userBasicInfo.copy(biometricsRecords = biometricsRecords)
+    }
+
 
     override suspend fun isUserExists(userId: String): Boolean =
         userCollectionReference.document(userId).get().await().exists()
@@ -97,7 +114,7 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
     ) {
         val batch = db.batch()
         biometricsRecords.forEach { biometricsRecord ->
-            val docRef = biometricsRecordCollectionRef(userId).document()
+            val docRef = biometricsRecordsCollectionRef(userId).document()
             batch.set(docRef, biometricsRecord.toFirestoreObject())
         }
         batch.commit().await()
@@ -132,6 +149,7 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
     private fun BiometricsRecord.toFirestoreObject(): Map<String, Any> {
         val result = mutableMapOf<String, Any>()
         result["biometricsId"] = this.biometricsId
+        result["biometricsName"] = this.biometricsName
         result["recordDate"] = this.recordDate.toTimeStampDayStart()
         result["measurementUnit"] = this.measurementUnit
         result["value"] = this.value
@@ -217,10 +235,26 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         return User(
             id = this.id,
             displayName = this["displayName"] as String,
+            age = this["age"] as Long,
+            sex = this["sex"] as String,
             email = this["email"] as String,
             trackedCategories = trackedCategories,
             shouldShowOnboarding = this["shouldShowOnboarding"] as Boolean,
             goals = goals
         )
+    }
+
+    private fun QuerySnapshot.toBiometricsRecords(): List<BiometricsRecord> {
+        return this.mapNotNull {
+            Timber.d("document: $it")
+            BiometricsRecord(
+                id = it.id,
+                biometricsId = it["biometricsId"] as String,
+                biometricsName = it["biometricsName"] as String,
+                recordDate = (it["recordDate"] as Timestamp).toLocalDate(),
+                measurementUnit = it["measurementUnit"] as String,
+                value = (it["value"].toString()).toFloat(),
+            )
+        }
     }
 }
