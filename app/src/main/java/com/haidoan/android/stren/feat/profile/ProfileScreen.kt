@@ -34,7 +34,8 @@ internal fun ProfileRoute(
     ProfileScreen(
         modifier = modifier,
         uiState = uiState,
-        onProfileOptionClick = onNavigateToEditProfile
+        onProfileOptionClick = onNavigateToEditProfile,
+        onLogoutButtonClick = viewModel::logOut
     )
 }
 
@@ -43,7 +44,8 @@ internal fun ProfileRoute(
 private fun ProfileScreen(
     modifier: Modifier = Modifier,
     uiState: ProfileUiState,
-    onProfileOptionClick: (userId: String) -> Unit
+    onProfileOptionClick: (userId: String) -> Unit,
+    onLogoutButtonClick: () -> Unit
 ) {
     when (uiState) {
         is ProfileUiState.Loading -> {
@@ -53,6 +55,10 @@ private fun ProfileScreen(
         }
         is ProfileUiState.LoadComplete -> {
             val currentUser = uiState.currentUser
+            var shouldShowLogOutDialog by remember {
+                mutableStateOf(false)
+            }
+
             Column(modifier = modifier.fillMaxSize()) {
                 Column(modifier = Modifier.weight(1f)) {
                     Row(
@@ -103,8 +109,16 @@ private fun ProfileScreen(
                     text = "Logout",
                     leadingIconResId = null,
                     onClick = {
-                        /*TODO*/
+                        shouldShowLogOutDialog = true
                     })
+            }
+
+            if (shouldShowLogOutDialog) {
+                SimpleConfirmationDialog(onDismissDialog = {
+                    shouldShowLogOutDialog = false
+                }, title = "Logout", body = "Logging out of this account?") {
+                    onLogoutButtonClick()
+                }
             }
         }
     }
