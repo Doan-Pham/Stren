@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.feat.profile
+package com.haidoan.android.stren.feat.settings
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
@@ -15,14 +15,15 @@ import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.core.designsystem.component.*
 
-const val PROFILE_SCREEN_ROUTE = "profile_screen_route"
+const val SETTINGS_SCREEN_ROUTE = "settings_screen_route"
 
 @Composable
-internal fun ProfileRoute(
+internal fun SettingsRoute(
     modifier: Modifier = Modifier,
-    viewModel: ProfileViewModel = hiltViewModel(),
+    viewModel: SettingsViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onNavigateToEditProfile: (userId: String) -> Unit,
+    onNavigateToAbout: () -> Unit,
 ) {
     var isAppBarConfigured by remember { mutableStateOf(false) }
     if (!isAppBarConfigured) {
@@ -31,29 +32,31 @@ internal fun ProfileRoute(
     }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    ProfileScreen(
+    SettingsScreen(
         modifier = modifier,
         uiState = uiState,
         onProfileOptionClick = onNavigateToEditProfile,
-        onLogoutButtonClick = viewModel::logOut
+        onLogoutButtonClick = viewModel::logOut,
+        onAboutOptionClick = onNavigateToAbout
     )
 }
 
 @SuppressLint("NewApi")
 @Composable
-private fun ProfileScreen(
+private fun SettingsScreen(
     modifier: Modifier = Modifier,
-    uiState: ProfileUiState,
+    uiState: SettingsUiState,
     onProfileOptionClick: (userId: String) -> Unit,
+    onAboutOptionClick: () -> Unit,
     onLogoutButtonClick: () -> Unit
 ) {
     when (uiState) {
-        is ProfileUiState.Loading -> {
+        is SettingsUiState.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 LoadingAnimation()
             }
         }
-        is ProfileUiState.LoadComplete -> {
+        is SettingsUiState.LoadComplete -> {
             val currentUser = uiState.currentUser
             var shouldShowLogOutDialog by remember {
                 mutableStateOf(false)
@@ -93,7 +96,7 @@ private fun ProfileScreen(
 
                     OptionItem(modifier = Modifier
                         .clickable {
-                            //TODO
+                            onAboutOptionClick()
                         }
                         .fillMaxWidth()
                         .padding(dimensionResource(id = R.dimen.padding_medium)),

@@ -40,8 +40,8 @@ class NavigationTest {
     private val nutritionBottomNavItem =
         context.resources.getString(TopLevelDestination.NUTRITION.titleTextId)
 
-    private val profileBottomNavItem =
-        context.resources.getString(TopLevelDestination.PROFILE.titleTextId)
+    private val SETTINGSBottomNavItem =
+        context.resources.getString(TopLevelDestination.SETTINGS.titleTextId)
 
 
     @Before
@@ -89,7 +89,7 @@ class NavigationTest {
             // GIVEN the user navigated to some destinations
             onNodeWithText(trainingBottomNavItem).performClick()
             onNodeWithText(nutritionBottomNavItem).performClick()
-            onNodeWithText(profileBottomNavItem).performClick()
+            onNodeWithText(SETTINGSBottomNavItem).performClick()
             onNodeWithText(nutritionBottomNavItem).performClick()
 
             // WHEN the user uses the system button/gesture to go back,
@@ -134,7 +134,7 @@ class NavigationTest {
             onNodeWithText(nutritionBottomNavItem).performClick()
             onNodeWithContentDescription("App icon").assertIsDisplayed()
 
-            onNodeWithText(profileBottomNavItem).performClick()
+            onNodeWithText(SETTINGSBottomNavItem).performClick()
             onNodeWithContentDescription("App icon").assertIsDisplayed()
 
             onNodeWithText(dashboardBottomNavItem).performClick()
@@ -157,7 +157,7 @@ class NavigationTest {
             onNodeWithText(nutritionBottomNavItem).performClick()
             onNodeWithContentDescription("App icon").assertIsDisplayed()
 
-            onNodeWithText(profileBottomNavItem).performClick()
+            onNodeWithText(SETTINGSBottomNavItem).performClick()
             onNodeWithContentDescription("App icon").assertIsDisplayed()
 
             onNodeWithText(dashboardBottomNavItem).performClick()

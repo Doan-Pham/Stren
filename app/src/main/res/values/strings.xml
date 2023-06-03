@@ -9,7 +9,7 @@
     <string name="bottom_nav_title_dashboard">Dashboard</string>
     <string name="bottom_nav_title_training">Training</string>
     <string name="bottom_nav_title_nutrition">Nutrition</string>
-    <string name="bottom_nav_title_profile">Profile</string>
+    <string name="bottom_nav_title_settings">Settings</string>
 
 
 </resources>

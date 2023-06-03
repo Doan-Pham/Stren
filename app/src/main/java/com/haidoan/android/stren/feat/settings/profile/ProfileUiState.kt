@@ -1,13 +1,13 @@
-package com.haidoan.android.stren.feat.profile.edit
+package com.haidoan.android.stren.feat.settings.profile
 
 import com.haidoan.android.stren.core.domain.NutritionCalculationUseCase
 import com.haidoan.android.stren.core.model.User
 
-internal sealed interface EditProfileUiState {
-    object Loading : EditProfileUiState
+internal sealed interface ProfileUiState {
+    object Loading : ProfileUiState
     data class LoadComplete(
         val currentUser: User,
         val sexes: List<NutritionCalculationUseCase.Sex> = NutritionCalculationUseCase.Sex.values()
             .toList(),
-    ) : EditProfileUiState
+    ) : ProfileUiState
 }

@@ -15,7 +15,7 @@ import com.haidoan.android.stren.feat.dashboard.dashboardGraph
 import com.haidoan.android.stren.feat.nutrition.nutritionGraph
 import com.haidoan.android.stren.feat.onboarding.navigateToOnboarding
 import com.haidoan.android.stren.feat.onboarding.onboardingGraph
-import com.haidoan.android.stren.feat.profile.profileGraph
+import com.haidoan.android.stren.feat.settings.settingsGraph
 import com.haidoan.android.stren.feat.training.trainingGraph
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -67,7 +67,7 @@ fun StrenNavHost(
         dashboardGraph(navController, appBarConfigurationChangeHandler)
         trainingGraph(navController, appBarConfigurationChangeHandler)
         nutritionGraph(navController, appBarConfigurationChangeHandler)
-        profileGraph(navController, appBarConfigurationChangeHandler)
+        settingsGraph(navController, appBarConfigurationChangeHandler)
     }
 
     LaunchedEffect(key1 = isUserSignedIn, block = {

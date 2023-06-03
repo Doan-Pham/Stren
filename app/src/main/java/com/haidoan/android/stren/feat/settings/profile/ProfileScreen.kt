@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.feat.profile.edit
+package com.haidoan.android.stren.feat.settings.profile
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
@@ -21,13 +21,13 @@ import com.haidoan.android.stren.core.utils.ListUtils.replaceWith
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-internal const val EDIT_PROFILE_SCREEN_ROUTE = "edit_profile_screen_route"
-internal const val USER_ID_EDIT_PROFILE_NAV_ARG = "USER_ID_EDIT_PROFILE_NAV_ARG"
+internal const val PROFILE_SCREEN_ROUTE = "profile_screen_route"
+internal const val USER_ID_PROFILE_NAV_ARG = "USER_ID_PROFILE_NAV_ARG"
 
 @Composable
-internal fun EditProfileRoute(
+internal fun ProfileRoute(
     modifier: Modifier = Modifier,
-    viewModel: EditProfileViewModel = hiltViewModel(),
+    viewModel: ProfileViewModel = hiltViewModel(),
     onBackToPreviousScreen: () -> Unit,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
 ) {
@@ -75,7 +75,7 @@ internal fun EditProfileRoute(
         isAppBarConfigured = true
     }
 
-    EditProfileScreen(
+    ProfileScreen(
         modifier = modifier,
         uiState = uiState,
         onUiStateChange = viewModel::modifyUiState,
@@ -85,19 +85,19 @@ internal fun EditProfileRoute(
 
 @SuppressLint("NewApi")
 @Composable
-private fun EditProfileScreen(
+private fun ProfileScreen(
     modifier: Modifier = Modifier,
-    uiState: EditProfileUiState,
+    uiState: ProfileUiState,
     onErrorStatusChange: (Boolean) -> Unit,
     onUiStateChange: (User) -> Unit
 ) {
     when (uiState) {
-        is EditProfileUiState.Loading -> {
+        is ProfileUiState.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 LoadingAnimation()
             }
         }
-        is EditProfileUiState.LoadComplete -> {
+        is ProfileUiState.LoadComplete -> {
             Timber.d("user: ${uiState.currentUser}")
             val currentUser = uiState.currentUser
             val age = currentUser.age
