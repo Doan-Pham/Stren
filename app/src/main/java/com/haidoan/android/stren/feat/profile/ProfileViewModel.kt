@@ -15,7 +15,7 @@ private const val UNDEFINED_USER_ID = "UNDEFINED_USER_ID"
 
 @HiltViewModel
 internal class ProfileViewModel @Inject constructor(
-    authenticationService: AuthenticationService,
+    private val authenticationService: AuthenticationService,
     userRepository: UserRepository,
 ) : ViewModel() {
     private val _currentUserId = MutableStateFlow(UNDEFINED_USER_ID)
@@ -45,5 +45,9 @@ internal class ProfileViewModel @Inject constructor(
                 _currentUserId.value = UNDEFINED_USER_ID
                 Timber.d("authStateListen - User signed out")
             })
+    }
+
+    fun logOut() {
+        authenticationService.signOut()
     }
 }
