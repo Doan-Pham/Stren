@@ -37,7 +37,7 @@ class AuthenticationServiceImpl @Inject constructor() : AuthenticationService {
                 if (it.currentUser != null) {
                     trySend(
                         UserAuthState(
-                            user = User(
+                            user = User.undefined.copy(
                                 id = it.currentUser!!.uid,
                                 displayName = it.currentUser!!.displayName ?: "Undefined",
                                 email = it.currentUser!!.email ?: "NOT_USE_EMAIL",
