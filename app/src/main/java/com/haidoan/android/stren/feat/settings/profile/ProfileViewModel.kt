@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.feat.profile.edit
+package com.haidoan.android.stren.feat.settings.profile
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -19,21 +19,21 @@ import javax.inject.Inject
 private const val UNDEFINED_USER_ID = "UNDEFINED_USER_ID"
 
 @HiltViewModel
-internal class EditProfileViewModel @Inject constructor(
+internal class ProfileViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val userRepository: UserRepository,
 ) : ViewModel() {
 
     private val _currentUserId =
-        savedStateHandle.getStateFlow(USER_ID_EDIT_PROFILE_NAV_ARG, UNDEFINED_USER_ID)
+        savedStateHandle.getStateFlow(USER_ID_PROFILE_NAV_ARG, UNDEFINED_USER_ID)
 
     // Biometrics records should only be added if the values after use input are different from the old values
     private var cachedBiometrics = listOf<BiometricsRecord>()
 
-    private val _uiState: MutableStateFlow<EditProfileUiState> =
-        MutableStateFlow(EditProfileUiState.Loading)
+    private val _uiState: MutableStateFlow<ProfileUiState> =
+        MutableStateFlow(ProfileUiState.Loading)
     val uiState = _uiState.stateIn(
-        viewModelScope, SharingStarted.WhileSubscribed(5000), EditProfileUiState.Loading
+        viewModelScope, SharingStarted.WhileSubscribed(5000), ProfileUiState.Loading
     )
 
     init {
@@ -41,12 +41,12 @@ internal class EditProfileViewModel @Inject constructor(
             _currentUserId.collect { userId ->
                 Timber.d("flatMapLatest() - userId: $userId")
                 if (userId == UNDEFINED_USER_ID) {
-                    _uiState.update { EditProfileUiState.Loading }
+                    _uiState.update { ProfileUiState.Loading }
                 } else {
                     val user = userRepository.getUser(userId)
                     cachedBiometrics = user.biometricsRecords
                     Timber.d("flatMapLatest() - user: $user")
-                    _uiState.update { EditProfileUiState.LoadComplete(user) }
+                    _uiState.update { ProfileUiState.LoadComplete(user) }
                 }
             }
         }
@@ -54,12 +54,12 @@ internal class EditProfileViewModel @Inject constructor(
 
     fun modifyUiState(user: User) {
         val newUser = user.copy()
-        _uiState.update { EditProfileUiState.LoadComplete(newUser) }
+        _uiState.update { ProfileUiState.LoadComplete(newUser) }
     }
 
     fun saveProfile() {
         viewModelScope.launch {
-            val user = (uiState.value as EditProfileUiState.LoadComplete).currentUser
+            val user = (uiState.value as ProfileUiState.LoadComplete).currentUser
             userRepository.modifyUserProfile(
                 userId = user.id,
                 displayName = user.displayName,

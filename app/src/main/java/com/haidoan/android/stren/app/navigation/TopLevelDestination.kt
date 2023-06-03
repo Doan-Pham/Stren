@@ -5,8 +5,8 @@ import com.haidoan.android.stren.feat.dashboard.DASHBOARD_GRAPH_ROUTE
 import com.haidoan.android.stren.feat.dashboard.DASHBOARD_GRAPH_STARTING_ROUTE
 import com.haidoan.android.stren.feat.nutrition.NUTRITION_GRAPH_ROUTE
 import com.haidoan.android.stren.feat.nutrition.NUTRITION_GRAPH_STARTING_ROUTE
-import com.haidoan.android.stren.feat.profile.PROFILE_GRAPH_ROUTE
-import com.haidoan.android.stren.feat.profile.PROFILE_SCREEN_ROUTE
+import com.haidoan.android.stren.feat.settings.SETTINGS_GRAPH_ROUTE
+import com.haidoan.android.stren.feat.settings.SETTINGS_SCREEN_ROUTE
 import com.haidoan.android.stren.feat.training.TRAINING_GRAPH_ROUTE
 import com.haidoan.android.stren.feat.training.TRAINING_GRAPH_STARTING_ROUTE
 import com.haidoan.android.stren.feat.training.exercises.EXERCISES_SCREEN_ROUTE
@@ -52,13 +52,13 @@ enum class TopLevelDestination(
         )
     ),
 
-    PROFILE(
-        route = PROFILE_GRAPH_ROUTE,
-        iconDrawableId = R.drawable.ic_user,
-        titleTextId = R.string.bottom_nav_title_profile,
-        descriptionTextId = R.string.bottom_nav_title_profile,
+    SETTINGS(
+        route = SETTINGS_GRAPH_ROUTE,
+        iconDrawableId = R.drawable.ic_settings,
+        titleTextId = R.string.bottom_nav_title_settings,
+        descriptionTextId = R.string.bottom_nav_title_settings,
         immediateChildDestinationRoutes = listOf(
-            PROFILE_SCREEN_ROUTE
+            SETTINGS_SCREEN_ROUTE
         )
     )
 }

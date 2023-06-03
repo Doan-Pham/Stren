@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.feat.profile
+package com.haidoan.android.stren.feat.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,7 +14,7 @@ import javax.inject.Inject
 private const val UNDEFINED_USER_ID = "UNDEFINED_USER_ID"
 
 @HiltViewModel
-internal class ProfileViewModel @Inject constructor(
+internal class SettingsViewModel @Inject constructor(
     private val authenticationService: AuthenticationService,
     userRepository: UserRepository,
 ) : ViewModel() {
@@ -24,15 +24,15 @@ internal class ProfileViewModel @Inject constructor(
     val uiState = _currentUserId.flatMapLatest { userId ->
         Timber.d("flatMapLatest() - user: ${userId}")
         if (userId == UNDEFINED_USER_ID) {
-            flowOf(ProfileUiState.Loading)
+            flowOf(SettingsUiState.Loading)
         } else {
             userRepository.getUserStream(userId = userId).map { user ->
-                ProfileUiState.LoadComplete(user)
+                SettingsUiState.LoadComplete(user)
             }
         }
     }
         .stateIn(
-            viewModelScope, SharingStarted.WhileSubscribed(5000), ProfileUiState.Loading
+            viewModelScope, SharingStarted.WhileSubscribed(5000), SettingsUiState.Loading
         )
 
     init {
