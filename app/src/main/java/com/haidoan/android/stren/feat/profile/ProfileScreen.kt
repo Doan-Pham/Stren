@@ -22,6 +22,7 @@ internal fun ProfileRoute(
     modifier: Modifier = Modifier,
     viewModel: ProfileViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
+    onNavigateToEditProfile: (userId: String) -> Unit,
 ) {
     var isAppBarConfigured by remember { mutableStateOf(false) }
     if (!isAppBarConfigured) {
@@ -33,6 +34,7 @@ internal fun ProfileRoute(
     ProfileScreen(
         modifier = modifier,
         uiState = uiState,
+        onProfileOptionClick = onNavigateToEditProfile
     )
 }
 
@@ -40,7 +42,8 @@ internal fun ProfileRoute(
 @Composable
 private fun ProfileScreen(
     modifier: Modifier = Modifier,
-    uiState: ProfileUiState
+    uiState: ProfileUiState,
+    onProfileOptionClick: (userId: String) -> Unit
 ) {
     when (uiState) {
         is ProfileUiState.Loading -> {
@@ -49,6 +52,7 @@ private fun ProfileScreen(
             }
         }
         is ProfileUiState.LoadComplete -> {
+            val currentUser = uiState.currentUser
             Column(modifier = modifier.fillMaxSize()) {
                 Column(modifier = Modifier.weight(1f)) {
                     Row(
@@ -73,7 +77,7 @@ private fun ProfileScreen(
 
                     OptionItem(modifier = Modifier
                         .clickable {
-                            //TODO
+                            onProfileOptionClick(currentUser.id)
                         }
                         .fillMaxWidth()
                         .padding(dimensionResource(id = R.dimen.padding_medium)),
