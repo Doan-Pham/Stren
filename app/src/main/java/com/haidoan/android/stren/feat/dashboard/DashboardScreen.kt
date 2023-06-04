@@ -38,6 +38,8 @@ internal fun DashboardRoute(
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
 ) {
     val exercisesToTrack by viewModel.exercisesToTrack.collectAsStateWithLifecycle()
+    val biometricsToTrack by viewModel.biometricsToTrack.collectAsStateWithLifecycle()
+
     val trackExercisesBottomSheet = BottomSheetWrapper(
         type = DashBoardBottomSheetType.TRACK_EXERCISE,
         shouldShow = rememberSaveable { mutableStateOf(false) },
@@ -52,6 +54,26 @@ internal fun DashboardRoute(
                         text = it.exercise.name,
                         onClickHandler = {
                             viewModel.trackExerciseProgress(it.exercise.id)
+                            onDismiss()
+                        })
+                },
+            )
+        })
+
+    val trackBiometricsBottomSheet = BottomSheetWrapper(
+        type = DashBoardBottomSheetType.TRACK_BIOMETRICS,
+        shouldShow = rememberSaveable { mutableStateOf(false) },
+        bottomSheetComposable = { onDismiss ->
+            ListModalBottomSheet(
+                onDismissRequest = onDismiss,
+                bottomSheetState = rememberModalBottomSheetState(),
+                title = "Track biometrics",
+                sheetItems =
+                biometricsToTrack.map {
+                    BottomSheetItem(
+                        text = it.biometricsName,
+                        onClickHandler = {
+                            viewModel.trackBiometrics(it.biometricsId)
                             onDismiss()
                         })
                 },
@@ -74,12 +96,21 @@ internal fun DashboardRoute(
                             viewModel.refreshAllTrainedExercises()
                             onDismiss()
                             trackExercisesBottomSheet.shouldShow.value = true
+                        }),
+                    BottomSheetItem(
+                        imageResId = R.drawable.ic_heart,
+                        text = "Biometrics",
+                        onClickHandler = {
+                            viewModel.refreshAllBiometrics()
+                            onDismiss()
+                            trackBiometricsBottomSheet.shouldShow.value = true
                         })
                 )
             )
         })
 
-    val bottomSheetWrappers = listOf(categoriesBottomSheet, trackExercisesBottomSheet)
+    val bottomSheetWrappers =
+        listOf(categoriesBottomSheet, trackExercisesBottomSheet, trackBiometricsBottomSheet)
 
     var isAppBarConfigured by remember { mutableStateOf(false) }
     if (!isAppBarConfigured) {
@@ -167,7 +198,8 @@ private fun DashboardScreen(
                     }
                 }
                 is DashboardViewModel.DataOutput.Calories,
-                is DashboardViewModel.DataOutput.Exercise -> {
+                is DashboardViewModel.DataOutput.Exercise,
+                is DashboardViewModel.DataOutput.Biometrics -> {
                     if (chartEntryModelProducers.containsKey(dataOutput.dataSourceId)) {
                         ProgressItem(
                             chartEntryModelProducer = chartEntryModelProducers[dataOutput.dataSourceId]!!,
@@ -331,6 +363,10 @@ private data class BottomSheetWrapper(
     val bottomSheetComposable: @Composable (onDismiss: () -> Unit) -> Unit
 )
 
+/**
+ * Each dialog is differentiated by its type, so there can be only 1 dialog of each type at
+ * a time
+ */
 private enum class DashBoardBottomSheetType {
-    CATEGORIES, TRACK_EXERCISE
+    CATEGORIES, TRACK_EXERCISE, TRACK_BIOMETRICS
 }
