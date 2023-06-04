@@ -37,8 +37,6 @@ data class BiometricsRecord(
     val value: Float
 ) {
     companion object {
-
-
         fun createWeightBiometrics(weightInKg: Float, date: LocalDate) =
             BiometricsRecord(
                 biometricsId = CommonBiometrics.WEIGHT.id,
@@ -61,7 +59,8 @@ data class BiometricsRecord(
 }
 
 /**
- * Return a list of the latest records for each biometricsId
+ * Return a list of the latest records for each biometricsId (which means for records with
+ * the same biometricsId, only the latest ones are included and the earlier ones are removed
  */
 fun List<BiometricsRecord>.filterLatest(): List<BiometricsRecord> {
     val latestRecordByBiometricsId = mutableMapOf<String, Pair<String, LocalDate>>()
@@ -75,7 +74,8 @@ fun List<BiometricsRecord>.filterLatest(): List<BiometricsRecord> {
             latestRecordByBiometricsId[biometricsId] = Pair(recordId, recordDate)
         }
     }
-    return this.filter { it.id in latestRecordByBiometricsId.values.map { it.first } }
+    val latestRecordsIds = latestRecordByBiometricsId.values.map { it.first }
+    return this.filter { it.id in latestRecordsIds }
 }
 
 
@@ -131,12 +131,36 @@ sealed class Goal {
 sealed class TrackedCategory {
     @get:PropertyName("isDefaultCategory")
     abstract val isDefaultCategory: Boolean
+
+    /**
+     * Mostly for deserialization purpose (Since the category type is actually represented by the child classes themselves - each class represents a type), database stores a corresponding
+     * "categoryType" field from which the application deserializes to the correct child class
+     */
     abstract val categoryType: TrackedCategoryType
+
+    /**
+     * Identifier of each actual tracked category
+     */
     abstract val dataSourceId: String
     abstract val startDate: LocalDate
     abstract val endDate: LocalDate
+
+    /**
+     * Base copy() method for inheritance in parent sealed class isn't viable in Kotlin, since the language
+     * has no way to modify the copy() method's signature for each child class, but
+     * the copy() method is absolutely essential in this application. So,
+     * this method works as a lesser version of copy() method
+     */
     abstract fun withStartDate(startDate: LocalDate): TrackedCategory
+
+    /**
+     * Base copy() method for inheritance in parent sealed class isn't viable in Kotlin, since the language
+     * has no way to modify the copy() method's signature for each child class, but
+     * the copy() method is absolutely essential in this application. So,
+     * this method works as a lesser version of copy() method
+     */
     abstract fun withEndDate(endDate: LocalDate): TrackedCategory
+
     data class Calories(
         override val dataSourceId: String = DataSourceBaseId.DATA_SOURCE_ID_CALORIES.toString(),
         override val startDate: LocalDate = DateUtils.getCurrentDate().minusWeeks(1),
@@ -166,12 +190,29 @@ sealed class TrackedCategory {
 
         override fun withEndDate(endDate: LocalDate): TrackedCategory = this.copy(endDate = endDate)
     }
+
+    data class Biometrics(
+        override val categoryType: TrackedCategoryType = TrackedCategoryType.BIOMETRICS,
+        override val startDate: LocalDate = DateUtils.getCurrentDate().minusWeeks(1),
+        override val endDate: LocalDate = DateUtils.getCurrentDate(),
+        override val isDefaultCategory: Boolean,
+        val biometricsId: String,
+        val biometricsName: String,
+        override val dataSourceId: String =
+            DataSourceBaseId.DATA_SOURCE_ID_BIOMETRICS.toString() + "_" + biometricsId
+    ) : TrackedCategory() {
+
+        override fun withStartDate(startDate: LocalDate): TrackedCategory =
+            this.copy(startDate = startDate)
+
+        override fun withEndDate(endDate: LocalDate): TrackedCategory = this.copy(endDate = endDate)
+    }
 }
 
 enum class TrackedCategoryType {
-    CALORIES, EXERCISE_1RM
+    CALORIES, EXERCISE_1RM, BIOMETRICS
 }
 
 enum class DataSourceBaseId {
-    DATA_SOURCE_ID_CALORIES, DATA_SOURCE_ID_EXERCISE_1RM
+    DATA_SOURCE_ID_CALORIES, DATA_SOURCE_ID_EXERCISE_1RM, DATA_SOURCE_ID_BIOMETRICS
 }

@@ -27,6 +27,19 @@ class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteD
             User.undefined
         }
 
+    override suspend fun modifyUserProfile(
+        userId: String,
+        displayName: String,
+        age: Long,
+        sex: String
+    ) {
+        try {
+            dataSource.modifyUserProfile(userId, displayName, age, sex)
+        } catch (ex: Exception) {
+            Timber.e("modifyUserProfile() - userId: $userId - Exception: $ex")
+        }
+    }
+
     override suspend fun isUserExists(userId: String): Boolean =
         try {
             dataSource.isUserExists(userId = userId)
@@ -39,6 +52,56 @@ class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteD
         dataSource.addUser(user)
     } catch (ex: Exception) {
         Timber.e("addUser() - Exception: $ex")
+    }
+
+    override suspend fun getAllBiometricsToTrack(userId: String): List<BiometricsRecord> {
+        return try {
+            dataSource.getAllBiometricsToTrack(userId)
+        } catch (ex: Exception) {
+            Timber.e("getAllBiometricsToTrack() - Exception: $ex \nStack Trace: ${ex.stackTrace} ")
+            emptyList()
+        }
+    }
+
+    override fun getBiometricsRecordsStream(
+        userId: String,
+        biometricsId: String,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Flow<List<BiometricsRecord>> {
+        Timber.d(
+            "getBiometricsRecordsStream() is called; " +
+                    "userId: $userId, " +
+                    "biometricsId: $biometricsId" +
+                    ",startDate: $startDate" +
+                    ", endDate: $endDate "
+        )
+
+        return dataSource
+            .getBiometricsRecordsStream(userId, biometricsId, startDate, endDate)
+            .catch {
+                Timber.e("getBiometricsRecordsStream() - Exception: $it - stacktrace: ${it.stackTrace}")
+            }
+    }
+
+    override suspend fun addBiometricsRecord(
+        userId: String, biometricsRecords: List<BiometricsRecord>
+    ) {
+        try {
+            dataSource.addBiometricsRecord(userId, biometricsRecords)
+        } catch (ex: Exception) {
+            Timber.e("addBiometricsRecord() - userId: $userId - Exception: $ex")
+        }
+    }
+
+    override suspend fun addGoals(
+        userId: String, goals: List<Goal>
+    ) {
+        try {
+            dataSource.addGoals(userId, goals)
+        } catch (ex: Exception) {
+            Timber.e("addGoals() - userId: $userId - Exception: $ex")
+        }
     }
 
     override suspend fun trackCategory(userId: String, category: TrackedCategory) {
@@ -73,25 +136,6 @@ class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteD
         }
     }
 
-    override suspend fun addBiometricsRecord(
-        userId: String, biometricsRecords: List<BiometricsRecord>
-    ) {
-        try {
-            dataSource.addBiometricsRecord(userId, biometricsRecords)
-        } catch (ex: Exception) {
-            Timber.e("addBiometricsRecord() - userId: $userId - Exception: $ex")
-        }
-    }
-
-    override suspend fun addGoals(
-        userId: String, goals: List<Goal>
-    ) {
-        try {
-            dataSource.addGoals(userId, goals)
-        } catch (ex: Exception) {
-            Timber.e("addGoals() - userId: $userId - Exception: $ex")
-        }
-    }
 
     override suspend fun completeOnboarding(userId: String) {
         try {
@@ -101,16 +145,4 @@ class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteD
         }
     }
 
-    override suspend fun modifyUserProfile(
-        userId: String,
-        displayName: String,
-        age: Long,
-        sex: String
-    ) {
-        try {
-            dataSource.modifyUserProfile(userId, displayName, age, sex)
-        } catch (ex: Exception) {
-            Timber.e("modifyUserProfile() - userId: $userId - Exception: $ex")
-        }
-    }
 }

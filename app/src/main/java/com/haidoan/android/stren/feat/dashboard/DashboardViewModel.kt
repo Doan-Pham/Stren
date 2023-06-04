@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.designsystem.component.toCharEntries
 import com.haidoan.android.stren.core.designsystem.component.toCharEntryModelProducer
 import com.haidoan.android.stren.core.domain.GetUserFullDataUseCase
+import com.haidoan.android.stren.core.model.BiometricsRecord
 import com.haidoan.android.stren.core.model.TrackedCategory
 import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.repository.base.EatingDayRepository
@@ -39,6 +40,7 @@ internal class DashboardViewModel @Inject constructor(
     private var cachedTrackedCategories = listOf<TrackedCategory>()
 
     private val _allTrainedExercises = MutableStateFlow(listOf<TrainedExercise>())
+    private val _allBiometrics = MutableStateFlow(listOf<BiometricsRecord>())
 
     //TODO: This only works for exercises' 1RM and not other exercises-related metrics
     val exercisesToTrack = _allTrainedExercises.mapLatest { allTrainedExercises ->
@@ -50,6 +52,15 @@ internal class DashboardViewModel @Inject constructor(
         allTrainedExercises.filter { it.exercise.id !in alreadyTrackedExercisesIds }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
 
+    val biometricsToTrack = _allBiometrics.mapLatest { allBiometrics ->
+        val alreadyTrackedBiometricsIds =
+            cachedTrackedCategories.filterIsInstance(TrackedCategory.Biometrics::class.java)
+                .map {
+                    it.biometricsId
+                }
+        allBiometrics.filter { it.biometricsId !in alreadyTrackedBiometricsIds }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
+
     val chartEntryModelProducers = mutableStateMapOf<String, ChartEntryModelProducer>()
 
     val dataOutputs = currentUserId.flatMapLatest { userId ->
@@ -58,38 +69,17 @@ internal class DashboardViewModel @Inject constructor(
             cachedTrackedCategories = user.trackedCategories
             Timber.d("getUserFullDataUseCase() - trackedCategories: $cachedTrackedCategories")
 
-           val dataOutputsStateFlows = user.trackedCategories.map { category ->
-               when (category) {
-                   is TrackedCategory.Calories -> {
-                       eatingDayRepository.getCaloriesOfDatesStream(
-                           userId = userId,
-                           startDate = category.startDate,
-                           endDate = category.endDate
-                       ).flatMapLatest { caloriesOfDates ->
-                           val chartData = caloriesOfDates.map { caloriesOfDate ->
-                               Pair(
-                                   caloriesOfDate.date,
-                                    caloriesOfDate.calories.toFloat()
-                                )
-                            }
-                            Timber.d("chartData: $chartData")
-                            if (chartEntryModelProducers.containsKey(category.dataSourceId)) {
-                                chartEntryModelProducers[category.dataSourceId]?.updateChartEntries(
-                                    chartData
-                                )
-                            } else {
-                                chartEntryModelProducers[category.dataSourceId] =
-                                    chartData.toCharEntryModelProducer()
-                            }
-
-                            flowOf(
-                                DataOutput.Calories(
-                                    startDate = category.startDate,
-                                    endDate = category.endDate,
-                                    dataSourceId = category.dataSourceId,
-                                    isDefaultCategory = category.isDefaultCategory
-                                )
-                            )
+            val dataOutputsStateFlows = user.trackedCategories.map { category ->
+                when (category) {
+                    is TrackedCategory.Calories -> {
+                        eatingDayRepository.getCaloriesOfDatesStream(
+                            userId = userId,
+                            startDate = category.startDate,
+                            endDate = category.endDate
+                        ).flatMapLatest { caloriesOfDates ->
+                            val rawData =
+                                caloriesOfDates.associate { it.date to it.calories.toFloat() }
+                            convertTrackedDataToOutputFlow(category = category, rawData = rawData)
                         }.stateIn(
                             viewModelScope,
                             SharingStarted.WhileSubscribed(5000),
@@ -103,44 +93,93 @@ internal class DashboardViewModel @Inject constructor(
                             endDate = category.endDate,
                             exerciseId = category.exerciseId
                         ).flatMapLatest { rawData ->
-                            val chartData = rawData.toList()
-                            Timber.d("chartData: $chartData")
-
-                            if (chartEntryModelProducers.containsKey(category.dataSourceId)) {
-                                chartEntryModelProducers[category.dataSourceId]?.updateChartEntries(
-                                    chartData
-                                )
-                            } else {
-                                chartEntryModelProducers[category.dataSourceId] =
-                                    chartData.toCharEntryModelProducer()
-                            }
-
-                            flowOf(
-                                DataOutput.Exercise(
-                                    startDate = category.startDate,
-                                    endDate = category.endDate,
-                                    dataSourceId = category.dataSourceId,
-                                    title = category.exerciseName,
-                                    isDefaultCategory = category.isDefaultCategory,
-                                )
-                            )
+                            convertTrackedDataToOutputFlow(category = category, rawData = rawData)
                         }.stateIn(
                             viewModelScope,
                             SharingStarted.WhileSubscribed(5000),
                             DataOutput.EmptyData
                         )
                     }
-               }
-           }
-            // Assigning "isUpdating" any where else will result in a situation where
-            // composables that depend on "isUpdating" are recomposed before data from backend
-            // even arrives (Ex: A list that's supposed to scroll to old position after updating,
-            // if assign "isUpdating" anywhere else, the list will scroll before the list is
-            // even updated)
+                    is TrackedCategory.Biometrics -> {
+                        userRepository.getBiometricsRecordsStream(
+                            userId = userId,
+                            biometricsId = category.biometricsId,
+                            startDate = category.startDate,
+                            endDate = category.endDate
+                        ).flatMapLatest { records ->
+                            Timber.d("getBiometricsRecordsStream() - records: $records")
+                            val rawData = records.associate { it.recordDate to it.value }
+                            convertTrackedDataToOutputFlow(category = category, rawData = rawData)
+
+                        }.stateIn(
+                            viewModelScope,
+                            SharingStarted.WhileSubscribed(5000),
+                            DataOutput.EmptyData
+                        )
+                    }
+                }
+            }
+            /*
+             Assigning "isUpdating" any where else will result in a situation where
+             composables that depend on "isUpdating" are recomposed before data from backend
+             even arrives (Ex: A list that's supposed to scroll to old position after updating,
+             if assign "isUpdating" anywhere else, the list will scroll before the list is
+             even updated)
+             */
             isUpdating = true
+
             dataOutputsStateFlows
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
+
+    private fun convertTrackedDataToOutputFlow(
+        category: TrackedCategory,
+        rawData: Map<LocalDate, Float>
+    ): Flow<DataOutput> {
+        val chartData = rawData.toList()
+        Timber.d("chartData: $chartData")
+
+        if (chartEntryModelProducers.containsKey(category.dataSourceId)) {
+            chartEntryModelProducers[category.dataSourceId]?.updateChartEntries(
+                chartData
+            )
+        } else {
+            chartEntryModelProducers[category.dataSourceId] =
+                chartData.toCharEntryModelProducer()
+        }
+
+        return flowOf(
+            when (category) {
+                is TrackedCategory.Calories -> {
+                    DataOutput.Calories(
+                        startDate = category.startDate,
+                        endDate = category.endDate,
+                        dataSourceId = category.dataSourceId,
+                        isDefaultCategory = category.isDefaultCategory
+                    )
+                }
+                is TrackedCategory.ExerciseOneRepMax -> {
+                    DataOutput.Exercise(
+                        startDate = category.startDate,
+                        endDate = category.endDate,
+                        dataSourceId = category.dataSourceId,
+                        title = category.exerciseName,
+                        isDefaultCategory = category.isDefaultCategory,
+                    )
+                }
+                is TrackedCategory.Biometrics -> {
+                    DataOutput.Biometrics(
+                        startDate = category.startDate,
+                        endDate = category.endDate,
+                        dataSourceId = category.dataSourceId,
+                        title = category.biometricsName,
+                        isDefaultCategory = category.isDefaultCategory,
+                    )
+                }
+            }
+
+        )
+    }
 
     init {
         authenticationService.addAuthStateListeners(
@@ -170,7 +209,6 @@ internal class DashboardViewModel @Inject constructor(
                 newStartDate = startDate,
                 newEndDate = endDate
             )
-            //isUpdating = true
         }
     }
 
@@ -180,6 +218,14 @@ internal class DashboardViewModel @Inject constructor(
                 workoutsRepository.getAllExercisesTrained(userId = currentUserId.value)
 
             Timber.d("_allTrainedExercises.value: ${_allTrainedExercises.value}")
+        }
+    }
+
+    fun refreshAllBiometrics() {
+        viewModelScope.launch {
+            _allBiometrics.value =
+                userRepository.getAllBiometricsToTrack(userId = currentUserId.value)
+            Timber.d("_allBiometrics.value: ${_allBiometrics.value}")
         }
     }
 
@@ -193,6 +239,23 @@ internal class DashboardViewModel @Inject constructor(
                     category = TrackedCategory.ExerciseOneRepMax(
                         exerciseId = exerciseId,
                         exerciseName = _allTrainedExercises.value.first { it.exercise.id == exerciseId }.exercise.name,
+                        isDefaultCategory = false
+                    )
+                )
+            }
+        }
+    }
+
+    fun trackBiometrics(biometricsId: String) {
+        if (!cachedTrackedCategories.any {
+                it is TrackedCategory.Biometrics && it.biometricsId == biometricsId
+            }) {
+            viewModelScope.launch {
+                userRepository.trackCategory(
+                    userId = currentUserId.value,
+                    category = TrackedCategory.Biometrics(
+                        biometricsId = biometricsId,
+                        biometricsName = _allBiometrics.value.first { it.biometricsId == biometricsId }.biometricsName,
                         isDefaultCategory = false
                     )
                 )
@@ -236,6 +299,12 @@ internal class DashboardViewModel @Inject constructor(
         ) : DataOutput
 
         data class Exercise(
+            override val startDate: LocalDate, override val endDate: LocalDate,
+            override val dataSourceId: String, override val title: String,
+            override val isDefaultCategory: Boolean
+        ) : DataOutput
+
+        data class Biometrics(
             override val startDate: LocalDate, override val endDate: LocalDate,
             override val dataSourceId: String, override val title: String,
             override val isDefaultCategory: Boolean
