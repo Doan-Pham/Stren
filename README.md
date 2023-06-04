@@ -32,7 +32,9 @@
 * View foods' nutritional value
 * Track nutrition and calories
 * View training and nutrition progress
+* Track biometrics
 ### Work in Progress
+* Full-text search for exercises and foods
 * Record body measurements and view progress
 
 ## How To Run
@@ -61,7 +63,7 @@ GOOGLE_WEB_CLIENT_ID = [GOOGLE_WEB_CLIENT_ID]
 ```
 FDC_API_KEY = "[THE_API_KEY_YOU_JUST_GET]"
 ```
-6. Click Build -> Rebuild Project.
+6. In Android Studeio, click Build -> Rebuild Project.
 7. Click Run -> Run 'app'
 
 ## Architecture
@@ -73,7 +75,7 @@ with some modifications as the application doesn't utilize modularization yet.
 In general, there are 3 types of packages:
 * `app:` Entry point of the application. Handles the top-level logic (Top-level navigation, top-level state) .
 * `feat:` Include classes and functions related to a feature (or feature group).
-* `core:` Include classes and functions that are used by many different `feat` and `app` packages (Ex: [designsystem/component](https://github.com/Doan-Pham/Stren/tree/README/app/src/main/java/com/haidoan/android/stren/core/designsystem/component) contains common UI components)
+* `core:` Include classes and functions that are used by many different `feat` and `app` packages (Ex: [designsystem/component](https://github.com/Doan-Pham/Stren/tree/dev/app/src/main/java/com/haidoan/android/stren/core/designsystem/component) contains common UI components)
 
 ## Convention
 The application's conventions loosely follow the following guidelines:
@@ -91,18 +93,20 @@ The application's conventions loosely follow the following guidelines:
 - Pagination: [Paging 3](https://developer.android.com/topic/libraries/architecture/paging/v3-overview).
 - Network: [Retrofit](https://square.github.io/retrofit/), [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization).
 - Logging: [Timber](https://github.com/JakeWharton/timber).
-### Other Libraries
-- UI Design: [Figma](https://www.figma.com/) 
-- Chart and Graph UI Components: [charts](https://github.com/tehras/charts), [vico](https://github.com/patrykandpatrick/vico)
-- Calendar UI Component: [Calendar](https://github.com/kizitonwose/Calendar)
-- Navigation Transition: [Accompanist](https://github.com/google/accompanist)
-- Image Loader: [Coil](https://github.com/coil-kt/coil)
+### Other Libraries and Tools
+- UI Design: [Figma](https://www.figma.com/).
+- Validation: [commons-validator](https://github.com/apache/commons-validator).
+- Chart and Graph UI Components: [charts](https://github.com/tehras/charts), [vico](https://github.com/patrykandpatrick/vico).
+- Calendar UI Component: [Calendar](https://github.com/kizitonwose/Calendar).
+- Navigation Transition: [Accompanist](https://github.com/google/accompanist).
+- Image Loader: [Coil](https://github.com/coil-kt/coil).
+- Licenses: [AboutLibraries](https://github.com/mikepenz/AboutLibraries).
 ### Resources
 - Exercise Dataset: [free-exercise-db](https://github.com/yuhonas/free-exercise-db).
 - Food Dataset: [FoodData Central API](https://fdc.nal.usda.gov/api-guide.html).
 - Upload Dataset to Firebase: [firestore-backup-restore](https://github.com/dalenguyen/firestore-backup-restore).
 - Icons: [Severicons](https://www.figma.com/community/file/929620430222653376/Severicons---Essential-icon-set).
-
+- Calories Caculation: [mohap.gov.ae](https://mohap.gov.ae/en/more/awareness-center/calories-calculation#:~:text=To%20determin%E2%80%8Be%20your,Calorie%2DCalculation%20%3D%20BMR%20x%201.375), [TDEE Calculator](https://tdeecalculator.net/result.php?s=imperial&age=30&g=female&lbs=114&in=61&act=1.2&bf=&f=1), [Calculator.net](https://www.calculator.net/calorie-calculator.html).
 ## Author
  [**Pham Truong Hai Doan**](https://github.com/Doan-Pham)
 
