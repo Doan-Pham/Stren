@@ -8,6 +8,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Qualifier
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -32,4 +33,11 @@ internal abstract class DataSourceModule {
 
     @Binds
     abstract fun bindDefaultValuesRemoteDataSource(impl: DefaultValuesFirestoreDataSource): DefaultValuesRemoteDataSource
+
+    @AlgoliaDataSource
+    @Binds
+    abstract fun bindExercisesSearchDataSource(impl: ExercisesAlgoliaDataSource): ExercisesSearchDataSource
 }
+
+@Qualifier
+annotation class AlgoliaDataSource
