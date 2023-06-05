@@ -1,5 +1,11 @@
 package com.haidoan.android.stren.core.datasource.remote.di
 
+import com.algolia.search.client.ClientSearch
+import com.algolia.search.client.Index
+import com.algolia.search.logging.LogLevel
+import com.algolia.search.model.APIKey
+import com.algolia.search.model.ApplicationID
+import com.algolia.search.model.IndexName
 import com.haidoan.android.stren.BuildConfig
 import dagger.Module
 import dagger.Provides
@@ -43,7 +49,23 @@ object NetworkModule {
     @IoDispatcher
     @Provides
     fun providesIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
+
+    @ExerciseIndex
+    @Provides
+    @Singleton
+    fun providesAlgoliaIndex(): Index {
+        val client = ClientSearch(
+            applicationID = ApplicationID(BuildConfig.ALGOLIA_APPLICATION_ID),
+            apiKey = APIKey(BuildConfig.ALGOLIA_SEARCH_API_KEY),
+            logLevel = LogLevel.All
+        )
+        val indexName = IndexName("Exercise")
+        return client.initIndex(indexName)
+    }
 }
 
 @Qualifier
 annotation class IoDispatcher
+
+@Qualifier
+annotation class ExerciseIndex
