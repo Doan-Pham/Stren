@@ -37,6 +37,8 @@ android {
         properties.load(project.rootProject.file("api_key.properties").newDataInputStream())
         buildConfigField "String", "FDC_API_KEY", "${properties.getProperty("FDC_API_KEY")}"
         buildConfigField "String", "FDC_API_BASE_URL", "\"https://api.nal.usda.gov/fdc/v1/\""
+        buildConfigField "String", "ALGOLIA_APPLICATION_ID", "${properties.getProperty("ALGOLIA_APPLICATION_ID")}"
+        buildConfigField "String", "ALGOLIA_SEARCH_API_KEY", "${properties.getProperty("ALGOLIA_SEARCH_API_KEY")}"
     }
 
     buildTypes {
@@ -135,6 +137,10 @@ dependencies {
     // LICENSING
     implementation "com.mikepenz:aboutlibraries-core:$about_libraries_version"
     implementation "com.mikepenz:aboutlibraries-compose:$about_libraries_version"
+
+    // (FULL-TEXT SEARCH) ALGOLIA
+    implementation "com.algolia:algoliasearch-client-kotlin:$algolia_kotlin_client_version"
+    implementation "io.ktor:ktor-client-okhttp:2.2.4"
 
     // TEST
     testImplementation 'junit:junit:4.13.2'
