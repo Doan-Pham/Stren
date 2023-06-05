@@ -4,9 +4,12 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.haidoan.android.stren.core.datasource.remote.base.ExercisesRemoteDataSource
+import com.haidoan.android.stren.core.datasource.remote.base.ExercisesSearchDataSource
+import com.haidoan.android.stren.core.datasource.remote.di.AlgoliaDataSource
+import com.haidoan.android.stren.core.datasource.remote.impl.ExercisesSearchPagingSource
 import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.model.ExerciseCategory
-import com.haidoan.android.stren.core.model.ExerciseFilterStandards
+import com.haidoan.android.stren.core.model.ExerciseQueryParameters
 import com.haidoan.android.stren.core.model.MuscleGroup
 import com.haidoan.android.stren.core.repository.base.ExercisesRepository
 import kotlinx.coroutines.flow.Flow
@@ -16,7 +19,9 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class ExercisesRepositoryImpl @Inject constructor(
-    private val dataSource: ExercisesRemoteDataSource
+    private val dataSource: ExercisesRemoteDataSource,
+    @AlgoliaDataSource
+    private val searchDataSource: ExercisesSearchDataSource
 ) : ExercisesRepository {
 
     override fun getExercisesWithLimit(limit: Long) = Pager(config = PagingConfig(
@@ -53,15 +58,16 @@ class ExercisesRepositoryImpl @Inject constructor(
         Timber.e("getAllMuscleGroups() - Exception: ${it.message}")
     }
 
-    override fun filterExercises(
-        filterStandards: ExerciseFilterStandards, resultCountLimit: Long
+    override fun searchExercises(
+        filterStandards: ExerciseQueryParameters,
+        resultCountLimit: Long
     ): Flow<PagingData<Exercise>> = Pager(config = PagingConfig(
         pageSize = resultCountLimit.toInt(),
     ), pagingSourceFactory = {
-        ExercisesPagingSource(
-            dataSource.getFilteredExercisesAsQuery(
-                filterStandards, resultCountLimit
-            )
+        ExercisesSearchPagingSource(
+            exercisesSearchDataSource = searchDataSource,
+            exerciseQueryParameters = filterStandards,
+            pageSize = resultCountLimit
         )
     }).flow
 
