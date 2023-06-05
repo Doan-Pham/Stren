@@ -18,6 +18,8 @@ import javax.inject.Inject
 internal class ExercisesViewModel @Inject constructor(exercisesRepository: ExercisesRepository) :
     ViewModel() {
     var searchBarText = mutableStateOf("")
+    private var _isSearching = MutableStateFlow(false)
+    val isSearching: StateFlow<Boolean> = _isSearching
 
     private val _selectedCategoriesIds: MutableStateFlow<List<String>> =
         MutableStateFlow(listOf())
@@ -154,14 +156,17 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
 //        Timber.d( "applyFilters() - _exercisesFilterStandards: ${_exercisesFilterStandards.value}")
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     val exercises = _exercisesFilterStandards
+        .onEach { _isSearching.update { true } }
+        .debounce(800L)
         .flatMapLatest { filterStandards ->
             Timber.d("val exercises - filterStandards: $filterStandards")
             withContext(viewModelScope.coroutineContext + Dispatchers.IO) {
                 exercisesRepository.searchExercises(filterStandards = filterStandards)
             }
         }
+        .onEach { _isSearching.update { false } }
         .cachedIn(viewModelScope)
 }
 
