@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import com.haidoan.android.stren.core.model.ExerciseCategory
-import com.haidoan.android.stren.core.model.ExerciseFilterStandards
+import com.haidoan.android.stren.core.model.ExerciseQueryParameters
 import com.haidoan.android.stren.core.model.MuscleGroup
 import com.haidoan.android.stren.core.repository.base.ExercisesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -86,7 +86,7 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
     }
 
     private val _exercisesFilterStandards =
-        MutableStateFlow(ExerciseFilterStandards("", listOf(), listOf()))
+        MutableStateFlow(ExerciseQueryParameters("", listOf(), listOf()))
 
     fun searchExerciseByName(exerciseName: String) {
 //        Timber.d( "searchExerciseByName() - [Param]exerciseName: $exerciseName")
@@ -158,10 +158,9 @@ internal class ExercisesViewModel @Inject constructor(exercisesRepository: Exerc
     val exercises = _exercisesFilterStandards
         .flatMapLatest { filterStandards ->
             Timber.d("val exercises - filterStandards: $filterStandards")
-            withContext(viewModelScope.coroutineContext) {
-                exercisesRepository.filterExercises(filterStandards = filterStandards)
+            withContext(viewModelScope.coroutineContext + Dispatchers.IO) {
+                exercisesRepository.searchExercises(filterStandards = filterStandards)
             }
-
         }
         .cachedIn(viewModelScope)
 }

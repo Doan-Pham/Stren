@@ -4,7 +4,7 @@ import com.google.firebase.firestore.Query
 import com.haidoan.android.stren.core.datasource.remote.base.ExercisesRemoteDataSource
 import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.model.ExerciseCategory
-import com.haidoan.android.stren.core.model.ExerciseFilterStandards
+import com.haidoan.android.stren.core.model.ExerciseQueryParameters
 import com.haidoan.android.stren.core.model.MuscleGroup
 import com.haidoan.android.stren.core.repository.impl.QueryWrapper
 import com.haidoan.android.stren.core.testing.data.EXERCISE_CATEGORIES_TEST_DATA
@@ -31,7 +31,7 @@ class FakeExercisesRemoteDataSource : ExercisesRemoteDataSource {
     }
 
     override fun getFilteredExercisesAsQuery(
-        filterStandards: ExerciseFilterStandards,
+        filterStandards: ExerciseQueryParameters,
         resultCountLimit: Long
     ): QueryWrapper {
         TODO("Not yet implemented")

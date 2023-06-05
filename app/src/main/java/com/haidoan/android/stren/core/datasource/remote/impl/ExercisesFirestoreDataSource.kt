@@ -6,7 +6,7 @@ import com.google.firebase.ktx.Firebase
 import com.haidoan.android.stren.core.datasource.remote.base.ExercisesRemoteDataSource
 import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.model.ExerciseCategory
-import com.haidoan.android.stren.core.model.ExerciseFilterStandards
+import com.haidoan.android.stren.core.model.ExerciseQueryParameters
 import com.haidoan.android.stren.core.model.MuscleGroup
 import com.haidoan.android.stren.core.repository.impl.ExerciseExtraFilter
 import com.haidoan.android.stren.core.repository.impl.QueryWrapper
@@ -60,7 +60,7 @@ class ExercisesFirestoreDataSource @Inject constructor() : ExercisesRemoteDataSo
      * This query is very limited due to Firestore's query constraint
      */
     override fun getFilteredExercisesAsQuery(
-        filterStandards: ExerciseFilterStandards,
+        filterStandards: ExerciseQueryParameters,
         resultCountLimit: Long
     ): QueryWrapper {
         val query =

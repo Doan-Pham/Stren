@@ -4,7 +4,7 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.haidoan.android.stren.core.datasource.remote.base.ExercisesSearchDataSource
 import com.haidoan.android.stren.core.model.Exercise
-import com.haidoan.android.stren.core.model.ExerciseFilterStandards
+import com.haidoan.android.stren.core.model.ExerciseQueryParameters
 import com.haidoan.android.stren.core.repository.base.DEFAULT_EXERCISE_DATA_PAGE_SIZE
 import timber.log.Timber
 import javax.inject.Inject
@@ -12,7 +12,7 @@ import javax.inject.Inject
 class ExercisesSearchPagingSource @Inject constructor(
     private val pageSize: Long = DEFAULT_EXERCISE_DATA_PAGE_SIZE,
     private val exercisesSearchDataSource: ExercisesSearchDataSource,
-    private val exerciseFilterStandards: ExerciseFilterStandards
+    private val exerciseQueryParameters: ExerciseQueryParameters
 ) :
     PagingSource<Int, Exercise>() {
     override fun getRefreshKey(state: PagingState<Int, Exercise>): Int? {
@@ -26,7 +26,7 @@ class ExercisesSearchPagingSource @Inject constructor(
         return try {
             val nextPageNumber = params.key ?: 0
             val response = exercisesSearchDataSource.searchExercise(
-                exerciseFilterStandards = exerciseFilterStandards,
+                exerciseQueryParameters = exerciseQueryParameters,
                 dataPageSize = pageSize,
                 dataPageIndex = nextPageNumber
             )

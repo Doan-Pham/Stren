@@ -7,7 +7,7 @@ import com.algolia.search.helper.deserialize
 import com.haidoan.android.stren.core.datasource.remote.base.ExercisesSearchDataSource
 import com.haidoan.android.stren.core.datasource.remote.di.ExerciseIndex
 import com.haidoan.android.stren.core.model.Exercise
-import com.haidoan.android.stren.core.model.ExerciseFilterStandards
+import com.haidoan.android.stren.core.model.ExerciseQueryParameters
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,13 +19,13 @@ class ExercisesAlgoliaDataSource @Inject constructor(
 ) : ExercisesSearchDataSource {
 
     override suspend fun searchExercise(
-        exerciseFilterStandards: ExerciseFilterStandards,
+        exerciseQueryParameters: ExerciseQueryParameters,
         dataPageSize: Long,
         dataPageIndex: Int
     ): List<Exercise> {
-        val exerciseName = exerciseFilterStandards.exerciseName
-        val trainedMuscleGroups = exerciseFilterStandards.muscleGroupsTrained
-        val belongedCategories = exerciseFilterStandards.exerciseCategories
+        val exerciseName = exerciseQueryParameters.exerciseName
+        val trainedMuscleGroups = exerciseQueryParameters.muscleGroupsTrained
+        val belongedCategories = exerciseQueryParameters.exerciseCategories
         Timber.d("searchExercise() - trainedMuscleGroups: $trainedMuscleGroups")
         Timber.d("searchExercise() - belongedCategories: $belongedCategories")
         val query = query(exerciseName) {
