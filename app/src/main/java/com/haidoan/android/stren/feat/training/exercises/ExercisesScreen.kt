@@ -18,9 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.items
+import androidx.paging.compose.*
 import coil.compose.AsyncImage
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
@@ -46,6 +44,7 @@ internal fun ExercisesRoute(
 ) {
     var shouldShowFilterSheet by rememberSaveable { mutableStateOf(false) }
     val pagedExercises = viewModel.exercises.collectAsLazyPagingItems()
+    val isSearching by viewModel.isSearching.collectAsStateWithLifecycle()
 
     val exerciseCategories by viewModel.exerciseCategories.collectAsStateWithLifecycle()
     val exerciseCategoryFilter = FilterStandard(
@@ -82,7 +81,10 @@ internal fun ExercisesRoute(
                     val searchBarConfiguration = AppBarConfiguration.SearchAppBar(
                         text = viewModel.searchBarText,
                         placeholder = "Search exercise",
-                        onTextChange = { viewModel.searchBarText.value = it },
+                        onTextChange = {
+                            viewModel.searchBarText.value = it
+                            viewModel.searchExerciseByName(it)
+                        },
                         onSearchClicked = { viewModel.searchExerciseByName(it) })
                     appBarConfigurationChangeHandler(searchBarConfiguration)
                 }),
@@ -100,6 +102,7 @@ internal fun ExercisesRoute(
 
     ExercisesScreen(
         modifier = modifier,
+        isSearching = isSearching,
         pagedExercises = pagedExercises,
         shouldShowFilterSheet = shouldShowFilterSheet,
         onHideFilterSheet = { shouldShowFilterSheet = false },
@@ -114,6 +117,7 @@ internal fun ExercisesRoute(
 @Composable
 internal fun ExercisesScreen(
     modifier: Modifier = Modifier,
+    isSearching: Boolean,
     pagedExercises: LazyPagingItems<Exercise>,
     filterStandards: List<FilterStandard> = listOf(),
     shouldShowFilterSheet: Boolean = false,
@@ -122,67 +126,88 @@ internal fun ExercisesScreen(
     onApplyFilters: () -> Unit,
     onNavigateToExerciseDetailScreen: (exerciseId: String) -> Unit,
 ) {
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .testTag(EXERCISES_EXERCISE_LIST_TEST_TAG)
-    )
-    {
-        items(items = pagedExercises) { exercise ->
-            exercise?.let {
-                ExerciseItem(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(dimensionResource(id = R.dimen.padding_medium)),
-                    exercise = exercise,
-                    onClickHandler = onNavigateToExerciseDetailScreen
+    if (isSearching) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            LoadingAnimation(
+                modifier = Modifier.testTag(
+                    EXERCISES_LOADING_ANIMATION_TEST_TAG
                 )
-            }
+            )
         }
-        Timber.d("itemCount : ${pagedExercises.itemCount}")
+    } else {
+        LazyColumn(
+            modifier = modifier
+                .fillMaxSize()
+                .testTag(EXERCISES_EXERCISE_LIST_TEST_TAG)
+        )
+        {
 
-        when (pagedExercises.loadState.append) {
-            is LoadState.NotLoading -> Unit
-            is LoadState.Loading -> {
-                Timber.d("loadState - append: ${pagedExercises.loadState.append}")
-                item {
-                    Box(
+            items(
+                count = pagedExercises.itemCount,
+                key = pagedExercises.itemKey(),
+                contentType = pagedExercises.itemContentType()
+            ) { index ->
+                val item = pagedExercises[index]
+                item?.let {
+                    ExerciseItem(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .wrapContentHeight(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        LoadingAnimation(
-                            modifier = Modifier.testTag(
-                                EXERCISES_LOADING_ANIMATION_TEST_TAG
-                            )
-                        )
-                    }
+                            .padding(dimensionResource(id = R.dimen.padding_medium)),
+                        exercise = item,
+                        onClickHandler = onNavigateToExerciseDetailScreen
+                    )
                 }
             }
-            is LoadState.Error -> TODO()
+
+            Timber.d("itemCount : ${pagedExercises.itemCount}")
+            Timber.d("loadState - append: ${pagedExercises.loadState.append}")
+            Timber.d("loadState - refresh: ${pagedExercises.loadState.refresh}")
+
+            when (pagedExercises.loadState.append) {
+                is LoadState.NotLoading -> Unit
+                is LoadState.Loading -> {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            LoadingAnimation(
+                                modifier = Modifier.testTag(
+                                    EXERCISES_LOADING_ANIMATION_TEST_TAG
+                                )
+                            )
+                        }
+                    }
+                }
+                is LoadState.Error -> TODO()
+            }
+
+            when (pagedExercises.loadState.refresh) {
+                is LoadState.NotLoading -> Unit
+                is LoadState.Loading -> {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillParentMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            LoadingAnimation(
+                                modifier = Modifier.testTag(
+                                    EXERCISES_LOADING_ANIMATION_TEST_TAG
+                                )
+                            )
+                        }
+                    }
+                }
+                is LoadState.Error -> TODO()
+            }
         }
 
-        when (pagedExercises.loadState.refresh) {
-            is LoadState.NotLoading -> Unit
-            is LoadState.Loading -> {
-                Timber.d("loadState - refresh: ${pagedExercises.loadState.refresh}")
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillParentMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        LoadingAnimation(
-                            modifier = Modifier.testTag(
-                                EXERCISES_LOADING_ANIMATION_TEST_TAG
-                            )
-                        )
-                    }
-                }
-            }
-            is LoadState.Error -> TODO()
-        }
     }
 
     if (shouldShowFilterSheet) {
