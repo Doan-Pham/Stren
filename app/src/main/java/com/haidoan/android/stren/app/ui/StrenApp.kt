@@ -19,6 +19,8 @@ import com.haidoan.android.stren.core.designsystem.component.BottomNavigationBar
 import com.haidoan.android.stren.core.designsystem.component.SearchBar
 import com.haidoan.android.stren.core.designsystem.component.StrenSmallTopAppBar
 import com.haidoan.android.stren.core.designsystem.component.TEST_TAG_TOP_BAR
+import com.haidoan.android.stren.feat.auth.AUTH_GRAH_ROUTE
+import com.haidoan.android.stren.feat.dashboard.DASHBOARD_GRAPH_ROUTE
 import timber.log.Timber
 
 val LocalSnackbarHostState =
@@ -27,12 +29,18 @@ val LocalSnackbarHostState =
 @Composable
 fun StrenApp(
     viewModel: StrenAppViewModel = hiltViewModel(),
-    appState: StrenAppState = rememberStrenAppState()
+    appState: StrenAppState = rememberStrenAppState(),
+    onAuthStateResolved: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val userId by rememberSaveable { viewModel.userId }
     val isUserSignedIn by rememberSaveable { viewModel.isUserSignedIn }
     val shouldShowOnboarding by rememberSaveable { viewModel.shouldShowOnboarding }
+    if (isUserSignedIn != null) {
+        LaunchedEffect(true) {
+            onAuthStateResolved()
+        }
+    }
 
     Timber.d("isUserSignedIn: $isUserSignedIn")
     Timber.d("appState.currentAppBarConfiguration: ${appState.currentAppBarConfiguration}")
@@ -66,13 +74,16 @@ fun StrenApp(
             StrenNavHost(
                 modifier = Modifier.padding(it),
                 navController = appState.navController,
-                isUserSignedIn = isUserSignedIn,
-                userId = userId,
-                shouldShowOnboarding = shouldShowOnboarding,
+                isUserSignedIn = isUserSignedIn ?: false,
                 appBarConfigurationChangeHandler = { newConfiguration ->
                     appState.previousAppBarConfiguration = appState.currentAppBarConfiguration
                     appState.currentAppBarConfiguration = newConfiguration
-                }
+                },
+                shouldShowOnboarding = shouldShowOnboarding,
+                userId = userId,
+                startDestination =
+                if (isUserSignedIn == true) DASHBOARD_GRAPH_ROUTE
+                else AUTH_GRAH_ROUTE
             )
         }
     }

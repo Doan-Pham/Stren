@@ -8,7 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.haidoan.android.stren.feat.auth.NAV_ROUTE_AUTH
+import com.haidoan.android.stren.feat.auth.AUTH_GRAH_ROUTE
 import com.haidoan.android.stren.feat.auth.authenticationGraph
 import com.haidoan.android.stren.feat.auth.navigateToAuthentication
 import com.haidoan.android.stren.feat.dashboard.dashboardGraph
@@ -23,10 +23,10 @@ import com.haidoan.android.stren.feat.training.trainingGraph
 fun StrenNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    isUserSignedIn: Boolean,
     userId: String,
     shouldShowOnboarding: Boolean,
-    startDestination: String = NAV_ROUTE_AUTH,
+    isUserSignedIn: Boolean,
+    startDestination: String = AUTH_GRAH_ROUTE,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {},
 ) {
     AnimatedNavHost(
@@ -71,18 +71,13 @@ fun StrenNavHost(
     }
 
     LaunchedEffect(key1 = isUserSignedIn, block = {
-        if (isUserSignedIn) {
-            if (shouldShowOnboarding) {
-                navController.navigateToOnboarding(userId) {
-                    popUpTo(0)
-                }
-            } else {
-                navController.navigate(TopLevelDestination.DASHBOARD.route) {
-                    popUpTo(0)
-                }
-            }
-        } else {
+        if (!isUserSignedIn) {
             navController.navigateToAuthentication {
+                // This removes all screens on back stack
+                popUpTo(0)
+            }
+        } else if (shouldShowOnboarding) {
+            navController.navigateToOnboarding(userId) {
                 // This removes all screens on back stack
                 popUpTo(0)
             }
