@@ -187,7 +187,7 @@ private fun BasicProfileOnboardingScreen(
             isError = height == 0F,
             errorText = "Field can't be empty"
         )
-        val isError = weight == 0f || height == 0F || age == 0L
+        val isError = displayName.isBlank() || weight == 0f || height == 0F || age == 0L
         onErrorStatusChange(isError)
     }
 }
