@@ -13,6 +13,7 @@ import com.haidoan.android.stren.core.model.MuscleGroup
 import com.haidoan.android.stren.core.repository.base.ExercisesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -33,6 +34,8 @@ internal class AddExerciseToRoutineViewModel @Inject constructor(exercisesReposi
 
     var searchBarText = mutableStateOf("")
     var shouldShowSnackBar by mutableStateOf(false)
+    private var _isSearching = MutableStateFlow(false)
+    val isSearching: StateFlow<Boolean> = _isSearching
 
     val snackBarErrorMessage = "Max 30 selected exercises at a time"
 
@@ -183,12 +186,15 @@ internal class AddExerciseToRoutineViewModel @Inject constructor(exercisesReposi
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     val exercises = _exercisesFilterStandards
+        .onEach { _isSearching.update { true } }
+        .debounce(800L)
         .flatMapLatest { filterStandards ->
             Timber.d("val exercises - filterStandards: $filterStandards")
             exercisesRepository.searchExercises(filterStandards = filterStandards)
         }
+        .onEach { _isSearching.update { false } }
         .cachedIn(viewModelScope)
 }
 
