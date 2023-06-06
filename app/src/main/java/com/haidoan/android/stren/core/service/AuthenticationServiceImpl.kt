@@ -35,6 +35,18 @@ class AuthenticationServiceImpl @Inject constructor() : AuthenticationService {
             try {
                 Timber.d("getUserAuthIdFlow() - Flow emits new value: ${it.currentUser}")
                 if (it.currentUser != null) {
+                    var isUserSigningUp = !it.currentUser!!.isEmailVerified
+
+                    // If user signs in with Facebook, their email is marked as unverified,
+                    // and isUserSigningUp will be true, and requires user to verify their email,
+                    // which is quite clunky
+                    // Ref: https://stackoverflow.com/questions/38398545/firebase-facebook-auth-email-verified-always-false
+                    if (it.currentUser!!.providerData.any
+                        { userInfo -> userInfo.providerId == "facebook.com" }
+                    ) {
+                        isUserSigningUp = false
+                    }
+
                     trySend(
                         UserAuthState(
                             user = User.undefined.copy(
@@ -43,7 +55,7 @@ class AuthenticationServiceImpl @Inject constructor() : AuthenticationService {
                                 email = it.currentUser!!.email ?: "NOT_USE_EMAIL",
                                 shouldShowOnboarding = true
                             ),
-                            isUserSigningUp = !it.currentUser!!.isEmailVerified
+                            isUserSigningUp = isUserSigningUp
                         )
                     ).isSuccess
                 } else {
