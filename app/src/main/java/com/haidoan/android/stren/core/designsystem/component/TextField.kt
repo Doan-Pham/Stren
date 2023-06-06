@@ -27,6 +27,7 @@ import java.text.DecimalFormat
 
 @Composable
 fun StrenOutlinedTextField(
+    modifier: Modifier = Modifier,
     text: String,
     onTextChange: (String) -> Unit,
     leadingIcon: (@Composable () -> Unit)? = null,
@@ -36,7 +37,7 @@ fun StrenOutlinedTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
 ) {
     OutlinedTextField(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth(),
         value = text,
         onValueChange = onTextChange,
@@ -349,7 +350,10 @@ fun ExposedDropDownMenuTextField(
 fun PasswordTextField(
     modifier: Modifier = Modifier,
     value: String,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
+    isError: Boolean = false,
+    label: String = "Password",
+    errorText: String = "",
 ) {
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     OutlinedTextField(
@@ -358,7 +362,7 @@ fun PasswordTextField(
         onValueChange = onValueChange,
         singleLine = true,
         label = {
-            Text(text = "Password")
+            Text(text = label)
         },
         leadingIcon = {
             Icon(
@@ -375,6 +379,10 @@ fun PasswordTextField(
             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                 Icon(painter = image, description)
             }
+        },
+        isError = isError,
+        supportingText = {
+            if (isError) Text(text = errorText)
         },
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation()
     )

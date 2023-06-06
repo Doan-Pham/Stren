@@ -21,13 +21,14 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.ui.LocalSnackbarHostState
+import com.haidoan.android.stren.core.designsystem.component.PasswordTextField
+import com.haidoan.android.stren.core.designsystem.component.StrenOutlinedTextField
 import com.haidoan.android.stren.core.designsystem.theme.Red40
 import com.haidoan.android.stren.core.designsystem.theme.Red50
 import kotlinx.coroutines.delay
@@ -62,7 +63,7 @@ internal fun SignupScreen(
                 snackbarHostState.showSnackbar(
                     message = "A verification email has been sent!",
                     withDismissAction = true,
-                    duration = SnackbarDuration.Short
+                    duration = SnackbarDuration.Long
                 )
                 viewModel.resetAuthState()
             }
@@ -91,103 +92,43 @@ internal fun SignupScreen(
             textAlign = TextAlign.Center
         )
 
-        OutlinedTextField(
+        StrenOutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp, bottom = 8.dp),
-            value = uiState.email,
-            onValueChange = { viewModel.onEmailChange(it) },
-            singleLine = true,
-            isError = !uiState.isEmailValid,
-            supportingText = {
-                if (!uiState.isEmailValid)
-                    Text("Invalid email")
-            },
-            label = {
-                Text(text = "Email")
-            },
+            text = uiState.email,
             leadingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_user),
                     contentDescription = "User icon"
                 )
             },
-            trailingIcon = {
-                IconButton(onClick = { viewModel.onEmailChange("") }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_cancel_circle),
-                        contentDescription = "User icon"
-                    )
-                }
-            },
+            onTextChange = { viewModel.onEmailChange(it) },
+            label = "Email",
+            isError = !uiState.isEmailValid,
+            errorText = "Invalid email",
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
 
-        OutlinedTextField(
+        PasswordTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 8.dp, bottom = 16.dp),
             value = uiState.password,
-            onValueChange = { viewModel.onPasswordChange(it) },
-            singleLine = true,
             isError = !uiState.isPasswordValid,
-            supportingText = {
-                if (!uiState.isPasswordValid)
-                    Text("Password must contain at least 8 characters")
-            },
-            label = {
-                Text(text = "Password")
-            },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_password),
-                    contentDescription = "Password icon"
-                )
-            },
-            trailingIcon = {
-                IconButton(onClick = { viewModel.onPasswordChange("") }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_cancel_circle),
-                        contentDescription = "Delete icon"
-                    )
-                }
-            },
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-        )
-        OutlinedTextField(
+            errorText = "Password must contain at least 8 characters",
+            onValueChange = { viewModel.onPasswordChange(it) })
+
+        PasswordTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 8.dp, bottom = 16.dp),
+            label = "Confirm password",
             value = uiState.repeatPassword,
-            onValueChange = { viewModel.onRepeatPasswordChange(it) },
-            singleLine = true,
             isError = !uiState.isRepeatPasswordValid,
-            supportingText = {
-                if (!uiState.isRepeatPasswordValid) {
-                    Text("Passwords don't match")
-                }
-            },
-            label = {
-                Text(text = "Confirm password")
-            },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_password),
-                    contentDescription = "Password icon"
-                )
-            },
-            trailingIcon = {
-                IconButton(onClick = { viewModel.onRepeatPasswordChange("") }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_cancel_circle),
-                        contentDescription = "Delete icon"
-                    )
-                }
-            },
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-        )
+            errorText = "Passwords don't match",
+            onValueChange = { viewModel.onRepeatPasswordChange(it) })
+
         if (uiState.isLoading) {
             CircularProgressIndicator(
                 color = MaterialTheme.colorScheme.primary,
