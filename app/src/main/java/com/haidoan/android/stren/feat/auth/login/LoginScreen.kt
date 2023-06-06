@@ -80,7 +80,7 @@ internal fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp)
+            .padding(top = 24.dp, bottom = 12.dp, start = 24.dp, end = 24.dp)
             .testTag(TEST_TAG_SCREEN_LOGIN)
     ) {
         Text(
@@ -99,6 +99,7 @@ internal fun LoginScreen(
         )
 
         StrenOutlinedTextField(
+            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
             text = uiState.email,
             leadingIcon = {
                 Icon(
@@ -119,6 +120,7 @@ internal fun LoginScreen(
                 .padding(bottom = 8.dp),
             value = uiState.password,
             onValueChange = { viewModel.onPasswordChange(it) })
+
         if (uiState.isLoading) {
             CircularProgressIndicator(
                 color = MaterialTheme.colorScheme.primary,
