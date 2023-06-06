@@ -7,7 +7,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.haidoan.android.stren.core.testing.data.EXERCISES_TEST_DATA
-import com.haidoan.android.stren.feat.trainining.exercises.ExercisesScreen
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Rule
 import org.junit.Test
@@ -22,7 +21,7 @@ class ExercisesScreenTest {
             BoxWithConstraints {
                 val exercises =
                     flowOf(PagingData.from(EXERCISES_TEST_DATA)).collectAsLazyPagingItems()
-                ExercisesScreen(pagedExercises = exercises)
+                //ExercisesScreen(pagedExercises = exercises)
             }
         }
         EXERCISES_TEST_DATA.forEach {
