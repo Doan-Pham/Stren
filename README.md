@@ -29,12 +29,12 @@
 * View information of more than 800 exercises
 * View workout history
 * Log workout
-* View foods' nutritional value
+* View nutritional values of more than 400,000 foods
+* Full-text search for exercises and foods
 * Track nutrition and calories
 * View training and nutrition progress
 * Track biometrics
 ### Work in Progress
-* Full-text search for exercises and foods
 * Record body measurements and view progress
 
 ## How To Run
@@ -49,7 +49,7 @@ $ git clone https://github.com/Doan-Pham/Stren
 
 then open the project in Android Studio. Or you can clone the project in Android Studio itself following this [guide](https://www.geeksforgeeks.org/how-to-clone-android-project-from-github-in-android-studio/).
 
-2. Get [google-services.json](https://console.firebase.google.com/u/2/project/stren-55f4e/settings/general/android:com.haidoan.android.stren) from Firebase Console -> Project Settings and add to "app" directory
+2. Get [google-services.json](https://console.firebase.google.com/u/2/project/stren-55f4e/settings/general/android:com.haidoan.android.stren) from Firebase Console -> Project Settings. Then add this file to project's "app" directory
 3. To use Sign in with Facebook/Google feature, add a "credentials.properties" file in the root project directory with the following content
 
 ```
@@ -63,8 +63,14 @@ GOOGLE_WEB_CLIENT_ID = [GOOGLE_WEB_CLIENT_ID]
 ```
 FDC_API_KEY = "[THE_API_KEY_YOU_JUST_GET]"
 ```
-6. In Android Studeio, click Build -> Rebuild Project.
-7. Click Run -> Run 'app'
+6. Congigure Firestore to use [Search Firestore with Algolia extension](https://extensions.dev/extensions/algolia/firestore-algolia-search), following these guides: [firestore-algolia-search](https://github.com/algolia/firestore-algolia-search), [Đồng bộ data từ Cloud Firestore lên Algolia thông qua Firebase Functions](https://viblo.asia/p/dong-bo-data-tu-cloud-firestore-len-algolia-thong-qua-firebase-functions-3P0lP9Om5ox) (You can skip step 3, since the extension already handles the synchronization).
+7. Add these 2 lines to "api_key.properties" file from 5.
+```
+ALGOLIA_APPLICATION_ID = "[YOUR_APPLICATION_ID]"
+ALGOLIA_SEARCH_API_KEY = "[YOUR_SEARCH_API_KEY]"
+```
+8. In Android Studio, click Build -> Rebuild Project.
+9. Click Run -> Run 'app'
 
 ## Architecture
 The application's architecture follows the MVVM pattern based on [Now In Android's](https://github.com/android/nowinandroid/tree/main) [Architecture Learning Journey](https://github.com/android/nowinandroid/blob/main/docs/ArchitectureLearningJourney.md) but without a local database and support for offline usage.
@@ -95,6 +101,7 @@ The application's conventions loosely follow the following guidelines:
 - Logging: [Timber](https://github.com/JakeWharton/timber).
 ### Other Libraries and Tools
 - UI Design: [Figma](https://www.figma.com/).
+- Full-text Search: [algolia](https://www.algolia.com/).
 - Validation: [commons-validator](https://github.com/apache/commons-validator).
 - Chart and Graph UI Components: [charts](https://github.com/tehras/charts), [vico](https://github.com/patrykandpatrick/vico).
 - Calendar UI Component: [Calendar](https://github.com/kizitonwose/Calendar).
@@ -103,7 +110,7 @@ The application's conventions loosely follow the following guidelines:
 - Licenses: [AboutLibraries](https://github.com/mikepenz/AboutLibraries).
 ### Resources
 - Exercise Dataset: [free-exercise-db](https://github.com/yuhonas/free-exercise-db).
-- Food Dataset: [FoodData Central API](https://fdc.nal.usda.gov/api-guide.html).
+- Food Dataset: [FDC API](https://fdc.nal.usda.gov/api-guide.html) (U.S. Department of Agriculture, Agricultural Research Service. FoodData Central, 2019. [fdc.nal.usda.gov](https://fdc.nal.usda.gov/)).
 - Upload Dataset to Firebase: [firestore-backup-restore](https://github.com/dalenguyen/firestore-backup-restore).
 - Icons: [Severicons](https://www.figma.com/community/file/929620430222653376/Severicons---Essential-icon-set).
 - Calories Caculation: [mohap.gov.ae](https://mohap.gov.ae/en/more/awareness-center/calories-calculation#:~:text=To%20determin%E2%80%8Be%20your,Calorie%2DCalculation%20%3D%20BMR%20x%201.375), [TDEE Calculator](https://tdeecalculator.net/result.php?s=imperial&age=30&g=female&lbs=114&in=61&act=1.2&bf=&f=1), [Calculator.net](https://www.calculator.net/calorie-calculator.html).
