@@ -59,6 +59,17 @@ enum class CoreNutrient(
         measurementUnit = "g",
         defaultRatioInEatingPlan = 1.15f
     );
+
+    companion object {
+        private val nutrientNameMap = CoreNutrient.values().associateBy(CoreNutrient::nutrientName)
+        fun fromNutrientName(nutrientName: String) =
+            if (nutrientNameMap[nutrientName] == null) {
+                throw IllegalArgumentException("CoreNutrient.fromNutrientName() - Enum doesn't have any value with \"nutrientName\" being: $nutrientName")
+            } else {
+                nutrientNameMap[nutrientName]
+            }
+
+    }
 }
 
 data class FoodNutrient(
