@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.feat.training.exercises
+package com.haidoan.android.stren.feat.training.exercises.view_exercises
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,6 +14,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -74,6 +75,12 @@ internal fun ExercisesRoute(
     val exercisesAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons =
         listOf(
+            IconButtonInfo(
+                drawableResourceId = R.drawable.ic_add,
+                description = "Menu Item Add",
+                clickHandler = {
+                    // TODO: Navigate to Create Custom exercise
+                }),
             IconButtonInfo(
                 drawableResourceId = R.drawable.ic_search,
                 description = "MenuItem-Search",
@@ -188,7 +195,17 @@ internal fun ExercisesScreen(
             }
 
             when (pagedExercises.loadState.refresh) {
-                is LoadState.NotLoading -> Unit
+                is LoadState.NotLoading -> {
+                    if (pagedExercises.itemCount == 0) {
+                        item {
+                            EmptyScreen(modifier = Modifier
+                                .clickable {
+                                    //TODO : Navigate to create custom exercise screen
+                                }
+                                .fillParentMaxSize())
+                        }
+                    }
+                }
                 is LoadState.Loading -> {
                     item {
                         Box(
@@ -224,6 +241,7 @@ internal fun ExercisesScreen(
 
 }
 
+
 @Composable
 private fun ExerciseItem(
     modifier: Modifier = Modifier,
@@ -253,6 +271,40 @@ private fun ExerciseItem(
                 text = exercise.trainedMuscleGroups.first(),
                 style = MaterialTheme.typography.labelLarge,
                 color = Gray60
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyScreen(
+    modifier: Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_whole_screen)),
+                painter = painterResource(id = R.drawable.ic_add),
+                contentDescription = "Icon edit"
+            )
+            Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_small)))
+            Text(
+                text = "No exercise found",
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = "Click to create custom exercise",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center
             )
         }
     }
