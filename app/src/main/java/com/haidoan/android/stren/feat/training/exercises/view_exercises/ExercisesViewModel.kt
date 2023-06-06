@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.feat.training.exercises
+package com.haidoan.android.stren.feat.training.exercises.view_exercises
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel

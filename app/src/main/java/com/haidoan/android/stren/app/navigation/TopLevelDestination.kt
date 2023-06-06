@@ -9,7 +9,7 @@ import com.haidoan.android.stren.feat.settings.SETTINGS_GRAPH_ROUTE
 import com.haidoan.android.stren.feat.settings.SETTINGS_SCREEN_ROUTE
 import com.haidoan.android.stren.feat.training.TRAINING_GRAPH_ROUTE
 import com.haidoan.android.stren.feat.training.TRAINING_GRAPH_STARTING_ROUTE
-import com.haidoan.android.stren.feat.training.exercises.EXERCISES_SCREEN_ROUTE
+import com.haidoan.android.stren.feat.training.exercises.view_exercises.EXERCISES_SCREEN_ROUTE
 
 /**
  * @param startingChildDestinationRoute is for the case where the top-level destination is
