@@ -20,7 +20,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -33,6 +32,8 @@ import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.LocalFacebookCallbackManager
 import com.haidoan.android.stren.app.ui.LocalSnackbarHostState
 import com.haidoan.android.stren.core.designsystem.component.OutlinedTextAndIconButton
+import com.haidoan.android.stren.core.designsystem.component.PasswordTextField
+import com.haidoan.android.stren.core.designsystem.component.StrenOutlinedTextField
 import com.haidoan.android.stren.core.designsystem.theme.Red40
 import com.haidoan.android.stren.core.designsystem.theme.Red50
 import com.stevdzasan.onetap.OneTapSignInWithGoogle
@@ -76,7 +77,6 @@ internal fun LoginScreen(
         }
     }
 
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -98,61 +98,27 @@ internal fun LoginScreen(
             textAlign = TextAlign.Center
         )
 
-        OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp, bottom = 8.dp),
-            value = uiState.email,
-            onValueChange = { viewModel.onEmailChange(it) },
-            singleLine = true,
-            label = {
-                Text(text = "Email")
-            },
+        StrenOutlinedTextField(
+            text = uiState.email,
             leadingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_user),
                     contentDescription = "User icon"
                 )
             },
-            trailingIcon = {
-                IconButton(onClick = { viewModel.onEmailChange("") }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_cancel_circle),
-                        contentDescription = "User icon"
-                    )
-                }
-            },
+            onTextChange = { viewModel.onEmailChange(it) },
+            label = "Email",
+            isError = false,
+            errorText = "",
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
 
-        OutlinedTextField(
+        PasswordTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp, bottom = 16.dp),
+                .padding(bottom = 8.dp),
             value = uiState.password,
-            onValueChange = { viewModel.onPasswordChange(it) },
-            singleLine = true,
-            label = {
-                Text(text = "Password")
-            },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_password),
-                    contentDescription = "User icon"
-                )
-            },
-            trailingIcon = {
-                IconButton(onClick = { viewModel.onPasswordChange("") }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_cancel_circle),
-                        contentDescription = "User icon"
-                    )
-                }
-            },
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-        )
-
+            onValueChange = { viewModel.onPasswordChange(it) })
         if (uiState.isLoading) {
             CircularProgressIndicator(
                 color = MaterialTheme.colorScheme.primary,
@@ -168,7 +134,7 @@ internal fun LoginScreen(
                     .fillMaxWidth()
                     .padding(vertical = dimensionResource(id = R.dimen.padding_large)),
                 shape = RoundedCornerShape(15),
-                onClick = { /*TODO: Sign in click*/
+                onClick = {
                     viewModel.onSignInClick()
                 },
                 contentPadding = PaddingValues(),
@@ -196,7 +162,6 @@ internal fun LoginScreen(
             }
         }
 
-        // TODO: Add other ways of authentication
         Text(
             modifier = Modifier
                 .fillMaxWidth()

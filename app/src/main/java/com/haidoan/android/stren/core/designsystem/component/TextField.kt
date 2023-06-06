@@ -8,12 +8,14 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -25,7 +27,13 @@ import java.text.DecimalFormat
 
 @Composable
 fun StrenOutlinedTextField(
-    text: String, onTextChange: (String) -> Unit, label: String, isError: Boolean, errorText: String
+    text: String,
+    onTextChange: (String) -> Unit,
+    leadingIcon: (@Composable () -> Unit)? = null,
+    label: String,
+    isError: Boolean,
+    errorText: String,
+    keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
 ) {
     OutlinedTextField(
         modifier = Modifier
@@ -36,6 +44,7 @@ fun StrenOutlinedTextField(
         label = {
             Text(text = label)
         },
+        leadingIcon = leadingIcon,
         trailingIcon = {
             IconButton(onClick = { onTextChange("") }) {
                 Icon(
@@ -48,7 +57,7 @@ fun StrenOutlinedTextField(
         supportingText = {
             if (isError) Text(text = errorText)
         },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+        keyboardOptions = keyboardOptions
     )
 }
 
@@ -334,4 +343,39 @@ fun ExposedDropDownMenuTextField(
             }
         }
     }
+}
+
+@Composable
+fun PasswordTextField(
+    modifier: Modifier = Modifier,
+    value: String,
+    onValueChange: (String) -> Unit
+) {
+    var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    OutlinedTextField(
+        modifier = modifier,
+        value = value,
+        onValueChange = onValueChange,
+        singleLine = true,
+        label = {
+            Text(text = "Password")
+        },
+        leadingIcon = {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_password),
+                contentDescription = "User icon"
+            )
+        },
+        trailingIcon = {
+            val image = if (passwordVisible) painterResource(id = R.drawable.ic_visibility_on)
+            else painterResource(id = R.drawable.ic_visibility_off)
+
+            val description = if (passwordVisible) "Hide password" else "Show password"
+
+            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                Icon(painter = image, description)
+            }
+        },
+        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation()
+    )
 }
