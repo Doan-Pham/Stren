@@ -7,9 +7,9 @@ import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.core.designsystem.component.TabLayout
-import com.haidoan.android.stren.feat.training.exercises.ExercisesRoute
-import com.haidoan.android.stren.feat.training.exercises.navigation.exerciseGraph
-import com.haidoan.android.stren.feat.training.exercises.navigation.navigateToExerciseDetail
+import com.haidoan.android.stren.feat.training.exercises.exerciseGraph
+import com.haidoan.android.stren.feat.training.exercises.navigateToExerciseDetail
+import com.haidoan.android.stren.feat.training.exercises.view_exercises.ExercisesRoute
 import com.haidoan.android.stren.feat.training.history.TrainingHistoryRoute
 import com.haidoan.android.stren.feat.training.history.log_workout.navigateToAddWorkoutScreen
 import com.haidoan.android.stren.feat.training.history.log_workout.navigateToAddWorkoutWithRoutine

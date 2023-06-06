@@ -32,7 +32,7 @@ import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.component.LoadingAnimation
 import com.haidoan.android.stren.core.model.Food
-import com.haidoan.android.stren.feat.training.exercises.EXERCISES_LOADING_ANIMATION_TEST_TAG
+import com.haidoan.android.stren.feat.training.exercises.view_exercises.EXERCISES_LOADING_ANIMATION_TEST_TAG
 import kotlinx.coroutines.launch
 import timber.log.Timber
 

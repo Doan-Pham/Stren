@@ -167,7 +167,7 @@ internal fun AddExerciseToRoutineScreen(
         ) {
             LoadingAnimation(
                 modifier = Modifier.testTag(
-                    com.haidoan.android.stren.feat.training.exercises.EXERCISES_LOADING_ANIMATION_TEST_TAG
+                    com.haidoan.android.stren.feat.training.exercises.view_exercises.EXERCISES_LOADING_ANIMATION_TEST_TAG
                 )
             )
         }
