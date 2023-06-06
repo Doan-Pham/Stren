@@ -23,6 +23,7 @@ internal fun SettingsRoute(
     viewModel: SettingsViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onNavigateToEditProfile: (userId: String) -> Unit,
+    onNavigateToMeasurements: (userId: String) -> Unit,
     onNavigateToAbout: () -> Unit,
 ) {
     var isAppBarConfigured by remember { mutableStateOf(false) }
@@ -36,8 +37,9 @@ internal fun SettingsRoute(
         modifier = modifier,
         uiState = uiState,
         onProfileOptionClick = onNavigateToEditProfile,
+        onMeasurementsOptionClick = onNavigateToMeasurements,
+        onAboutOptionClick = onNavigateToAbout,
         onLogoutButtonClick = viewModel::logOut,
-        onAboutOptionClick = onNavigateToAbout
     )
 }
 
@@ -47,6 +49,7 @@ private fun SettingsScreen(
     modifier: Modifier = Modifier,
     uiState: SettingsUiState,
     onProfileOptionClick: (userId: String) -> Unit,
+    onMeasurementsOptionClick: (userId: String) -> Unit,
     onAboutOptionClick: () -> Unit,
     onLogoutButtonClick: () -> Unit
 ) {
@@ -93,6 +96,16 @@ private fun SettingsScreen(
                         iconResId = R.drawable.ic_profile,
                         iconDescription = "Icon Profile",
                         text = "Profile")
+
+                    OptionItem(modifier = Modifier
+                        .clickable {
+                            onMeasurementsOptionClick(currentUser.id)
+                        }
+                        .fillMaxWidth()
+                        .padding(dimensionResource(id = R.dimen.padding_medium)),
+                        iconResId = R.drawable.ic_measurements,
+                        iconDescription = "Icon Measurements",
+                        text = "Measurements")
 
                     OptionItem(modifier = Modifier
                         .clickable {
