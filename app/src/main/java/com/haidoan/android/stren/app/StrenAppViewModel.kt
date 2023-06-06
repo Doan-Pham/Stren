@@ -13,7 +13,7 @@ import javax.inject.Inject
 class StrenAppViewModel @Inject constructor(
     handleUserCreationUseCase: HandleUserCreationUseCase
 ) : ViewModel() {
-    var isUserSignedIn = mutableStateOf(false)
+    var isUserSignedIn = mutableStateOf<Boolean?>(null)
         private set
     var userId = mutableStateOf("")
         private set

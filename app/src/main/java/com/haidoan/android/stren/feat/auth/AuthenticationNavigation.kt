@@ -8,17 +8,17 @@ import com.haidoan.android.stren.feat.auth.login.LoginScreen
 import com.haidoan.android.stren.feat.auth.signup.SIGNUP_SCREEN_ROUTE
 import com.haidoan.android.stren.feat.auth.signup.SignupScreen
 
-const val NAV_ROUTE_AUTH = "auth_graph_route"
+const val AUTH_GRAH_ROUTE = "auth_graph_route"
 
 fun NavController.navigateToAuthentication(navOptions: NavOptionsBuilder.() -> Unit = {}) {
-    this.navigate(NAV_ROUTE_AUTH, navOptions)
+    this.navigate(AUTH_GRAH_ROUTE, navOptions)
 }
 
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.authenticationGraph(
     navController: NavHostController
 ) {
-    navigation(startDestination = LOGIN_SCREEN_ROUTE, route = NAV_ROUTE_AUTH) {
+    navigation(startDestination = LOGIN_SCREEN_ROUTE, route = AUTH_GRAH_ROUTE) {
         composable(route = LOGIN_SCREEN_ROUTE) {
             LoginScreen(onSignupClick = {
                 navController.navigate(SIGNUP_SCREEN_ROUTE) {
