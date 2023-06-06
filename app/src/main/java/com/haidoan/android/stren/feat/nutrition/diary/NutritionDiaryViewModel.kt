@@ -59,9 +59,10 @@ internal class NutritionDiaryViewModel @Inject constructor(
 
             if (userId != UNDEFINED_USER_ID) {
                 combine(
-                    eatingDayRepository.getEatingDayByUserIdAndDate(userId, selectedDate),
-                    eatingDayRepository.getDatesUserTracked(userId)
-                ) { eatingDay, datesTracked ->
+                    eatingDayRepository.getEatingDayStream(userId, selectedDate),
+                    eatingDayRepository.getDatesUserTracked(userId),
+                    getUserNutrientGoalsUseCase(userId)
+                ) { eatingDay, datesTracked, nutrientGoals ->
                     currentEatingDay = eatingDay.addMeals(Meal.defaultMeals)
                     NutritionDiaryUiState.LoadComplete(
                         userId = userId,
