@@ -9,9 +9,8 @@ import com.haidoan.android.stren.core.repository.base.FoodRepository
 import com.haidoan.android.stren.feat.nutrition.diary.AddFoodToMealArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.*
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -25,6 +24,8 @@ class AddFoodToMealViewModel @Inject constructor(
 ) : ViewModel() {
     internal val navArgs: AddFoodToMealArgs = AddFoodToMealArgs(savedStateHandle)
     var searchBarText = mutableStateOf(EMPTY_FOOD_QUERY)
+    private var _isSearching = MutableStateFlow(false)
+    val isSearching: StateFlow<Boolean> = _isSearching
 
     private val foodNameToQuery = MutableStateFlow("")
 
@@ -36,8 +37,13 @@ class AddFoodToMealViewModel @Inject constructor(
         foodNameToQuery.update { name }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val pagedFoodData = foodNameToQuery.flatMapLatest {
-        foodRepository.getPagedFoodData(foodNameToQuery = it)
-    }.cachedIn(viewModelScope)
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+    val pagedFoodData = foodNameToQuery
+        .onEach { _isSearching.update { true } }
+        .debounce(800L)
+        .flatMapLatest {
+            foodRepository.getPagedFoodData(foodNameToQuery = it)
+        }
+        .onEach { _isSearching.update { false } }
+        .cachedIn(viewModelScope)
 }

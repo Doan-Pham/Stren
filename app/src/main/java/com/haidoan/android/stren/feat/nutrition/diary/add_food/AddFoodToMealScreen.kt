@@ -14,11 +14,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -30,6 +32,7 @@ import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.component.LoadingAnimation
 import com.haidoan.android.stren.core.model.Food
+import com.haidoan.android.stren.feat.training.exercises.EXERCISES_LOADING_ANIMATION_TEST_TAG
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.time.LocalDate
@@ -51,6 +54,7 @@ internal fun AddFoodToMealRoute(
     val pagedFoodData = viewModel.pagedFoodData.collectAsLazyPagingItems()
     val lazyListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val isSearching by viewModel.isSearching.collectAsStateWithLifecycle()
 
     val foodAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         title = "Add food to meal",
@@ -66,6 +70,7 @@ internal fun AddFoodToMealRoute(
                         placeholder = "Search food",
                         onTextChange = {
                             viewModel.searchBarText.value = it
+                            viewModel.searchFoodByName(it)
                         },
                         onSearchClicked = {
                             viewModel.searchFoodByName(it)
@@ -85,6 +90,7 @@ internal fun AddFoodToMealRoute(
 
     AddFoodToMealScreen(
         modifier = modifier,
+        isSearching = isSearching,
         pagedFoodData = pagedFoodData,
         onNavigateToEditFoodEntry = { foodId ->
             onNavigateToAddFoodEntry(
@@ -102,80 +108,93 @@ internal fun AddFoodToMealRoute(
 @Composable
 internal fun AddFoodToMealScreen(
     modifier: Modifier = Modifier,
+    isSearching: Boolean,
     pagedFoodData: LazyPagingItems<Food>,
     onNavigateToEditFoodEntry: (foodId: String) -> Unit,
     lazyListState: LazyListState
 ) {
-
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize(),
-        state = lazyListState
-    )
-    {
-
-        this.items(
-            count = pagedFoodData.itemCount,
-            key = pagedFoodData.itemKey(),
-            contentType = pagedFoodData.itemContentType(
-            )
-        ) { index ->
-            val food = pagedFoodData[index]
-            food?.let {
-                FoodItem(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(dimensionResource(id = R.dimen.padding_medium)),
-                    food = food,
-                    onClickHandler = onNavigateToEditFoodEntry
+    if (isSearching) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            LoadingAnimation(
+                modifier = Modifier.testTag(
+                    EXERCISES_LOADING_ANIMATION_TEST_TAG
                 )
-            }
+            )
         }
-        Timber.d("itemCount : ${pagedFoodData.itemCount}")
-        when (pagedFoodData.loadState.append) {
-            is LoadState.NotLoading -> {
-                Timber.d("loadState - append: ${pagedFoodData.loadState.append}")
-            }
-            is LoadState.Loading -> {
-                Timber.d("loadState - append: ${pagedFoodData.loadState.append}")
-                item {
-                    Box(
+    } else {
+        LazyColumn(
+            modifier = modifier
+                .fillMaxSize(),
+            state = lazyListState
+        )
+        {
+
+            this.items(
+                count = pagedFoodData.itemCount,
+                key = pagedFoodData.itemKey(),
+                contentType = pagedFoodData.itemContentType(
+                )
+            ) { index ->
+                val food = pagedFoodData[index]
+                food?.let {
+                    FoodItem(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .wrapContentHeight(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        LoadingAnimation()
-                    }
+                            .padding(dimensionResource(id = R.dimen.padding_medium)),
+                        food = food,
+                        onClickHandler = onNavigateToEditFoodEntry
+                    )
                 }
             }
-            is LoadState.Error -> TODO()
-        }
-
-        when (pagedFoodData.loadState.refresh) {
-            is LoadState.NotLoading -> {
-                if (pagedFoodData.itemCount == 0) {
+            Timber.d("itemCount : ${pagedFoodData.itemCount}")
+            when (pagedFoodData.loadState.append) {
+                is LoadState.NotLoading -> {
+                    Timber.d("loadState - append: ${pagedFoodData.loadState.append}")
+                }
+                is LoadState.Loading -> {
+                    Timber.d("loadState - append: ${pagedFoodData.loadState.append}")
                     item {
-                        EmptyScreen(modifier = Modifier.fillParentMaxSize())
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            LoadingAnimation()
+                        }
                     }
                 }
-                Timber.d("loadState - refresh: ${pagedFoodData.loadState.refresh}")
+                is LoadState.Error -> TODO()
             }
-            is LoadState.Loading -> {
-                Timber.d("loadState - refresh: ${pagedFoodData.loadState.refresh}")
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillParentMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        LoadingAnimation()
-                    }
-                }
-            }
-            is LoadState.Error -> TODO()
-        }
 
+            when (pagedFoodData.loadState.refresh) {
+                is LoadState.NotLoading -> {
+                    if (pagedFoodData.itemCount == 0) {
+                        item {
+                            EmptyScreen(modifier = Modifier.fillParentMaxSize())
+                        }
+                    }
+                    Timber.d("loadState - refresh: ${pagedFoodData.loadState.refresh}")
+                }
+                is LoadState.Loading -> {
+                    Timber.d("loadState - refresh: ${pagedFoodData.loadState.refresh}")
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillParentMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            LoadingAnimation()
+                        }
+                    }
+                }
+                is LoadState.Error -> TODO()
+            }
+
+        }
     }
 }
 
