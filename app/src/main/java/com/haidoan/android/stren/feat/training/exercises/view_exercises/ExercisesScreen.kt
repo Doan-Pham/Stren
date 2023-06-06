@@ -42,6 +42,7 @@ internal fun ExercisesRoute(
     viewModel: ExercisesViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {},
     onNavigateToExerciseDetailScreen: (exerciseId: String) -> Unit,
+    onNavigateToCreateExerciseScreen: (exerciseName: String) -> Unit,
 ) {
     var shouldShowFilterSheet by rememberSaveable { mutableStateOf(false) }
     val pagedExercises = viewModel.exercises.collectAsLazyPagingItems()
@@ -79,7 +80,7 @@ internal fun ExercisesRoute(
                 drawableResourceId = R.drawable.ic_add,
                 description = "Menu Item Add",
                 clickHandler = {
-                    // TODO: Navigate to Create Custom exercise
+                    onNavigateToCreateExerciseScreen(viewModel.searchBarText.value)
                 }),
             IconButtonInfo(
                 drawableResourceId = R.drawable.ic_search,
@@ -116,7 +117,10 @@ internal fun ExercisesRoute(
         filterStandards = listOf(exerciseCategoryFilter, muscleGroupFilter),
         onResetFilters = viewModel::resetFilters,
         onApplyFilters = viewModel::applyFilters,
-        onNavigateToExerciseDetailScreen = onNavigateToExerciseDetailScreen
+        onNavigateToExerciseDetailScreen = onNavigateToExerciseDetailScreen,
+        onEmptyScreenClick = {
+            onNavigateToCreateExerciseScreen(viewModel.searchBarText.value)
+        }
     )
 }
 
@@ -132,6 +136,7 @@ internal fun ExercisesScreen(
     onResetFilters: () -> Unit,
     onApplyFilters: () -> Unit,
     onNavigateToExerciseDetailScreen: (exerciseId: String) -> Unit,
+    onEmptyScreenClick: () -> Unit,
 ) {
     if (isSearching) {
         Box(
@@ -200,7 +205,7 @@ internal fun ExercisesScreen(
                         item {
                             EmptyScreen(modifier = Modifier
                                 .clickable {
-                                    //TODO : Navigate to create custom exercise screen
+                                    onEmptyScreenClick()
                                 }
                                 .fillParentMaxSize())
                         }
