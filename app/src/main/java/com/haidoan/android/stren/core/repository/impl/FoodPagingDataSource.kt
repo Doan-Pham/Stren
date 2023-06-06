@@ -53,6 +53,10 @@ class FoodPagingDataSource(
         } catch (e: HttpException) {
             Timber.e("Load - Exception: $e ")
             return LoadResult.Error(e)
+        } catch (e: Exception) {
+            Timber.e("Load - Exception: $e, ${e.printStackTrace()} ")
+            return LoadResult.Error(e)
         }
+
     }
 }

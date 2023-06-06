@@ -155,7 +155,7 @@ fun NetworkFoodNutrient.asExternalModel(): FoodNutrient {
     df.roundingMode = RoundingMode.DOWN
     if (CoreNutrient.values().any { it.nutrientName == nutrientName }) {
         return FoodNutrient(
-            id = CoreNutrient.valueOf(nutrientName).id,
+            id = CoreNutrient.fromNutrientName(nutrientName)?.id ?: "Undefined FoodNutrient ID",
             nutrientName = nutrientName,
             amount =
             df.format(amount).toFloatOrNull() ?: 0f,
