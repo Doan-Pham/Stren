@@ -8,6 +8,7 @@ import com.google.accompanist.navigation.animation.navigation
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.core.designsystem.component.TabLayout
 import com.haidoan.android.stren.feat.training.exercises.exerciseGraph
+import com.haidoan.android.stren.feat.training.exercises.navigateToCreateExercise
 import com.haidoan.android.stren.feat.training.exercises.navigateToExerciseDetail
 import com.haidoan.android.stren.feat.training.exercises.view_exercises.ExercisesRoute
 import com.haidoan.android.stren.feat.training.history.TrainingHistoryRoute
@@ -40,7 +41,11 @@ fun NavGraphBuilder.trainingGraph(
                             },
                             onNavigateToExerciseDetailScreen = {
                                 navController.navigateToExerciseDetail(it)
+                            },
+                            onNavigateToCreateExerciseScreen = {
+                                navController.navigateToCreateExercise(it)
                             })
+
                     },
                     Pair("History") {
                         TrainingHistoryRoute(
