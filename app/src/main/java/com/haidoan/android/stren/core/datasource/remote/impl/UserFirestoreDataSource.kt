@@ -22,12 +22,16 @@ import javax.inject.Inject
 
 private const val USER_COLLECTION_PATH = "User"
 private const val BIOMETRICS_RECORD_COLLECTION_PATH = "BiometricsRecord"
+private const val CUSTOM_EXERCISE_COLLECTION_PATH = "CustomExercise"
 
 class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
     private val db = FirebaseFirestore.getInstance()
     private val userCollectionReference = db.collection(USER_COLLECTION_PATH)
     private fun biometricsRecordsCollectionRef(userId: String) =
         db.collection("$USER_COLLECTION_PATH/$userId/$BIOMETRICS_RECORD_COLLECTION_PATH")
+
+    private fun customExerciseCollectionRef(userId: String) =
+        db.collection("$USER_COLLECTION_PATH/$userId/$CUSTOM_EXERCISE_COLLECTION_PATH")
 
     override fun getUserStream(userId: String): Flow<User> =
         combine(
@@ -166,6 +170,10 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         userCollectionReference.document(userId).update("shouldShowOnboarding", false).await()
     }
 
+    override suspend fun createCustomExercise(userId: String, exercise: Exercise) {
+        customExerciseCollectionRef(userId).add(exercise.toFirestoreObject())
+    }
+
 
     private fun BiometricsRecord.toFirestoreObject(): Map<String, Any> {
         val result = mutableMapOf<String, Any>()
@@ -176,6 +184,18 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         result["value"] = this.value
 
         Timber.d("BiometricsRecord.toFirestoreObject() - result: $result")
+        return result
+    }
+
+    private fun Exercise.toFirestoreObject(): Map<String, Any> {
+        val result = mutableMapOf<String, Any>()
+        result["instructions"] = this.instructions
+        result["images"] = this.imageUrls
+        result["name"] = this.name
+        result["category"] = this.belongedCategory
+        result["primaryMuscles"] = this.trainedMuscleGroups
+
+        Timber.d("Exercise.toFirestoreObject() - result: $result")
         return result
     }
 
