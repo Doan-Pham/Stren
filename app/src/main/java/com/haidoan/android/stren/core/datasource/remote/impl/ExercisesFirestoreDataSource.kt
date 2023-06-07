@@ -1,9 +1,13 @@
 package com.haidoan.android.stren.core.datasource.remote.impl
 
-import com.google.firebase.firestore.*
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.FieldPath
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.haidoan.android.stren.core.datasource.remote.base.ExercisesRemoteDataSource
+import com.haidoan.android.stren.core.datasource.remote.model.toExercise
+import com.haidoan.android.stren.core.datasource.remote.model.toFirestoreObject
 import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.model.ExerciseQueryParameters
@@ -11,7 +15,6 @@ import com.haidoan.android.stren.core.model.MuscleGroup
 import com.haidoan.android.stren.core.repository.impl.ExerciseExtraFilter
 import com.haidoan.android.stren.core.repository.impl.QueryWrapper
 import kotlinx.coroutines.tasks.await
-import timber.log.Timber
 import javax.inject.Inject
 
 const val EXERCISE_COLLECTION_PATH = "Exercise"
@@ -120,16 +123,9 @@ class ExercisesFirestoreDataSource @Inject constructor() : ExercisesRemoteDataSo
             FieldPath.documentId(), exerciseIds
         ).get().await().mapNotNull { document -> document.toExercise() }
 
-    private fun DocumentSnapshot.toExercise(): Exercise {
-        Timber.d("document: $this")
-        @Suppress("UNCHECKED_CAST")
-        return Exercise(
-            this.id,
-            this.getString("name") ?: "",
-            this.get("instructions") as List<String>,
-            this.get("images") as List<String>,
-            this.getString("category") ?: "",
-            this.get("primaryMuscles") as List<String>
+    override suspend fun createCustomExercise(userId: String, exercise: Exercise) {
+        exerciseCollection.add(
+            exercise.copy(userId = userId, isCustomExercise = true).toFirestoreObject()
         )
     }
 }

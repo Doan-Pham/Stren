@@ -1,6 +1,9 @@
 package com.haidoan.android.stren.core.datasource.remote.base
 
-import com.haidoan.android.stren.core.model.*
+import com.haidoan.android.stren.core.model.BiometricsRecord
+import com.haidoan.android.stren.core.model.Goal
+import com.haidoan.android.stren.core.model.TrackedCategory
+import com.haidoan.android.stren.core.model.User
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -32,6 +35,4 @@ interface UserRemoteDataSource {
 
     suspend fun stopTrackingCategory(userId: String, dataSourceId: String)
     suspend fun completeOnboarding(userId: String)
-    suspend fun createCustomExercise(userId: String, exercise: Exercise)
-
 }

@@ -22,7 +22,10 @@ data class Exercise(
 
     @SerialName("primaryMuscles")
     @PropertyName("primaryMuscles")
-    val trainedMuscleGroups: List<String> = listOf()
+    val trainedMuscleGroups: List<String> = listOf(),
+    @field:JvmField
+    val isCustomExercise: Boolean = false,
+    val userId: String = "",
 )
 
 data class ExerciseQueryParameters(

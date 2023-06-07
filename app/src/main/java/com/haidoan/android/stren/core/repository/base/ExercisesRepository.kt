@@ -27,4 +27,5 @@ interface ExercisesRepository {
     fun getExerciseById(exerciseId: String): Flow<Exercise>
 
     suspend fun getExercisesByIds(exerciseIds: List<String>): List<Exercise>
+    suspend fun createCustomExercise(userId: String, exercise: Exercise)
 }

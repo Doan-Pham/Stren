@@ -30,9 +30,6 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
     private fun biometricsRecordsCollectionRef(userId: String) =
         db.collection("$USER_COLLECTION_PATH/$userId/$BIOMETRICS_RECORD_COLLECTION_PATH")
 
-    private fun customExerciseCollectionRef(userId: String) =
-        db.collection("$USER_COLLECTION_PATH/$userId/$CUSTOM_EXERCISE_COLLECTION_PATH")
-
     override fun getUserStream(userId: String): Flow<User> =
         combine(
             userCollectionReference.document(userId).snapshots(),
@@ -170,11 +167,6 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         userCollectionReference.document(userId).update("shouldShowOnboarding", false).await()
     }
 
-    override suspend fun createCustomExercise(userId: String, exercise: Exercise) {
-        customExerciseCollectionRef(userId).add(exercise.toFirestoreObject())
-    }
-
-
     private fun BiometricsRecord.toFirestoreObject(): Map<String, Any> {
         val result = mutableMapOf<String, Any>()
         result["biometricsId"] = this.biometricsId
@@ -184,18 +176,6 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         result["value"] = this.value
 
         Timber.d("BiometricsRecord.toFirestoreObject() - result: $result")
-        return result
-    }
-
-    private fun Exercise.toFirestoreObject(): Map<String, Any> {
-        val result = mutableMapOf<String, Any>()
-        result["instructions"] = this.instructions
-        result["images"] = this.imageUrls
-        result["name"] = this.name
-        result["category"] = this.belongedCategory
-        result["primaryMuscles"] = this.trainedMuscleGroups
-
-        Timber.d("Exercise.toFirestoreObject() - result: $result")
         return result
     }
 
