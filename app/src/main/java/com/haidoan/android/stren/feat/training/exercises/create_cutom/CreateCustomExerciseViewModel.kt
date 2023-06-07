@@ -11,7 +11,6 @@ import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.model.MuscleGroup
 import com.haidoan.android.stren.core.repository.base.ExercisesRepository
-import com.haidoan.android.stren.core.repository.base.UserRepository
 import com.haidoan.android.stren.core.service.AuthenticationService
 import com.haidoan.android.stren.core.service.StorageService
 import com.haidoan.android.stren.feat.training.exercises.CreateExerciseArgs
@@ -31,9 +30,8 @@ internal const val UNDEFINED_EXERCISE_NAME_NAV_ARG = "UNDEFINED_EXERCISE_NAME_NA
 @HiltViewModel
 internal class CreateCustomExerciseViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    exercisesRepository: ExercisesRepository,
     authenticationService: AuthenticationService,
-    private val userRepository: UserRepository,
+    private val exercisesRepository: ExercisesRepository,
     private val storageService: StorageService
 ) : ViewModel() {
     private var userId: String = ""
@@ -129,7 +127,7 @@ internal class CreateCustomExerciseViewModel @Inject constructor(
                         .filter { it.id in uiState.value.trainedMusclesIds }
                         .map { it.name }
                 )
-                userRepository.createCustomExercise(userId = userId, exerciseToAdd)
+                exercisesRepository.createCustomExercise(userId = userId, exerciseToAdd)
 
                 isCreateExerciseComplete = true
             }

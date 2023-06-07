@@ -30,4 +30,5 @@ interface ExercisesRemoteDataSource {
     suspend fun getExerciseById(exerciseId: String): Exercise
 
     suspend fun getExercisesByIds(exerciseIds: List<String>): List<Exercise>
+    suspend fun createCustomExercise(userId: String, exercise: Exercise)
 }
