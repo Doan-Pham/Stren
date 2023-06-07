@@ -21,6 +21,9 @@ object DateUtils {
         )
     }
 
+    fun getCurrentTimeEpochSecond(): Long =
+        LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(DEFAULT_TIMEZONE_OFFSET_IN_HOURS))
+
     private fun getMondayFrom(date: LocalDate): LocalDate =
         date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 
