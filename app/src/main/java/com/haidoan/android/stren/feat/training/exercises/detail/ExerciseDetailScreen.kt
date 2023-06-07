@@ -111,7 +111,7 @@ internal fun ExerciseDetailScreen(
             style = MaterialTheme.typography.titleMedium
         )
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_small)))
-        exercise.instruction.forEachIndexed { index, instructionStep ->
+        exercise.instructions.forEachIndexed { index, instructionStep ->
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
