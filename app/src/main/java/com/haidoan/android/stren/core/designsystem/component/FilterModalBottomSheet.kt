@@ -86,7 +86,7 @@ fun FilterModalBottomSheet(
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-private fun FilterRegion(modifier: Modifier = Modifier, filterStandard: FilterStandard) {
+fun FilterRegion(modifier: Modifier = Modifier, filterStandard: FilterStandard) {
     Column(
         modifier = modifier
             .fillMaxWidth()
