@@ -9,6 +9,7 @@ import androidx.navigation.*
 import com.google.accompanist.navigation.animation.composable
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.core.utils.DateUtils
+import com.haidoan.android.stren.feat.training.exercises.navigateToCreateExercise
 import com.haidoan.android.stren.feat.training.routines.add_edit.*
 import timber.log.Timber
 import java.time.LocalDate
@@ -152,6 +153,9 @@ internal fun NavGraphBuilder.workoutGraph(
                     SELECTED_EXERCISES_IDS_SAVED_STATE_KEY, listOf(selectedExercisesIds).flatten()
                 )
                 navController.popBackStack()
+            },
+            onNavigateToCreateExerciseScreen = {
+                navController.navigateToCreateExercise(it)
             })
     }
 }

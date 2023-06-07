@@ -16,6 +16,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -45,6 +46,7 @@ internal fun AddExerciseToRoutineRoute(
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {},
     onBackToPreviousScreen: () -> Unit,
     onAddExercisesToRoutine: (selectedExercisesIds: List<String>) -> Unit,
+    onNavigateToCreateExerciseScreen: (exerciseName: String) -> Unit,
 ) {
     var shouldShowFilterSheet by rememberSaveable { mutableStateOf(false) }
     val snackbarHostState = LocalSnackbarHostState.current
@@ -97,7 +99,7 @@ internal fun AddExerciseToRoutineRoute(
                 drawableResourceId = R.drawable.ic_add,
                 description = "Menu Item Add",
                 clickHandler = {
-                    //TODO: Add custom exercise
+                    onNavigateToCreateExerciseScreen(viewModel.searchBarText.value)
                 }),
             IconButtonInfo(
                 drawableResourceId = R.drawable.ic_search,
@@ -128,7 +130,7 @@ internal fun AddExerciseToRoutineRoute(
     AddExerciseToRoutineScreen(
         modifier = modifier,
         isSearching = isSearching,
-        pagedAddExerciseToRoutine = pagedAddExerciseToRoutine,
+        pagedExercises = pagedAddExerciseToRoutine,
         shouldShowFilterSheet = shouldShowFilterSheet,
         onHideFilterSheet = { shouldShowFilterSheet = false },
         filterStandards = listOf(exerciseCategoryFilter, muscleGroupFilter),
@@ -136,7 +138,10 @@ internal fun AddExerciseToRoutineRoute(
         onApplyFilters = viewModel::applyFilters,
         selectedExercisesIds = viewModel.selectedExercisesIds,
         onSelectExercise = viewModel::toggleExerciseSelection,
-        onButtonAddExerciseClick = { onAddExercisesToRoutine(viewModel.selectedExercisesIds.toList()) }
+        onButtonAddExerciseClick = { onAddExercisesToRoutine(viewModel.selectedExercisesIds.toList()) },
+        onEmptyScreenClick = {
+            onNavigateToCreateExerciseScreen(viewModel.searchBarText.value)
+        }
     )
 }
 
@@ -150,7 +155,7 @@ internal fun AddExerciseToRoutineRoute(
 internal fun AddExerciseToRoutineScreen(
     modifier: Modifier = Modifier,
     isSearching: Boolean,
-    pagedAddExerciseToRoutine: LazyPagingItems<Exercise>,
+    pagedExercises: LazyPagingItems<Exercise>,
     selectedExercisesIds: List<String>,
     filterStandards: List<FilterStandard> = listOf(),
     shouldShowFilterSheet: Boolean = false,
@@ -158,7 +163,8 @@ internal fun AddExerciseToRoutineScreen(
     onResetFilters: () -> Unit,
     onApplyFilters: () -> Unit,
     onSelectExercise: (exerciseId: String) -> Unit,
-    onButtonAddExerciseClick: () -> Unit
+    onButtonAddExerciseClick: () -> Unit,
+    onEmptyScreenClick: () -> Unit,
 ) {
     if (isSearching) {
         Box(
@@ -180,12 +186,12 @@ internal fun AddExerciseToRoutineScreen(
             )
             {
                 items(
-                    count = pagedAddExerciseToRoutine.itemCount,
-                    key = pagedAddExerciseToRoutine.itemKey(),
-                    contentType = pagedAddExerciseToRoutine.itemContentType(
+                    count = pagedExercises.itemCount,
+                    key = pagedExercises.itemKey(),
+                    contentType = pagedExercises.itemContentType(
                     )
                 ) { index ->
-                    val item = pagedAddExerciseToRoutine[index]
+                    val item = pagedExercises[index]
                     item?.let {
                         ExerciseItem(
                             exercise = item,
@@ -194,12 +200,12 @@ internal fun AddExerciseToRoutineScreen(
                         )
                     }
                 }
-                Timber.d("itemCount : ${pagedAddExerciseToRoutine.itemCount}")
+                Timber.d("itemCount : ${pagedExercises.itemCount}")
 
-                when (pagedAddExerciseToRoutine.loadState.append) {
+                when (pagedExercises.loadState.append) {
                     is LoadState.NotLoading -> Unit
                     is LoadState.Loading -> {
-                        Timber.d("loadState - append: ${pagedAddExerciseToRoutine.loadState.append}")
+                        Timber.d("loadState - append: ${pagedExercises.loadState.append}")
                         item {
                             Box(
                                 modifier = Modifier
@@ -218,10 +224,21 @@ internal fun AddExerciseToRoutineScreen(
                     is LoadState.Error -> TODO()
                 }
 
-                when (pagedAddExerciseToRoutine.loadState.refresh) {
-                    is LoadState.NotLoading -> Unit
+                when (pagedExercises.loadState.refresh) {
+                    is LoadState.NotLoading -> {
+                        if (pagedExercises.itemCount == 0) {
+                            item {
+                                EmptyScreen(
+                                    modifier = Modifier
+                                        .clickable {
+                                            onEmptyScreenClick()
+                                        }
+                                        .fillParentMaxSize())
+                            }
+                        }
+                    }
                     is LoadState.Loading -> {
-                        Timber.d("loadState - refresh: ${pagedAddExerciseToRoutine.loadState.refresh}")
+                        Timber.d("loadState - refresh: ${pagedExercises.loadState.refresh}")
                         item {
                             Box(
                                 modifier = Modifier
@@ -301,6 +318,40 @@ private fun ExerciseItem(
                 text = exercise.trainedMuscleGroups.first(),
                 style = MaterialTheme.typography.labelLarge,
                 color = Gray60
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyScreen(
+    modifier: Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_whole_screen)),
+                painter = painterResource(id = R.drawable.ic_add),
+                contentDescription = "Icon edit"
+            )
+            Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_small)))
+            Text(
+                text = "No exercise found",
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = "Click to create custom exercise",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center
             )
         }
     }

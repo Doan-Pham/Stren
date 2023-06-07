@@ -364,12 +364,12 @@ private fun EmptyScreen(
                 onClickHandler = onLogWorkoutButtonClick,
                 textStyle = MaterialTheme.typography.bodyMedium
             )
-            StrenTextButton(
-                modifier = Modifier.fillMaxWidth(), text = "Copy previous workout",
-                textStyle = MaterialTheme.typography.bodyMedium
-            ) {
-                /*TODO*/
-            }
+//            StrenTextButton(
+//                modifier = Modifier.fillMaxWidth(), text = "Copy previous workout",
+//                textStyle = MaterialTheme.typography.bodyMedium
+//            ) {
+//                /*TODO*/
+//            }
         }
     }
 }
