@@ -81,4 +81,9 @@ class ExercisesRepositoryImpl @Inject constructor(
     override suspend fun getExercisesByIds(exerciseIds: List<String>): List<Exercise> =
         dataSource.getExercisesByIds(exerciseIds)
 
+    override suspend fun createCustomExercise(userId: String, exercise: Exercise) = try {
+        dataSource.createCustomExercise(userId, exercise)
+    } catch (ex: Exception) {
+        Timber.e("createCustomExercise() - Exception: $ex, ${ex.printStackTrace()}")
+    }
 }
