@@ -1,5 +1,8 @@
 package com.haidoan.android.stren.feat.training.exercises.create_cutom
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,23 +11,28 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
+import com.haidoan.android.stren.app.ui.LocalSnackbarHostState
 import com.haidoan.android.stren.core.designsystem.component.*
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.model.MuscleGroup
+import kotlinx.coroutines.launch
 
 internal const val CREATE_EXERCISE_SCREEN_ROUTE = "CREATE_EXERCISE_SCREEN_ROUTE"
 internal const val EXERCISE_NAME_NAV_ARG = "EXERCISE_NAME_NAV_ARG"
@@ -36,8 +44,26 @@ internal fun CreateCustomExerciseRoute(
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onBackToPreviousScreen: () -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = LocalSnackbarHostState.current
+
+    if (viewModel.isCreateExerciseComplete) {
+        LaunchedEffect(true) {
+            coroutineScope.launch {
+                onBackToPreviousScreen()
+                snackbarHostState.showSnackbar(
+                    message = "Custom exercise created!",
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Short
+                )
+            }
+        }
+    }
     val exerciseCategories by viewModel.exerciseCategories.collectAsStateWithLifecycle()
     val muscleGroups by viewModel.muscleGroups.collectAsStateWithLifecycle()
+    var isError by remember {
+        mutableStateOf(false)
+    }
 
     var isAppBarConfigured by remember { mutableStateOf(false) }
     if (!isAppBarConfigured) {
@@ -49,8 +75,17 @@ internal fun CreateCustomExerciseRoute(
                     drawableResourceId = R.drawable.ic_save,
                     description = "Menu Item Save",
                     clickHandler = {
-                        //TODO: Save
-                        onBackToPreviousScreen()
+                        if (isError) {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "Please fill out exercise name and choose at least 1 trained primary muscle group",
+                                    withDismissAction = true,
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        } else {
+                            viewModel.createCustomExercise()
+                        }
                     })
             )
         )
@@ -60,25 +95,33 @@ internal fun CreateCustomExerciseRoute(
 
     CreateCustomExerciseScreen(
         modifier = modifier,
+        isLoading = viewModel.isLoading,
         uiState = viewModel.uiState.value,
         muscleGroups = muscleGroups,
         exerciseCategories = exerciseCategories,
         onUiStateChange = viewModel::modifyUiState,
-        onTogglePrimaryMuscleGroup = viewModel::togglePrimaryMuscleGroupSelection,
-        onToggleSecondaryMuscleGroup = viewModel::toggleSecondaryMuscleGroupSelection
+        onTogglePrimaryMuscleGroup = viewModel::toggleMuscleGroupSelection,
+        onErrorStatusChange = { isError = it },
     )
 }
 
 @Composable
 private fun CreateCustomExerciseScreen(
     modifier: Modifier,
+    isLoading: Boolean,
     uiState: CreateCustomExerciseUiState,
     exerciseCategories: List<ExerciseCategory>,
     muscleGroups: List<MuscleGroup>,
     onUiStateChange: (CreateCustomExerciseUiState) -> Unit,
     onTogglePrimaryMuscleGroup: (muscleGroupId: String) -> Unit,
-    onToggleSecondaryMuscleGroup: (muscleGroupId: String) -> Unit
+    onErrorStatusChange: (Boolean) -> Unit,
 ) {
+    if (isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            LoadingAnimation()
+        }
+        return
+    }
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
@@ -88,6 +131,22 @@ private fun CreateCustomExerciseScreen(
         Row(
             modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            val startPhotoPickerLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.PickVisualMedia(),
+                onResult = { uri ->
+                    if (uri != null) {
+                        onUiStateChange(uiState.copy(startImage = uri))
+                    }
+                }
+            )
+            val endPhotoPickerLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.PickVisualMedia(),
+                onResult = { uri ->
+                    if (uri != null) {
+                        onUiStateChange(uiState.copy(endImage = uri))
+                    }
+                }
+            )
             Column(
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -96,10 +155,31 @@ private fun CreateCustomExerciseScreen(
                     text = "Start",
                     style = MaterialTheme.typography.titleMedium
                 )
-                AddImageButton(modifier = Modifier.clickable {
-                    // TODO
-                })
+                if (uiState.startImage == null) {
+                    AddImageButton(modifier = Modifier.clickable {
+                        startPhotoPickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    })
+
+                } else {
+                    AsyncImage(
+                        model = uiState.startImage,
+                        modifier = Modifier
+                            .clickable {
+                                startPhotoPickerLauncher.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                )
+                            }
+                            .size(100.dp),
+                        placeholder = painterResource(id = R.drawable.ic_app_logo_no_padding),
+                        error = painterResource(id = R.drawable.ic_app_logo_no_padding),
+                        contentDescription = "An exercise image",
+                        contentScale = ContentScale.Fit
+                    )
+                }
             }
+
             Column(
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -108,34 +188,30 @@ private fun CreateCustomExerciseScreen(
                     text = "Finish",
                     style = MaterialTheme.typography.titleMedium
                 )
-                AddImageButton(modifier = Modifier.clickable {
-                    // TODO
-                })
+
+                if (uiState.endImage == null) {
+                    AddImageButton(modifier = Modifier.clickable {
+                        endPhotoPickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    })
+                } else {
+                    AsyncImage(
+                        model = uiState.endImage,
+                        modifier = Modifier
+                            .clickable {
+                                endPhotoPickerLauncher.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                )
+                            }
+                            .size(100.dp),
+                        placeholder = painterResource(id = R.drawable.ic_app_logo_no_padding),
+                        error = painterResource(id = R.drawable.ic_app_logo_no_padding),
+                        contentDescription = "An exercise image",
+                        contentScale = ContentScale.Fit
+                    )
+                }
             }
-//            AsyncImage(
-//                model = exercise.imageUrls.firstOrNull(),
-//                modifier = Modifier
-//                    .weight(1f)
-//                    .clip(
-//                        RoundedCornerShape(6.dp)
-//                    ),
-//                placeholder = painterResource(id = R.drawable.ic_app_logo_no_padding),
-//                error = painterResource(id = R.drawable.ic_app_logo_no_padding),
-//                contentDescription = "An exercise image",
-//                contentScale = ContentScale.Fit
-//            )
-//            AsyncImage(
-//                model = exercise.imageUrls.getOrNull(1),
-//                modifier = Modifier
-//                    .weight(1f)
-//                    .clip(
-//                        RoundedCornerShape(6.dp)
-//                    ),
-//                placeholder = painterResource(id = R.drawable.ic_app_logo_no_padding),
-//                error = painterResource(id = R.drawable.ic_app_logo_no_padding),
-//                contentDescription = "An exercise image",
-//                contentScale = ContentScale.Fit
-//            )
         }
 
         Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
@@ -148,6 +224,21 @@ private fun CreateCustomExerciseScreen(
             label = "Exercise name",
             isError = uiState.exerciseName.isBlank(),
             errorText = "Name can't be empty",
+        )
+
+        StrenOutlinedTextField(
+            modifier = Modifier
+                .padding(top = 8.dp, bottom = 8.dp)
+                .height(200.dp),
+            text = uiState.instruction,
+            onTextChange = {
+                onUiStateChange(uiState.copy(instruction = it))
+            },
+            trailingIcon = null,
+            singleLine = false,
+            label = "Instructions",
+            isError = false,
+            errorText = "",
         )
 
         ExposedDropDownMenuTextField(
@@ -167,50 +258,31 @@ private fun CreateCustomExerciseScreen(
             }
         )
 
-        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
-        Text(
-            text = "Trained muscles",
-            style = MaterialTheme.typography.titleMedium
-        )
-
+        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_extra_large)))
         if (muscleGroups.isEmpty()) {
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 LoadingAnimation()
             }
         } else {
             val primaryMuscleGroupFilter = FilterStandard(
-                standardName = "Primary trained muscles",
+                standardName = "Trained Muscle Groups",
                 filterLabels = muscleGroups.map {
                     FilterLabel(
                         id = it.id,
                         name = it.name,
-                        isSelected = it.id in uiState.primaryTrainedMusclesIds
+                        isSelected = it.id in uiState.trainedMusclesIds
                     )
                 },
                 onLabelSelected = {
-                    // TODO
                     onTogglePrimaryMuscleGroup(it.id)
                 },
             )
             FilterRegion(filterStandard = primaryMuscleGroupFilter)
-
-            val secondaryMuscleGroupFilter = FilterStandard(
-                standardName = "Secondary trained muscles",
-                filterLabels = muscleGroups.map {
-                    FilterLabel(
-                        id = it.id,
-                        name = it.name,
-                        isSelected = it.id in uiState.secondaryTrainedMusclesIds
-                    )
-                },
-                onLabelSelected = {
-                    // TODO
-                    onToggleSecondaryMuscleGroup(it.id)
-                },
-            )
-            FilterRegion(filterStandard = secondaryMuscleGroupFilter)
         }
     }
+    val isError =
+        uiState.exerciseName.isBlank() || uiState.trainedMusclesIds.isEmpty()
+    onErrorStatusChange(isError)
 }
 
 @Composable

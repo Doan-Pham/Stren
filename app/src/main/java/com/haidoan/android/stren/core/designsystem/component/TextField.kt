@@ -19,6 +19,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.core.designsystem.theme.Gray95
 import com.haidoan.android.stren.core.utils.ValidationUtils
@@ -32,7 +33,16 @@ fun StrenOutlinedTextField(
     onTextChange: (String) -> Unit,
     leadingIcon: (@Composable () -> Unit)? = null,
     label: String,
+    trailingIcon: (@Composable () -> Unit)? = {
+        IconButton(onClick = { onTextChange("") }) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_cancel_circle),
+                contentDescription = "Cancel icon"
+            )
+        }
+    },
     isError: Boolean,
+    singleLine: Boolean = true,
     errorText: String,
     keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
 ) {
@@ -41,19 +51,13 @@ fun StrenOutlinedTextField(
             .fillMaxWidth(),
         value = text,
         onValueChange = onTextChange,
-        singleLine = true,
+        singleLine = singleLine,
+        textStyle = LocalTextStyle.current.copy(lineHeight = 20.sp),
         label = {
             Text(text = label)
         },
         leadingIcon = leadingIcon,
-        trailingIcon = {
-            IconButton(onClick = { onTextChange("") }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_cancel_circle),
-                    contentDescription = "Cancel icon"
-                )
-            }
-        },
+        trailingIcon = trailingIcon,
         isError = isError,
         supportingText = {
             if (isError) Text(text = errorText)
