@@ -17,7 +17,7 @@ data class Food(
         val defaultCoreNutrients = CoreNutrient.values().map {
             FoodNutrient(
                 id = it.id,
-                nutrientName = it.name,
+                nutrientName = it.nutrientName,
                 amount = 0f,
                 unitName = it.measurementUnit,
             )
