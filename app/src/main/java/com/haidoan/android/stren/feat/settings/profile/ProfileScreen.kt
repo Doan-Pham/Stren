@@ -79,7 +79,7 @@ internal fun ProfileRoute(
         modifier = modifier,
         uiState = uiState,
         onUiStateChange = viewModel::modifyUiState,
-        onErrorStatusChange = { isError = true }
+        onErrorStatusChange = { isError = it }
     )
 }
 
