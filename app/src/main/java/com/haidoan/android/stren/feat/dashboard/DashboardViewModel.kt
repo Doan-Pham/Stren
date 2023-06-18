@@ -101,7 +101,7 @@ internal class DashboardViewModel @Inject constructor(
                         )
                     }
                     is TrackedCategory.Biometrics -> {
-                        userRepository.getBiometricsRecordsStream(
+                        userRepository.getBiometricsRecordsStreamById(
                             userId = userId,
                             biometricsId = category.biometricsId,
                             startDate = category.startDate,

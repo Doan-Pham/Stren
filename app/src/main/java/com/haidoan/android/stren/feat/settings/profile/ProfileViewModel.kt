@@ -75,7 +75,7 @@ internal class ProfileViewModel @Inject constructor(
             Timber.d("saveProfile() - newUniqueBiometricsRecord: $newUniqueBiometricsRecords")
 
             if (newUniqueBiometricsRecords.isNotEmpty()) {
-                userRepository.addBiometricsRecord(
+                userRepository.addBiometricsRecords(
                     userId = user.id,
                     biometricsRecords = newUniqueBiometricsRecords
                 )

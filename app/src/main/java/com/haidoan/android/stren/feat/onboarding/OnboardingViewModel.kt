@@ -51,7 +51,7 @@ internal class OnboardingViewModel @Inject constructor(
                     )
                 }
                 tasks["addBiometricsTask"] = async {
-                    userRepository.addBiometricsRecord(
+                    userRepository.addBiometricsRecords(
                         userId = userId,
                         biometricsRecords = listOf(
                             BiometricsRecord.createWeightBiometrics(
