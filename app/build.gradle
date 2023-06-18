@@ -118,6 +118,8 @@ dependencies {
 
     // CALENDAR UI
     implementation "com.kizitonwose.calendar:compose:$calendar_ui_version"
+    implementation "com.maxkeppeler.sheets-compose-dialogs:core:$sheets_compose_dialogs_version"
+    implementation "com.maxkeppeler.sheets-compose-dialogs:calendar:$sheets_compose_dialogs_version"
 
     // RETROFIT
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
