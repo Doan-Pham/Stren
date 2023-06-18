@@ -11,11 +11,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
 import com.haidoan.android.stren.R
+import com.haidoan.android.stren.core.model.BiometricsRecord
 import com.haidoan.android.stren.core.utils.DateUtils
 import com.haidoan.android.stren.core.utils.DateUtils.defaultFormat
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarSelection
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 
@@ -61,7 +63,10 @@ fun SimpleConfirmationDialog(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddMeasurementDialog(
-    onDismissDialog: () -> Unit
+    onDismissDialog: () -> Unit,
+    biometricsRecords: List<BiometricsRecord>,
+    biometricsToAddRecord: BiometricsRecord,
+    onSaveClick: (BiometricsRecord) -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismissDialog,
@@ -77,7 +82,10 @@ fun AddMeasurementDialog(
                 Text(text = "Add Measurement", style = MaterialTheme.typography.titleLarge)
                 Spacer(Modifier.size(dimensionResource(R.dimen.padding_medium)))
 
-                //TODO: Measurement biometrics name
+                var selectedBiometrics by remember { mutableStateOf(biometricsToAddRecord) }
+                var inputValue by remember { mutableStateOf(selectedBiometrics.value) }
+                var selectedDate: LocalDate by remember { mutableStateOf(DateUtils.getCurrentDate()) }
+
                 ExposedDropDownMenuTextField(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -85,46 +93,48 @@ fun AddMeasurementDialog(
                             bottom = dimensionResource(id = R.dimen.padding_small)
                         ),
                     textFieldLabel = "Measured biometrics",
-                    selectedText = "ha",
-                    menuItemsTextAndClickHandler = mapOf("ha" to {}, "wa" to {})
+                    selectedText = selectedBiometrics.biometricsName,
+                    menuItemsTextAndClickHandler = biometricsRecords.associate {
+                        it.biometricsName to {
+                            if (it != selectedBiometrics) inputValue = it.value
+                            selectedBiometrics = it
+                        }
+                    }
                 )
-                // TODO: value
-                var value by remember { mutableStateOf(0f) }
+
                 OutlinedNumberTextField(
                     modifier = Modifier.fillMaxWidth(),
-                    number = value,
+                    number = inputValue,
                     onValueChange = {
-                        // TODO: Change value
-                        value = it.toFloat()
+                        inputValue = it.toFloat()
                     },
                     label = "Value",
-                    suffixText = "cm",
-                    isError = value <= 0f,
+                    suffixText = selectedBiometrics.measurementUnit,
+                    isError = inputValue <= 0f,
                     errorText = "Invalid value"
                 )
                 Spacer(Modifier.size(dimensionResource(R.dimen.padding_small)))
 
-                // Date picker
-                var shouldShowCalendarDialog by remember { mutableStateOf(false) }
                 val calendarState = rememberUseCaseState(
-                    visible = true,
-                    onCloseRequest = { shouldShowCalendarDialog = false })
+                    embedded = true,
+                    visible = false,
+                    onCloseRequest = { })
 
-                var selectedDate: LocalDate by remember { mutableStateOf(DateUtils.getCurrentDate()) }
+                CalendarDialog(
+                    state = calendarState,
+                    selection = CalendarSelection.Date { date ->
+                        selectedDate = date
+                    },
+                )
 
-                if (shouldShowCalendarDialog) {
-                    CalendarDialog(
-                        state = calendarState,
-                        selection = CalendarSelection.Date { date ->
-                            selectedDate = date
-                        },
-                    )
-                }
-
-
+                val coroutineScope = rememberCoroutineScope()
                 StrenOutlinedTextField(
                     modifier = Modifier
-                        .clickable { calendarState.show() }
+                        .clickable {
+                            coroutineScope.launch {
+                                calendarState.show()
+                            }
+                        }
                         .fillMaxWidth(),
                     enabled = false,
                     readOnly = true,
@@ -151,10 +161,16 @@ fun AddMeasurementDialog(
                     StrenFilledButton(
                         modifier = Modifier.weight(1f),
                         onClickHandler = {
-                            // TODO: On Save
+                            onSaveClick(
+                                selectedBiometrics.copy(
+                                    value = inputValue,
+                                    recordDate = selectedDate
+                                )
+                            )
+                            onDismissDialog()
                         },
                         text = "Save",
-                        enabled = value > 0f,
+                        enabled = inputValue > 0f,
                         textStyle = MaterialTheme.typography.bodyMedium
                     )
                 }
