@@ -71,7 +71,7 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
     override suspend fun getAllBiometricsToTrack(userId: String): List<BiometricsRecord> =
         biometricsRecordsCollectionRef(userId).get().await().toBiometricsRecords().filterLatest()
 
-    override fun getBiometricsRecordsStream(
+    override fun getBiometricsRecordsStreamById(
         userId: String,
         biometricsId: String,
         startDate: LocalDate,
@@ -84,6 +84,14 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
             .snapshots()
             .map {
                 Timber.d(" Querysnapshot - $it")
+                Timber.d(" it.toBiometricsRecords() - ${it.toBiometricsRecords()}")
+                it.toBiometricsRecords()
+            }
+
+    override fun getAllBiometricsRecordsStream(userId: String): Flow<List<BiometricsRecord>> =
+        biometricsRecordsCollectionRef(userId)
+            .snapshots()
+            .map {
                 Timber.d(" it.toBiometricsRecords() - ${it.toBiometricsRecords()}")
                 it.toBiometricsRecords()
             }
