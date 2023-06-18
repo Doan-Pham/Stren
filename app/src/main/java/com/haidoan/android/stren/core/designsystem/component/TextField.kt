@@ -30,6 +30,8 @@ import java.text.DecimalFormat
 fun StrenOutlinedTextField(
     modifier: Modifier = Modifier,
     text: String,
+    enabled: Boolean = true,
+    readOnly: Boolean = false,
     onTextChange: (String) -> Unit,
     leadingIcon: (@Composable () -> Unit)? = null,
     label: String,
@@ -49,6 +51,8 @@ fun StrenOutlinedTextField(
     OutlinedTextField(
         modifier = modifier
             .fillMaxWidth(),
+        enabled = enabled,
+        readOnly = readOnly,
         value = text,
         onValueChange = onTextChange,
         singleLine = singleLine,
@@ -62,6 +66,12 @@ fun StrenOutlinedTextField(
         supportingText = {
             if (isError) Text(text = errorText)
         },
+        colors = TextFieldDefaults.colors(
+            disabledTextColor = MaterialTheme.colorScheme.onBackground,
+            disabledContainerColor = Color.Transparent,
+            disabledIndicatorColor = MaterialTheme.colorScheme.onBackground,
+            disabledLabelColor = MaterialTheme.colorScheme.onBackground,
+        ),
         keyboardOptions = keyboardOptions
     )
 }
