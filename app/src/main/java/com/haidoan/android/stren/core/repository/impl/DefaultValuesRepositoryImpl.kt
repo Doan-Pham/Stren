@@ -1,6 +1,7 @@
 package com.haidoan.android.stren.core.repository.impl
 
 import com.haidoan.android.stren.core.datasource.remote.base.DefaultValuesRemoteDataSource
+import com.haidoan.android.stren.core.model.Biometrics
 import com.haidoan.android.stren.core.model.TrackedCategory
 import com.haidoan.android.stren.core.repository.base.DefaultValuesRepository
 import timber.log.Timber
@@ -13,6 +14,15 @@ class DefaultValuesRepositoryImpl @Inject constructor(private val dataSource: De
             dataSource.getDefaultTrackedCategories()
         } catch (ex: Exception) {
             Timber.e("getDefaultTrackedCategories() - exception: $ex")
+            listOf()
+        }
+    }
+
+    override suspend fun getDefaultBiometrics(): List<Biometrics> {
+        return try {
+            dataSource.getDefaultBiometrics()
+        } catch (ex: Exception) {
+            Timber.e("getDefaultBiometrics() - exception: $ex, ${ex.printStackTrace()}")
             listOf()
         }
     }

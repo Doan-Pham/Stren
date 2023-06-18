@@ -22,11 +22,6 @@ data class User(
     }
 }
 
-enum class CommonBiometrics(val id: String, val biometricsName: String) {
-    WEIGHT(id = "BIOMETRICS_ID_WEIGHT", biometricsName = "Weight"),
-    HEIGHT(id = "BIOMETRICS_ID_HEIGHT", biometricsName = "Height"),
-}
-
 data class BiometricsRecord(
     @DocumentId
     val id: String = "Undefined Document Id",
@@ -42,7 +37,7 @@ data class BiometricsRecord(
                 biometricsId = CommonBiometrics.WEIGHT.id,
                 biometricsName = CommonBiometrics.WEIGHT.biometricsName,
                 recordDate = date,
-                measurementUnit = "kg",
+                measurementUnit = CommonBiometrics.WEIGHT.measurementUnit,
                 value = weightInKg
             )
 
@@ -51,7 +46,7 @@ data class BiometricsRecord(
                 biometricsId = CommonBiometrics.HEIGHT.id,
                 biometricsName = CommonBiometrics.HEIGHT.biometricsName,
                 recordDate = date,
-                measurementUnit = "cm",
+                measurementUnit = CommonBiometrics.HEIGHT.measurementUnit,
                 value = heightInCm
             )
     }
