@@ -4,6 +4,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.haidoan.android.stren.core.datasource.remote.base.DefaultValuesRemoteDataSource
+import com.haidoan.android.stren.core.model.Biometrics
 import com.haidoan.android.stren.core.model.TrackedCategory
 import com.haidoan.android.stren.core.model.TrackedCategoryType
 import com.haidoan.android.stren.core.utils.DateUtils
@@ -13,6 +14,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 private const val DEFAULT_TRACKED_CATEGORY_COLLECTION_PATH = "DefaultTrackedCategory"
+private const val DEFAULT_BIOMETRICS_COLLECTION_PATH = "DefaultBiometrics"
 
 internal class DefaultValuesFirestoreDataSource @Inject constructor() :
     DefaultValuesRemoteDataSource {
@@ -20,8 +22,14 @@ internal class DefaultValuesFirestoreDataSource @Inject constructor() :
     private val defaultCategoriesCollection =
         FirebaseFirestore.getInstance().collection(DEFAULT_TRACKED_CATEGORY_COLLECTION_PATH)
 
+    private val defaultBiometricsCollection =
+        FirebaseFirestore.getInstance().collection(DEFAULT_BIOMETRICS_COLLECTION_PATH)
+
     override suspend fun getDefaultTrackedCategories(): List<TrackedCategory> =
         defaultCategoriesCollection.get().await().toDefaultTrackedCategories()
+
+    override suspend fun getDefaultBiometrics(): List<Biometrics> =
+        defaultBiometricsCollection.get().await().mapNotNull { it.toObject(Biometrics::class.java) }
 
     private fun QuerySnapshot.toDefaultTrackedCategories(): List<TrackedCategory> {
         val trackedCategories = mutableListOf<TrackedCategory>()
