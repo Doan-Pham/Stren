@@ -22,11 +22,15 @@ interface UserRepository {
     suspend fun addUser(user: User): Any?
 
     suspend fun getAllBiometricsToTrack(userId: String): List<BiometricsRecord>
-    fun getBiometricsRecordsStream(
+    fun getBiometricsRecordsStreamById(
         userId: String,
         biometricsId: String,
         startDate: LocalDate,
         endDate: LocalDate
+    ): Flow<List<BiometricsRecord>>
+
+    fun getAllBiometricsRecordsStream(
+        userId: String,
     ): Flow<List<BiometricsRecord>>
 
     suspend fun addBiometricsRecord(userId: String, biometricsRecords: List<BiometricsRecord>)

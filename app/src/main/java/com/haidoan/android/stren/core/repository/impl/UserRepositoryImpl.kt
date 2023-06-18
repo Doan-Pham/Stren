@@ -63,7 +63,7 @@ class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteD
         }
     }
 
-    override fun getBiometricsRecordsStream(
+    override fun getBiometricsRecordsStreamById(
         userId: String,
         biometricsId: String,
         startDate: LocalDate,
@@ -78,9 +78,21 @@ class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteD
         )
 
         return dataSource
-            .getBiometricsRecordsStream(userId, biometricsId, startDate, endDate)
+            .getBiometricsRecordsStreamById(userId, biometricsId, startDate, endDate)
             .catch {
                 Timber.e("getBiometricsRecordsStream() - Exception: $it - stacktrace: ${it.stackTrace}")
+            }
+    }
+
+    override fun getAllBiometricsRecordsStream(userId: String): Flow<List<BiometricsRecord>> {
+        Timber.d(
+            "getAllBiometricsRecordsStream() is called; " +
+                    "userId: $userId"
+        )
+        return dataSource
+            .getAllBiometricsRecordsStream(userId)
+            .catch {
+                Timber.e("getAllBiometricsRecordsStream() - Exception: $it ${it.printStackTrace()}")
             }
     }
 
