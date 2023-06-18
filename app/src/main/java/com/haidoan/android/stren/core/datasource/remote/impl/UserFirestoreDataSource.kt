@@ -96,8 +96,14 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
                 it.toBiometricsRecords()
             }
 
-
     override suspend fun addBiometricsRecord(
+        userId: String,
+        biometricsRecord: BiometricsRecord
+    ) {
+        biometricsRecordsCollectionRef(userId).add(biometricsRecord.toFirestoreObject()).await()
+    }
+
+    override suspend fun addBiometricsRecords(
         userId: String,
         biometricsRecords: List<BiometricsRecord>
     ) {

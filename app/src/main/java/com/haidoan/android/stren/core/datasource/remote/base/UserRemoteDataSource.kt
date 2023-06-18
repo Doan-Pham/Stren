@@ -23,8 +23,10 @@ interface UserRemoteDataSource {
     ): Flow<List<BiometricsRecord>>
 
     fun getAllBiometricsRecordsStream(userId: String): Flow<List<BiometricsRecord>>
+    suspend fun addBiometricsRecords(userId: String, biometricsRecords: List<BiometricsRecord>)
+    suspend fun addBiometricsRecord(userId: String, biometricsRecord: BiometricsRecord)
 
-    suspend fun addBiometricsRecord(userId: String, biometricsRecords: List<BiometricsRecord>)
+
     suspend fun addGoals(userId: String, goals: List<Goal>)
 
     suspend fun trackCategory(userId: String, category: TrackedCategory)
