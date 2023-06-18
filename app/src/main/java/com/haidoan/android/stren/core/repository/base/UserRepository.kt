@@ -33,7 +33,7 @@ interface UserRepository {
         userId: String,
     ): Flow<List<BiometricsRecord>>
 
-    suspend fun addBiometricsRecord(userId: String, biometricsRecords: List<BiometricsRecord>)
+    suspend fun addBiometricsRecords(userId: String, biometricsRecords: List<BiometricsRecord>)
     suspend fun addGoals(userId: String, goals: List<Goal>)
 
     suspend fun trackCategory(userId: String, category: TrackedCategory)
@@ -46,4 +46,5 @@ interface UserRepository {
 
     suspend fun stopTrackingCategory(userId: String, dataSourceId: String)
     suspend fun completeOnboarding(userId: String)
+    suspend fun addBiometricsRecord(userId: String, biometricsRecord: BiometricsRecord)
 }

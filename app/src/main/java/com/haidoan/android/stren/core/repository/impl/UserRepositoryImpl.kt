@@ -96,13 +96,23 @@ class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteD
             }
     }
 
-    override suspend fun addBiometricsRecord(
+    override suspend fun addBiometricsRecords(
         userId: String, biometricsRecords: List<BiometricsRecord>
     ) {
         try {
-            dataSource.addBiometricsRecord(userId, biometricsRecords)
+            dataSource.addBiometricsRecords(userId, biometricsRecords)
         } catch (ex: Exception) {
-            Timber.e("addBiometricsRecord() - userId: $userId - Exception: $ex")
+            Timber.e("addBiometricsRecords() - userId: $userId - Exception: $ex")
+        }
+    }
+
+    override suspend fun addBiometricsRecord(
+        userId: String, biometricsRecord: BiometricsRecord
+    ) {
+        try {
+            dataSource.addBiometricsRecord(userId, biometricsRecord)
+        } catch (ex: Exception) {
+            Timber.e("addBiometricsRecord() - userId: $userId - Exception: $ex, ${ex.printStackTrace()}")
         }
     }
 
