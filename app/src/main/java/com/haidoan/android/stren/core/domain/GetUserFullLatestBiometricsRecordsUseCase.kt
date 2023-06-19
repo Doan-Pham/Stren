@@ -1,6 +1,8 @@
 package com.haidoan.android.stren.core.domain
 
 import com.haidoan.android.stren.core.model.BiometricsRecord
+import com.haidoan.android.stren.core.model.CommonBiometrics
+import com.haidoan.android.stren.core.model.filterLatest
 import com.haidoan.android.stren.core.repository.base.DefaultValuesRepository
 import com.haidoan.android.stren.core.repository.base.UserRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,12 +23,20 @@ class GetUserFullLatestBiometricsRecordsUseCase @Inject constructor(
     ): Flow<List<BiometricsRecord>> =
         userRepository.getAllBiometricsRecordsStream(userId).mapLatest { biometricsRecords ->
             val result = mutableListOf<BiometricsRecord>()
-            result.addAll(biometricsRecords)
+            result.addAll(biometricsRecords.filterLatest())
             defaultValuesRepository.getDefaultBiometrics().forEach { defaultBiometrics ->
                 if (!biometricsRecords.any { it.biometricsId == defaultBiometrics.id }) {
                     result.add(defaultBiometrics.toBiometricsRecordWithDefaultValue())
                 }
             }
-            result
+            result.sortedWith(
+                compareBy(
+                    { biometrics ->
+                        biometrics.biometricsName !in CommonBiometrics.values()
+                            .map { it.biometricsName }
+                    },
+                    { it.biometricsName }
+                )
+            )
         }
 }
