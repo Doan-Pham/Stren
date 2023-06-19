@@ -126,8 +126,16 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
     }
 
     override suspend fun trackCategory(userId: String, category: TrackedCategory) {
-        userCollectionReference.document(userId)
-            .update("trackedCategories", FieldValue.arrayUnion(category.toFirestoreObject()))
+        // For some reason, unless runTransaction() is used to update document, application
+        // won't receive real-time updates from Firestore
+        db.runTransaction { transaction ->
+            val documentRef = userCollectionReference.document(userId)
+            transaction.update(
+                documentRef,
+                "trackedCategories",
+                FieldValue.arrayUnion(category.toFirestoreObject())
+            )
+        }.await()
     }
 
     override suspend fun updateTrackCategory(
