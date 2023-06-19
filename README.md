@@ -104,7 +104,7 @@ The application's conventions loosely follow the following guidelines:
 - Full-text Search: [algolia](https://www.algolia.com/).
 - Validation: [commons-validator](https://github.com/apache/commons-validator).
 - Chart and Graph UI Components: [charts](https://github.com/tehras/charts), [vico](https://github.com/patrykandpatrick/vico).
-- Calendar UI Component: [Calendar](https://github.com/kizitonwose/Calendar).
+- Calendar UI Component: [Calendar](https://github.com/kizitonwose/Calendar), [sheets-compose-dialogs](https://github.com/maxkeppeler/sheets-compose-dialogs).
 - Navigation Transition: [Accompanist](https://github.com/google/accompanist).
 - Image Loader: [Coil](https://github.com/coil-kt/coil).
 - Licenses: [AboutLibraries](https://github.com/mikepenz/AboutLibraries).
