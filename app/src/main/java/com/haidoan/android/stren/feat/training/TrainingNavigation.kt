@@ -11,11 +11,8 @@ import com.haidoan.android.stren.feat.training.exercises.exerciseGraph
 import com.haidoan.android.stren.feat.training.exercises.navigateToCreateExercise
 import com.haidoan.android.stren.feat.training.exercises.navigateToExerciseDetail
 import com.haidoan.android.stren.feat.training.exercises.view_exercises.ExercisesRoute
-import com.haidoan.android.stren.feat.training.history.TrainingHistoryRoute
-import com.haidoan.android.stren.feat.training.history.log_workout.navigateToAddWorkoutScreen
-import com.haidoan.android.stren.feat.training.history.log_workout.navigateToAddWorkoutWithRoutine
-import com.haidoan.android.stren.feat.training.history.log_workout.navigateToEditWorkoutScreen
-import com.haidoan.android.stren.feat.training.history.log_workout.workoutGraph
+import com.haidoan.android.stren.feat.training.history.*
+import com.haidoan.android.stren.feat.training.history.log_workout.*
 import com.haidoan.android.stren.feat.training.routines.RoutinesRoute
 import com.haidoan.android.stren.feat.training.routines.navigateToRoutineGraph
 import com.haidoan.android.stren.feat.training.routines.routineGraph
@@ -54,6 +51,12 @@ fun NavGraphBuilder.trainingGraph(
                             },
                             onNavigateToAddWorkoutScreen = { userId, selectedDate ->
                                 navController.navigateToAddWorkoutScreen(
+                                    userId = userId,
+                                    selectedDate = selectedDate
+                                )
+                            },
+                            onNavigateToStartWorkoutScreen = { userId, selectedDate ->
+                                navController.navigateToStartWorkoutScreen(
                                     userId = userId,
                                     selectedDate = selectedDate
                                 )
@@ -104,7 +107,7 @@ fun NavGraphBuilder.trainingGraph(
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
         )
 
-        workoutGraph(
+        trainingHistoryGraph(
             navController = navController,
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
         )
