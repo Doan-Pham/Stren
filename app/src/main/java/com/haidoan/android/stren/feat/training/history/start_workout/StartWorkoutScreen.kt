@@ -1,16 +1,20 @@
 package com.haidoan.android.stren.feat.training.history.start_workout
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
@@ -27,6 +31,7 @@ import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.app.ui.LocalSnackbarHostState
 import com.haidoan.android.stren.core.designsystem.component.*
+import com.haidoan.android.stren.core.designsystem.theme.*
 import com.haidoan.android.stren.core.model.Routine
 import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics
@@ -47,6 +52,13 @@ internal fun StartWorkoutRoute(
     onBackToPreviousScreen: () -> Unit,
     onNavigateToAddExercise: () -> Unit
 ) {
+    val trainedExercises by workoutInProgressViewModel.trainedExercises.collectAsStateWithLifecycle()
+    val secondaryUiState by viewModel.secondaryUiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val routines by workoutInProgressViewModel.routines.collectAsStateWithLifecycle()
+    val snackbarHostState = LocalSnackbarHostState.current
+    val coroutineScope = rememberCoroutineScope()
+
     workoutInProgressViewModel.setInitArgs(
         WorkoutInProgressInitArgs(
             userId = viewModel.navArgs.userId,
@@ -54,8 +66,6 @@ internal fun StartWorkoutRoute(
             selectedRoutineId = viewModel.navArgs.selectedRoutineId
         )
     )
-
-    val trainedExercises by workoutInProgressViewModel.trainedExercises.collectAsStateWithLifecycle()
     viewModel.setTrainedExercises(trainedExercises)
 
     if (exercisesIdsToAdd.isNotEmpty()) {
@@ -63,7 +73,6 @@ internal fun StartWorkoutRoute(
         onAddExercisesCompleted()
     }
 
-    val secondaryUiState by viewModel.secondaryUiState.collectAsStateWithLifecycle()
     if (secondaryUiState.shouldShowBackConfirmDialog) {
         SimpleConfirmationDialog(
             onDismissDialog = { viewModel.updateBackConfirmDialogState(false) },
@@ -83,12 +92,6 @@ internal fun StartWorkoutRoute(
         }
     }
 
-    Timber.d("selected routine id: ${workoutInProgressViewModel.currentSelectedRoutineId}")
-
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    val snackbarHostState = LocalSnackbarHostState.current
-    val coroutineScope = rememberCoroutineScope()
     val startWorkoutAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         title = "Workout",
         navigationIcon = IconButtonInfo.BACK_ICON.copy(clickHandler = onBackToPreviousScreen),
@@ -141,7 +144,6 @@ internal fun StartWorkoutRoute(
         isAppBarConfigured = true
     }
 
-    val routines by workoutInProgressViewModel.routines.collectAsStateWithLifecycle()
     StartWorkoutScreen(
         modifier = modifier,
         uiState = uiState,
@@ -158,7 +160,18 @@ internal fun StartWorkoutRoute(
         onUpdateExercise = workoutInProgressViewModel::updateExerciseTrainingSet,
         onAddSetToExercise = workoutInProgressViewModel::addEmptyTrainingSet,
         onDeleteExercise = workoutInProgressViewModel::deleteExercise,
-        onDeleteTrainingSet = workoutInProgressViewModel::deleteTrainingSet
+        onDeleteTrainingSet = workoutInProgressViewModel::deleteTrainingSet,
+        onChangeCompleteStatusTrainingSetClick = { trainedExercise, trainingSet, isComplete ->
+            viewModel.toggleTrainingSetCompleteState(
+                trainingSet = trainingSet,
+                onToggleTrainingSetCompleteState = {
+                    workoutInProgressViewModel.toggleTrainingSetCompleteState(
+                        exerciseToUpdate = trainedExercise,
+                        trainingSetToUpdate = trainingSet,
+                        isTrainingSetComplete = isComplete
+                    )
+                })
+        },
     )
 }
 
@@ -180,7 +193,8 @@ internal fun StartWorkoutScreen(
     ) -> Unit,
     onAddSetToExercise: (TrainedExercise) -> Unit,
     onDeleteExercise: (TrainedExercise) -> Unit,
-    onDeleteTrainingSet: (TrainedExercise, TrainingMeasurementMetrics) -> Unit
+    onDeleteTrainingSet: (TrainedExercise, TrainingMeasurementMetrics) -> Unit,
+    onChangeCompleteStatusTrainingSetClick: (TrainedExercise, TrainingMeasurementMetrics, Boolean) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -242,7 +256,8 @@ internal fun StartWorkoutScreen(
                             onUpdateExercise = onUpdateExercise,
                             onAddSetButtonClick = onAddSetToExercise,
                             onDeleteExerciseClick = onDeleteExercise,
-                            onDeleteTrainingSetClick = onDeleteTrainingSet
+                            onDeleteTrainingSetClick = onDeleteTrainingSet,
+                            onChangeCompleteStatusTrainingSetClick = onChangeCompleteStatusTrainingSetClick
                         )
                     }
                 }
@@ -295,7 +310,8 @@ private fun TrainedExerciseRegion(
     ) -> Unit,
     onAddSetButtonClick: (TrainedExercise) -> Unit,
     onDeleteExerciseClick: (TrainedExercise) -> Unit,
-    onDeleteTrainingSetClick: (TrainedExercise, TrainingMeasurementMetrics) -> Unit
+    onDeleteTrainingSetClick: (TrainedExercise, TrainingMeasurementMetrics) -> Unit,
+    onChangeCompleteStatusTrainingSetClick: (TrainedExercise, TrainingMeasurementMetrics, Boolean) -> Unit
 ) {
     val headerTitles = mutableListOf<String>()
     when (trainedExercise.trainingSets.first()) {
@@ -347,6 +363,7 @@ private fun TrainedExerciseRegion(
         ) {
             var firstColumnWidth by remember { mutableStateOf(0) }
             TrainingSetRow(
+                isHeader = true,
                 firstColumnText = "Set",
                 firstColumnWidth = firstColumnWidth,
                 onFirstColumnWidthChange = {
@@ -364,7 +381,8 @@ private fun TrainedExerciseRegion(
                         )
                     }
                 },
-                onDeleteTrainingSetClick = { }
+                onDeleteTrainingSetClick = { },
+                onChangeCompleteStatusTrainingSetClick = {}
             )
 
             trainedExercise.trainingSets.forEachIndexed { index, trainingSet ->
@@ -383,6 +401,13 @@ private fun TrainedExerciseRegion(
                         onDeleteTrainingSetClick(
                             trainedExercise,
                             trainingSet
+                        )
+                    },
+                    onChangeCompleteStatusTrainingSetClick = { isComplete ->
+                        onChangeCompleteStatusTrainingSetClick(
+                            trainedExercise,
+                            trainingSet,
+                            isComplete
                         )
                     }
                 )
@@ -600,12 +625,14 @@ private enum class NumberType { LONG, DOUBLE }
 @Composable
 private fun TrainingSetRow(
     isFirstRow: Boolean = true,
+    isHeader: Boolean = false,
     firstColumnText: String,
     firstColumnWidth: Int,
     onFirstColumnWidthChange: (Int) -> Unit,
     trainingSet: TrainingMeasurementMetrics = TrainingMeasurementMetrics.DurationOnly(-1),
     remainingCells: List<@Composable (Modifier, TrainingMeasurementMetrics) -> Unit>,
-    onDeleteTrainingSetClick: () -> Unit
+    onDeleteTrainingSetClick: () -> Unit,
+    onChangeCompleteStatusTrainingSetClick: (Boolean) -> Unit
 ) {
 
     val widthInDp = with(LocalDensity.current) {
@@ -613,6 +640,8 @@ private fun TrainingSetRow(
     }
 
     Row(
+//        modifier = if (trainingSet.isComplete) Modifier.background(Green70)
+//        else Modifier.background(Color.White),
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (widthInDp == 0.dp) {
@@ -645,6 +674,39 @@ private fun TrainingSetRow(
                 trainingSet
             )
         }
+
+        var checkButtonModifier =
+            if (trainingSet.isComplete)
+                Modifier
+                    .padding(2.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Green95)
+            else
+                Modifier
+                    .padding(2.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Gray90)
+
+        checkButtonModifier =
+            if (isHeader) checkButtonModifier
+                .background(White)
+                .alpha(0f) else checkButtonModifier.alpha(1f)
+
+        // TODO: If user tries to complete an empty set, shake the button or do some signaling
+        IconButton(
+            modifier = checkButtonModifier,
+            enabled = !isHeader,
+            onClick = {
+                if (trainingSet.isComplete) onChangeCompleteStatusTrainingSetClick(false)
+                else onChangeCompleteStatusTrainingSetClick(true)
+            }) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_check_mark),
+                contentDescription = "Delete icon",
+                tint = if (trainingSet.isComplete) Green50 else Gray60
+            )
+        }
+
 
         IconButton(modifier = if (isFirstRow) Modifier.alpha(0f) else Modifier.alpha(1f),
             enabled = !isFirstRow,
