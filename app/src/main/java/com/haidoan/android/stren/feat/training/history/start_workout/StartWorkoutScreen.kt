@@ -1,7 +1,6 @@
 package com.haidoan.android.stren.feat.training.history.start_workout
 
 import android.annotation.SuppressLint
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,7 +21,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.LocalActivity
-import com.haidoan.android.stren.app.MainActivityViewModel
+import com.haidoan.android.stren.app.WorkoutInProgressInitArgs
+import com.haidoan.android.stren.app.WorkoutInProgressViewModel
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.app.ui.LocalSnackbarHostState
@@ -41,18 +41,25 @@ internal fun StartWorkoutRoute(
     modifier: Modifier = Modifier,
     exercisesIdsToAdd: List<String>,
     viewModel: StartWorkoutViewModel = hiltViewModel(),
-    mainActivityViewModel: MainActivityViewModel = hiltViewModel(LocalActivity.current),
+    workoutInProgressViewModel: WorkoutInProgressViewModel = hiltViewModel(LocalActivity.current),
     onAddExercisesCompleted: () -> Unit,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onBackToPreviousScreen: () -> Unit,
     onNavigateToAddExercise: () -> Unit
 ) {
-    mainActivityViewModel.test()
-    Timber.d("MainActivityViewModel() - a: ${mainActivityViewModel.a}")
-    Timber.d("MainActivityViewModel - Hashcode: ${mainActivityViewModel.hashCode()} : StartWorkoutRoute Scope")
+    workoutInProgressViewModel.setInitArgs(
+        WorkoutInProgressInitArgs(
+            userId = viewModel.navArgs.userId,
+            selectedDate = viewModel.navArgs.selectedDate,
+            selectedRoutineId = viewModel.navArgs.selectedRoutineId
+        )
+    )
+
+    val trainedExercises by workoutInProgressViewModel.trainedExercises.collectAsStateWithLifecycle()
+    viewModel.setTrainedExercises(trainedExercises)
 
     if (exercisesIdsToAdd.isNotEmpty()) {
-        viewModel.setExercisesIdsToAdd(exercisesIdsToAdd)
+        workoutInProgressViewModel.setExercisesIdsToAdd(exercisesIdsToAdd)
         onAddExercisesCompleted()
     }
 
@@ -76,28 +83,28 @@ internal fun StartWorkoutRoute(
         }
     }
 
+    Timber.d("selected routine id: ${workoutInProgressViewModel.currentSelectedRoutineId}")
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val onBackClickHandler = {
-        if (uiState is StartWorkoutUiState.IsLogging && (uiState as StartWorkoutUiState.IsLogging).trainedExercises.isNotEmpty()) {
-            viewModel.updateBackConfirmDialogState(true)
-        } else if (uiState is StartWorkoutUiState.EmptyWorkout) {
-            onBackToPreviousScreen()
-        }
-    }
-    BackHandler {
-        onBackClickHandler()
-    }
 
     val snackbarHostState = LocalSnackbarHostState.current
     val coroutineScope = rememberCoroutineScope()
-    val StartWorkoutAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
+    val startWorkoutAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         title = "Workout",
-        navigationIcon = IconButtonInfo.BACK_ICON.copy(clickHandler = onBackClickHandler),
+        navigationIcon = IconButtonInfo.BACK_ICON.copy(clickHandler = onBackToPreviousScreen),
         actionIcons = listOf(
             IconButtonInfo(
-                drawableResourceId = R.drawable.ic_save,
-                description = "Menu Item Save",
+                drawableResourceId = R.drawable.ic_clock,
+                description = "Menu Item Clock",
                 clickHandler = {
+//TODO: Clock Menu Item Click
+                }
+            ),
+            IconButtonInfo(
+                drawableResourceId = R.drawable.ic_check_mark,
+                description = "Menu Item Finish Workout",
+                clickHandler = {
+                    //TODO: Finish Workout Click
                     if (uiState is StartWorkoutUiState.EmptyWorkout) {
                         coroutineScope.launch {
                             snackbarHostState.showSnackbar(
@@ -119,7 +126,7 @@ internal fun StartWorkoutRoute(
                                 )
                             }
                         } else {
-                            viewModel.addEditWorkout()
+                            workoutInProgressViewModel.addWorkout()
                             onBackToPreviousScreen()
                         }
                     }
@@ -130,24 +137,28 @@ internal fun StartWorkoutRoute(
 
     var isAppBarConfigured by remember { mutableStateOf(false) }
     if (!isAppBarConfigured) {
-        appBarConfigurationChangeHandler(StartWorkoutAppBarConfiguration)
+        appBarConfigurationChangeHandler(startWorkoutAppBarConfiguration)
         isAppBarConfigured = true
     }
 
-    val routines by viewModel.routines.collectAsStateWithLifecycle()
+    val routines by workoutInProgressViewModel.routines.collectAsStateWithLifecycle()
     StartWorkoutScreen(
         modifier = modifier,
         uiState = uiState,
-        workoutName = viewModel.workoutNameTextFieldValue,
+        workoutName = workoutInProgressViewModel.workoutNameTextFieldValue,
         routines = routines,
-        selectedRoutineId = secondaryUiState.selectedRoutineId,
-        onSelectRoutine = viewModel::selectRoutine,
-        onWorkoutNameChange = { viewModel.workoutNameTextFieldValue = it },
+        selectedRoutineId = workoutInProgressViewModel.currentSelectedRoutineId,
+        onSelectRoutine = {
+            viewModel.selectRoutineDropdownOption(selectedOptionRoutineId = it, onSelectRoutine = {
+                workoutInProgressViewModel.selectRoutine(it)
+            })
+        },
+        onWorkoutNameChange = { workoutInProgressViewModel.workoutNameTextFieldValue = it },
         onNavigateToAddExercise = onNavigateToAddExercise,
-        onUpdateExercise = viewModel::updateExerciseTrainingSet,
-        onAddSetToExercise = viewModel::addEmptyTrainingSet,
-        onDeleteExercise = viewModel::deleteExercise,
-        onDeleteTrainingSet = viewModel::deleteTrainingSet
+        onUpdateExercise = workoutInProgressViewModel::updateExerciseTrainingSet,
+        onAddSetToExercise = workoutInProgressViewModel::addEmptyTrainingSet,
+        onDeleteExercise = workoutInProgressViewModel::deleteExercise,
+        onDeleteTrainingSet = workoutInProgressViewModel::deleteTrainingSet
     )
 }
 
