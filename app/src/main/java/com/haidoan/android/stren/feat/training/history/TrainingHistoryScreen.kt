@@ -43,6 +43,7 @@ internal fun TrainingHistoryRoute(
     viewModel: TrainingHistoryViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onNavigateToAddWorkoutScreen: (userId: String, selectedDate: LocalDate) -> Unit,
+    onNavigateToStartWorkoutScreen: (userId: String, selectedDate: LocalDate) -> Unit,
     onNavigateToEditWorkoutScreen: (userId: String, workoutId: String) -> Unit
 ) {
     var shouldShowCalendarDialog by remember {
@@ -87,6 +88,10 @@ internal fun TrainingHistoryRoute(
             val uiStateValue = viewModel.uiState.value as TrainingHistoryUiState.LoadComplete
             onNavigateToAddWorkoutScreen(uiStateValue.userId, uiStateValue.selectedDate)
         },
+        onStartWorkoutButtonClick = {
+            val uiStateValue = viewModel.uiState.value as TrainingHistoryUiState.LoadComplete
+            onNavigateToStartWorkoutScreen(uiStateValue.userId, uiStateValue.selectedDate)
+        },
         onNavigateToEditWorkoutScreen = { workoutId ->
             val uiStateValue = viewModel.uiState.value as TrainingHistoryUiState.LoadComplete
             onNavigateToEditWorkoutScreen(uiStateValue.userId, workoutId)
@@ -106,6 +111,7 @@ internal fun TrainingHistoryScreen(
     onMoveToPreviousWeek: () -> Unit,
     onMoveToNextWeek: () -> Unit,
     onLogWorkoutButtonClick: () -> Unit,
+    onStartWorkoutButtonClick: () -> Unit,
     onNavigateToEditWorkoutScreen: (String) -> Unit,
 ) {
     when (uiState) {
@@ -157,7 +163,11 @@ internal fun TrainingHistoryScreen(
                         workouts = uiState.workouts
                     )
                 } else {
-                    EmptyScreen(onLogWorkoutButtonClick = onLogWorkoutButtonClick)
+                    EmptyScreen(
+                        onLogWorkoutButtonClick = onLogWorkoutButtonClick,
+                        selectedDate = uiState.selectedDate,
+                        onStartWorkoutButtonClick = onStartWorkoutButtonClick
+                    )
                 }
             }
 
@@ -322,6 +332,8 @@ private fun WorkoutItem(
 
 @Composable
 private fun EmptyScreen(
+    selectedDate: LocalDate,
+    onStartWorkoutButtonClick: () -> Unit,
     onLogWorkoutButtonClick: () -> Unit,
     onCopyPreviousButtonClick: () -> Unit = {
         //TODO
@@ -358,12 +370,27 @@ private fun EmptyScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = CenterHorizontally
         ) {
-            StrenFilledButton(
-                modifier = Modifier.fillMaxWidth(),
-                text = "Log workout",
-                onClickHandler = onLogWorkoutButtonClick,
-                textStyle = MaterialTheme.typography.bodyMedium
-            )
+            if (selectedDate.isEqual(DateUtils.getCurrentDate())) {
+                StrenFilledButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = "Start workout",
+                    onClickHandler = onStartWorkoutButtonClick,
+                    textStyle = MaterialTheme.typography.bodyMedium
+                )
+                StrenTextButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = "Log workout",
+                    textStyle = MaterialTheme.typography.bodyMedium,
+                    onClickHandler = onLogWorkoutButtonClick,
+                )
+            } else {
+                StrenFilledButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = "Log workout",
+                    onClickHandler = onLogWorkoutButtonClick,
+                    textStyle = MaterialTheme.typography.bodyMedium
+                )
+            }
 //            StrenTextButton(
 //                modifier = Modifier.fillMaxWidth(), text = "Copy previous workout",
 //                textStyle = MaterialTheme.typography.bodyMedium
