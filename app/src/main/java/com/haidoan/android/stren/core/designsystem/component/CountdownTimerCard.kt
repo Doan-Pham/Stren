@@ -100,7 +100,7 @@ fun CountdownTimerCard(
 }
 
 private fun Long.toDurationString() =
-    if (this % 60 > 10) {
+    if (this % 60 >= 10) {
         "${this / 60}:${this % 60}"
     } else {
         "${this / 60}:0${this % 60}"
