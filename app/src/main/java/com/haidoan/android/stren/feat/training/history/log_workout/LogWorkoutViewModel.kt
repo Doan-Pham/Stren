@@ -10,6 +10,7 @@ import com.haidoan.android.stren.core.model.*
 import com.haidoan.android.stren.core.repository.base.ExercisesRepository
 import com.haidoan.android.stren.core.repository.base.RoutinesRepository
 import com.haidoan.android.stren.core.repository.base.WorkoutsRepository
+import com.haidoan.android.stren.feat.training.history.LogWorkoutArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -17,7 +18,6 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
-internal const val SELECTED_EXERCISES_IDS_SAVED_STATE_KEY = "selected_exercises_ids"
 internal const val NO_SELECTION_ROUTINE_ID = "NO SELECTION ROUTINE ID"
 internal const val NO_SELECTION_ROUTINE_NAME = "None"
 
