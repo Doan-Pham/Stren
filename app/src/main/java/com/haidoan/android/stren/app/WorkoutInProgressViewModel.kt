@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.time.LocalDate
+import java.util.*
 import javax.inject.Inject
 
 private const val NO_SELECTION_ROUTINE_ID = "NO SELECTION ROUTINE ID"
@@ -37,10 +38,6 @@ class WorkoutInProgressViewModel @Inject constructor(
 
     private val initArgs = MutableStateFlow(WorkoutInProgressInitArgs())
     var workoutNameTextFieldValue by mutableStateOf("New workout")
-
-    private val _trainedExercises: MutableStateFlow<List<TrainedExercise>> =
-        MutableStateFlow(listOf())
-
     var currentSelectedRoutineId by mutableStateOf(NO_SELECTION_ROUTINE_ID)
         private set
 
@@ -61,6 +58,16 @@ class WorkoutInProgressViewModel @Inject constructor(
         SharingStarted.WhileSubscribed(5000),
         listOf()
     )
+
+    private val _trainedExercises: MutableStateFlow<List<TrainedExercise>> =
+        MutableStateFlow(listOf())
+
+    val trainedExercises: StateFlow<List<TrainedExercise>> =
+        _trainedExercises.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            listOf()
+        )
 
     init {
         Timber.d("init() - userId: ${initArgs.value.userId} - selectedDate: ${initArgs.value.selectedDate}")
@@ -127,6 +134,41 @@ class WorkoutInProgressViewModel @Inject constructor(
             Timber.d("Finding exercise - id: ${trainedExercise.id}")
             trainedExercise.id == exerciseToUpdate.id
         }.trainingSets.replaceWith(updatedTrainingSetData) { trainingSet ->
+            Timber.d("Replacing training set - id: ${trainingSet.id}")
+            trainingSet.id == trainingSetToUpdate.id
+        }
+        Timber.d("updatedTrainingSets: $updatedTrainingSets")
+
+        val updatedExercise = _trainedExercises.value.first {
+            Timber.d("Finding exercise - id: ${it.id}")
+            it.id == exerciseToUpdate.id
+        }.copy(trainingSets = updatedTrainingSets)
+        Timber.d("updatedExercise: $updatedExercise")
+
+        val updatedTrainedExercises = mutableListOf<TrainedExercise>()
+        updatedTrainedExercises.addAll(_trainedExercises.value.replaceWith(updatedExercise) { it.id == exerciseToUpdate.id })
+        Timber.d("updatedTrainedExercises: $updatedTrainedExercises")
+
+        _trainedExercises.value = updatedTrainedExercises
+        Timber.d("_trainedExercises: ${_trainedExercises.value}")
+    }
+
+    fun toggleTrainingSetCompleteState(
+        exerciseToUpdate: TrainedExercise,
+        trainingSetToUpdate: TrainingMeasurementMetrics,
+        isTrainingSetComplete: Boolean
+    ) {
+        Timber.d("exerciseToUpdate - unique identifier: ${exerciseToUpdate.id}; content: $exerciseToUpdate")
+        Timber.d(
+            "trainingSetToUpdate - unique identifier: ${
+                trainingSetToUpdate.id
+            }; content: $trainingSetToUpdate"
+        )
+
+        val updatedTrainingSets = _trainedExercises.value.first { trainedExercise ->
+            Timber.d("Finding exercise - id: ${trainedExercise.id}")
+            trainedExercise.id == exerciseToUpdate.id
+        }.trainingSets.replaceWith(trainingSetToUpdate.withCompleteState(isTrainingSetComplete)) { trainingSet ->
             Timber.d("Replacing training set - id: ${trainingSet.id}")
             trainingSet.id == trainingSetToUpdate.id
         }
@@ -229,13 +271,6 @@ class WorkoutInProgressViewModel @Inject constructor(
             )
         }
     }
-
-    val trainedExercises: StateFlow<List<TrainedExercise>> =
-        _trainedExercises.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            listOf()
-        )
 }
 
 /**

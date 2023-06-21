@@ -99,11 +99,23 @@ fun MutableList<TrainingMeasurementMetrics>.addEmptyTrainingSet() {
 
 sealed class TrainingMeasurementMetrics {
     val id: UUID = UUID.randomUUID()
+    abstract val isComplete: Boolean
     abstract fun maxRecord(): Float
     abstract override fun toString(): String
+    abstract fun isEmpty(): Boolean
+
+    /**
+     * Base copy() method for inheritance in parent sealed class isn't viable in Kotlin, since the language
+     * has no way to modify the copy() method's signature for each child class, but
+     * the copy() method is absolutely essential in this application. So,
+     * this method works as a lesser version of copy() method
+     */
+    abstract fun withCompleteState(isComplete: Boolean): TrainingMeasurementMetrics
+
     data class WeightAndRep(
         val weight: Double,
-        val repAmount: Long
+        val repAmount: Long,
+        override val isComplete: Boolean = false,
     ) : TrainingMeasurementMetrics() {
         override fun maxRecord() = oneRepMax
 
@@ -113,9 +125,14 @@ sealed class TrainingMeasurementMetrics {
         override fun toString(): String {
             return "$weight kg x $repAmount"
         }
+
+        override fun isEmpty(): Boolean = weight <= 0f || repAmount <= 0L
+
+        override fun withCompleteState(isComplete: Boolean): TrainingMeasurementMetrics =
+            this.copy(isComplete = isComplete)
     }
 
-    data class DurationOnly(val seconds: Long) :
+    data class DurationOnly(val seconds: Long, override val isComplete: Boolean = false) :
         TrainingMeasurementMetrics() {
         override fun maxRecord() = seconds.toFloat()
 
@@ -124,11 +141,22 @@ sealed class TrainingMeasurementMetrics {
             if (seconds > 60) return "${seconds / 60} mins"
             return "${seconds}s"
         }
+
+        override fun isEmpty(): Boolean = seconds <= 0f
+
+        override fun withCompleteState(isComplete: Boolean): TrainingMeasurementMetrics =
+            this.copy(isComplete = isComplete)
     }
 
-    data class DistanceAndDuration(val kilometers: Double, val hours: Double) :
+    data class DistanceAndDuration(
+        val kilometers: Double,
+        val hours: Double,
+        override val isComplete: Boolean = false,
+    ) :
         TrainingMeasurementMetrics() {
         override fun maxRecord(): Float = (kilometers / hours).toFloat()
+
+        override fun isEmpty(): Boolean = kilometers <= 0f || hours <= 0f
 
         override fun toString(): String {
             val distance = if (kilometers < 1) "${kilometers * 1000}m" else "${kilometers}km"
@@ -142,6 +170,9 @@ sealed class TrainingMeasurementMetrics {
                 }
             return "$distance x $duration"
         }
+
+        override fun withCompleteState(isComplete: Boolean): TrainingMeasurementMetrics =
+            this.copy(isComplete = isComplete)
     }
 
     enum class ExerciseCategoryWithSpecialMetrics(val fieldValue: String) {

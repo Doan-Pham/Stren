@@ -59,6 +59,23 @@ internal class StartWorkoutViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Since [StartWorkoutViewModel] simply holds uiState for [StartWorkoutScreen] and doesn't hold any business logic (Which is hoisted up in [WorkoutInProgressViewModel] for use across different screens), this method simply does some checks before delegating the actual logic selection to [onToggleTrainingSetCompleteState] param
+     */
+    fun toggleTrainingSetCompleteState(
+        trainingSet: TrainingMeasurementMetrics,
+        onToggleTrainingSetCompleteState: () -> Unit
+    ) {
+        if (trainingSet.isEmpty()) {
+            _secondaryUiState.update { currentState ->
+                currentState.copy()
+            }
+        } else {
+            onToggleTrainingSetCompleteState()
+        }
+    }
+
+
     fun setTrainedExercises(trainedExercises: List<TrainedExercise>) {
         _trainedExercises.update { trainedExercises }
     }
