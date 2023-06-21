@@ -21,7 +21,9 @@ import dagger.hilt.android.AndroidEntryPoint
 
 val LocalFacebookCallbackManager =
     staticCompositionLocalOf<CallbackManager> { error("No CallbackManager provided") }
-
+val LocalActivity = staticCompositionLocalOf<ComponentActivity> {
+    error("LocalActivity is not present")
+}
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private var facebookCallbackManager = CallbackManager.Factory.create()
@@ -62,7 +64,8 @@ class MainActivity : ComponentActivity() {
             StrenTheme {
                 CompositionLocalProvider(
                     LocalFacebookCallbackManager provides facebookCallbackManager,
-                    LocalActivityResultRegistryOwner provides this
+                    LocalActivityResultRegistryOwner provides this,
+                    LocalActivity provides this
                 ) {
                     StrenApp(onAuthStateResolved = { isLoading = false })
                 }
