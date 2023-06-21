@@ -19,7 +19,8 @@ import java.time.LocalDate
 
 private const val UNDEFINED_WORKOUT_ID_NAV_ARG = "UNDEFINED_WORKOUT_ID_NAV_ARG"
 private val UNDEFINED_SELECTED_DATE_NAV_ARG = LocalDate.of(1900, 12, 12).toEpochDay()
-const val ADD_EXERCISE_TO_WORKOUT_SCREEN_ROUTE = "ADD_EXERCISE_TO_WORKOUT_SCREEN_ROUTE"
+private const val ADD_EXERCISE_TO_WORKOUT_SCREEN_ROUTE = "ADD_EXERCISE_TO_WORKOUT_SCREEN_ROUTE"
+private const val SELECTED_EXERCISES_IDS_SAVED_STATE_KEY = "SELECTED_EXERCISES_IDS_SAVED_STATE_KEY"
 
 internal fun NavController.navigateToStartWorkoutScreen(
     userId: String,
@@ -29,13 +30,13 @@ internal fun NavController.navigateToStartWorkoutScreen(
         START_WORKOUT_SCREEN_ROUTE +
                 "/" + userId +
                 "/" + true +
-                "?" + "${com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_DATE_WORKOUT_NAV_ARG}=${selectedDate.toEpochDay()}"
+                "?" + "selectedDate=${selectedDate.toEpochDay()}"
     )
     this.navigate(
         START_WORKOUT_SCREEN_ROUTE +
                 "/" + userId +
                 "/" + true +
-                "?" + "${com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_DATE_WORKOUT_NAV_ARG}=${selectedDate.toEpochDay()}"
+                "?" + "selectedDate=${selectedDate.toEpochDay()}"
     )
 }
 
@@ -44,12 +45,16 @@ internal fun NavController.navigateToAddWorkoutScreen(
     selectedDate: LocalDate
 ) {
     Timber.d(
-        "$LOG_WORKOUT_SCREEN_ROUTE/$userId/true" +
-                "?" + "${com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_DATE_WORKOUT_NAV_ARG}=${selectedDate.toEpochDay()}"
+        LOG_WORKOUT_SCREEN_ROUTE +
+                "/" + userId +
+                "/" + true +
+                "?" + "selectedDate=${selectedDate.toEpochDay()}"
     )
     this.navigate(
-        "$LOG_WORKOUT_SCREEN_ROUTE/$userId/true" +
-                "?" + "${com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_DATE_WORKOUT_NAV_ARG}=${selectedDate.toEpochDay()}"
+        LOG_WORKOUT_SCREEN_ROUTE +
+                "/" + userId +
+                "/" + true +
+                "?" + "selectedDate=${selectedDate.toEpochDay()}"
     )
 }
 
@@ -58,18 +63,18 @@ internal fun NavController.navigateToAddWorkoutWithRoutine(
     routineId: String
 ) {
     Timber.d(
-        "$LOG_WORKOUT_SCREEN_ROUTE/$userId/true" +
-                "?" + "${com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_DATE_WORKOUT_NAV_ARG}=${
-            DateUtils.getCurrentDate().toEpochDay()
-        }" +
-                "&" + "${com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_ROUTINE_ID_NAV_ARG}=$routineId"
+        LOG_WORKOUT_SCREEN_ROUTE +
+                "/" + userId +
+                "/" + true +
+                "?" + "selectedDate=${DateUtils.getCurrentDate().toEpochDay()}" +
+                "&" + "selectedRoutineId=$routineId"
     )
     this.navigate(
-        "$LOG_WORKOUT_SCREEN_ROUTE/$userId/true" +
-                "?" + "${com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_DATE_WORKOUT_NAV_ARG}=${
-            DateUtils.getCurrentDate().toEpochDay()
-        }" +
-                "&" + "${com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_ROUTINE_ID_NAV_ARG}=$routineId"
+        LOG_WORKOUT_SCREEN_ROUTE +
+                "/" + userId +
+                "/" + true +
+                "?" + "selectedDate=${DateUtils.getCurrentDate().toEpochDay()}" +
+                "&" + "selectedRoutineId=$routineId"
     )
 }
 
@@ -79,12 +84,16 @@ internal fun NavController.navigateToEditWorkoutScreen(
     workoutId: String,
 ) {
     Timber.d(
-        "$LOG_WORKOUT_SCREEN_ROUTE/$userId/false" +
-                "?" + "${com.haidoan.android.stren.feat.training.history.log_workout.WORKOUT_ID_NAV_ARG}=$workoutId"
+        LOG_WORKOUT_SCREEN_ROUTE +
+                "/" + userId +
+                "/" + false +
+                "?" + "workoutId=$workoutId"
     )
     this.navigate(
-        "$LOG_WORKOUT_SCREEN_ROUTE/$userId/false" +
-                "?" + "${com.haidoan.android.stren.feat.training.history.log_workout.WORKOUT_ID_NAV_ARG}=$workoutId"
+        LOG_WORKOUT_SCREEN_ROUTE +
+                "/" + userId +
+                "/" + false +
+                "?" + "workoutId=$workoutId"
     )
 }
 
@@ -99,16 +108,16 @@ internal class LogWorkoutArgs(
 ) {
     constructor(savedStateHandle: SavedStateHandle) :
             this(
-                checkNotNull(savedStateHandle[com.haidoan.android.stren.feat.training.history.log_workout.USER_ID_WORKOUT_NAV_ARG]),
-                checkNotNull(savedStateHandle[com.haidoan.android.stren.feat.training.history.log_workout.IS_ADDING_WORKOUT_NAV_ARG]),
-                checkNotNull(savedStateHandle[com.haidoan.android.stren.feat.training.history.log_workout.WORKOUT_ID_NAV_ARG]),
+                checkNotNull(savedStateHandle["userId"]),
+                checkNotNull(savedStateHandle["isAddingWorkout"]),
+                checkNotNull(savedStateHandle["workoutId"]),
                 checkNotNull(
                     LocalDate.ofEpochDay(
-                        savedStateHandle[com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_DATE_WORKOUT_NAV_ARG]
+                        savedStateHandle["selectedDate"]
                             ?: 0L
                     )
                 ),
-                checkNotNull(savedStateHandle[com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_ROUTINE_ID_NAV_ARG]),
+                checkNotNull(savedStateHandle["selectedRoutineId"]),
             )
 }
 
@@ -123,16 +132,16 @@ internal class StartWorkoutArgs(
 ) {
     constructor(savedStateHandle: SavedStateHandle) :
             this(
-                checkNotNull(savedStateHandle[USER_ID_WORKOUT_NAV_ARG]),
-                checkNotNull(savedStateHandle[IS_ADDING_WORKOUT_NAV_ARG]),
-                checkNotNull(savedStateHandle[WORKOUT_ID_NAV_ARG]),
+                checkNotNull(savedStateHandle["userId"]),
+                checkNotNull(savedStateHandle["isAddingWorkout"]),
+                checkNotNull(savedStateHandle["workoutId"]),
                 checkNotNull(
                     LocalDate.ofEpochDay(
-                        savedStateHandle[SELECTED_DATE_WORKOUT_NAV_ARG]
+                        savedStateHandle["selectedDate"]
                             ?: 0L
                     )
                 ),
-                checkNotNull(savedStateHandle[SELECTED_ROUTINE_ID_NAV_ARG]),
+                checkNotNull(savedStateHandle["selectedRoutineId"]),
             )
 }
 
@@ -148,31 +157,30 @@ internal fun NavGraphBuilder.trainingHistoryGraph(
 ) {
     composable(
         route = LOG_WORKOUT_SCREEN_ROUTE +
-                "/" + "{${com.haidoan.android.stren.feat.training.history.log_workout.USER_ID_WORKOUT_NAV_ARG}}" +
-                "/" + "{${com.haidoan.android.stren.feat.training.history.log_workout.IS_ADDING_WORKOUT_NAV_ARG}}" +
-                "?" + "${com.haidoan.android.stren.feat.training.history.log_workout.WORKOUT_ID_NAV_ARG}={${com.haidoan.android.stren.feat.training.history.log_workout.WORKOUT_ID_NAV_ARG}}" +
-                "&" + "${com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_DATE_WORKOUT_NAV_ARG}={${com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_DATE_WORKOUT_NAV_ARG}}" +
-                "&" + "${com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_ROUTINE_ID_NAV_ARG}={${com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_ROUTINE_ID_NAV_ARG}}",
+                "/" + "{userId}" +
+                "/" + "{isAddingWorkout}" +
+                "?" + "workoutId={workoutId}" +
+                "&" + "selectedDate={selectedDate}" +
+                "&" + "selectedRoutineId={selectedRoutineId}",
 
         arguments = listOf(
-            navArgument(com.haidoan.android.stren.feat.training.history.log_workout.USER_ID_WORKOUT_NAV_ARG) {
+            navArgument("userId") {
                 type = NavType.StringType
             },
-            navArgument(com.haidoan.android.stren.feat.training.history.log_workout.IS_ADDING_WORKOUT_NAV_ARG) {
+            navArgument("isAddingWorkout") {
                 type = NavType.BoolType
             },
-            navArgument(com.haidoan.android.stren.feat.training.history.log_workout.WORKOUT_ID_NAV_ARG) {
+            navArgument("workoutId") {
                 type = NavType.StringType
                 defaultValue = UNDEFINED_WORKOUT_ID_NAV_ARG
             },
-            navArgument(com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_DATE_WORKOUT_NAV_ARG) {
+            navArgument("selectedDate") {
                 type = NavType.LongType
                 defaultValue = UNDEFINED_SELECTED_DATE_NAV_ARG
             },
-            navArgument(com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_ROUTINE_ID_NAV_ARG) {
+            navArgument("selectedRoutineId") {
                 type = NavType.StringType
-                defaultValue =
-                    com.haidoan.android.stren.feat.training.history.log_workout.NO_SELECTION_ROUTINE_ID
+                defaultValue = NO_SELECTION_ROUTINE_ID
             },
         )
 
@@ -180,7 +188,7 @@ internal fun NavGraphBuilder.trainingHistoryGraph(
         val exercisesIdsToAdd: List<String> by navBackStackEntry
             .savedStateHandle
             .getStateFlow(
-                com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_EXERCISES_IDS_SAVED_STATE_KEY,
+                SELECTED_EXERCISES_IDS_SAVED_STATE_KEY,
                 listOf<String>()
             )
             .collectAsStateWithLifecycle()
@@ -189,7 +197,7 @@ internal fun NavGraphBuilder.trainingHistoryGraph(
         LogWorkoutRoute(
             exercisesIdsToAdd = exercisesIdsToAdd,
             onAddExercisesCompleted = {
-                navBackStackEntry.savedStateHandle[com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_EXERCISES_IDS_SAVED_STATE_KEY] =
+                navBackStackEntry.savedStateHandle[SELECTED_EXERCISES_IDS_SAVED_STATE_KEY] =
                     listOf<String>()
             },
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
@@ -201,31 +209,30 @@ internal fun NavGraphBuilder.trainingHistoryGraph(
     }
     composable(
         route = START_WORKOUT_SCREEN_ROUTE +
-                "/" + "{${com.haidoan.android.stren.feat.training.history.log_workout.USER_ID_WORKOUT_NAV_ARG}}" +
-                "/" + "{${com.haidoan.android.stren.feat.training.history.log_workout.IS_ADDING_WORKOUT_NAV_ARG}}" +
-                "?" + "${com.haidoan.android.stren.feat.training.history.log_workout.WORKOUT_ID_NAV_ARG}={${com.haidoan.android.stren.feat.training.history.log_workout.WORKOUT_ID_NAV_ARG}}" +
-                "&" + "${com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_DATE_WORKOUT_NAV_ARG}={${com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_DATE_WORKOUT_NAV_ARG}}" +
-                "&" + "${com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_ROUTINE_ID_NAV_ARG}={${com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_ROUTINE_ID_NAV_ARG}}",
+                "/" + "{userId}" +
+                "/" + "{isAddingWorkout}" +
+                "?" + "workoutId={workoutId}" +
+                "&" + "selectedDate={selectedDate}" +
+                "&" + "selectedRoutineId={selectedRoutineId}",
 
         arguments = listOf(
-            navArgument(com.haidoan.android.stren.feat.training.history.log_workout.USER_ID_WORKOUT_NAV_ARG) {
+            navArgument("userId") {
                 type = NavType.StringType
             },
-            navArgument(com.haidoan.android.stren.feat.training.history.log_workout.IS_ADDING_WORKOUT_NAV_ARG) {
+            navArgument("isAddingWorkout") {
                 type = NavType.BoolType
             },
-            navArgument(com.haidoan.android.stren.feat.training.history.log_workout.WORKOUT_ID_NAV_ARG) {
+            navArgument("workoutId") {
                 type = NavType.StringType
                 defaultValue = UNDEFINED_WORKOUT_ID_NAV_ARG
             },
-            navArgument(com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_DATE_WORKOUT_NAV_ARG) {
+            navArgument("selectedDate") {
                 type = NavType.LongType
                 defaultValue = UNDEFINED_SELECTED_DATE_NAV_ARG
             },
-            navArgument(com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_ROUTINE_ID_NAV_ARG) {
+            navArgument("selectedRoutineId") {
                 type = NavType.StringType
-                defaultValue =
-                    com.haidoan.android.stren.feat.training.history.log_workout.NO_SELECTION_ROUTINE_ID
+                defaultValue = NO_SELECTION_ROUTINE_ID
             },
         )
 
@@ -233,7 +240,7 @@ internal fun NavGraphBuilder.trainingHistoryGraph(
         val exercisesIdsToAdd: List<String> by navBackStackEntry
             .savedStateHandle
             .getStateFlow(
-                com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_EXERCISES_IDS_SAVED_STATE_KEY,
+                SELECTED_EXERCISES_IDS_SAVED_STATE_KEY,
                 listOf<String>()
             )
             .collectAsStateWithLifecycle()
@@ -242,7 +249,7 @@ internal fun NavGraphBuilder.trainingHistoryGraph(
         StartWorkoutRoute(
             exercisesIdsToAdd = exercisesIdsToAdd,
             onAddExercisesCompleted = {
-                navBackStackEntry.savedStateHandle[com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_EXERCISES_IDS_SAVED_STATE_KEY] =
+                navBackStackEntry.savedStateHandle[SELECTED_EXERCISES_IDS_SAVED_STATE_KEY] =
                     listOf<String>()
             },
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
@@ -263,7 +270,7 @@ internal fun NavGraphBuilder.trainingHistoryGraph(
                 // For some reason, app crashes if "selectedExercisesIds" is not wrapped
                 // in listOf() call
                 navController.previousBackStackEntry?.savedStateHandle?.set(
-                    com.haidoan.android.stren.feat.training.history.log_workout.SELECTED_EXERCISES_IDS_SAVED_STATE_KEY,
+                    SELECTED_EXERCISES_IDS_SAVED_STATE_KEY,
                     listOf(selectedExercisesIds).flatten()
                 )
                 navController.popBackStack()
