@@ -176,6 +176,9 @@ internal fun StartWorkoutRoute(
                     )
                 })
         },
+        onIncrementRestTimerClick = workoutInProgressViewModel::incrementRestTimer,
+        onDecrementRestTimerClick = workoutInProgressViewModel::decrementRestTimer,
+        onSkipRestTimerClick = workoutInProgressViewModel::skipRestTimer,
     )
 }
 
@@ -199,7 +202,10 @@ internal fun StartWorkoutScreen(
     onAddSetToExercise: (TrainedExercise) -> Unit,
     onDeleteExercise: (TrainedExercise) -> Unit,
     onDeleteTrainingSet: (TrainedExercise, TrainingMeasurementMetrics) -> Unit,
-    onChangeCompleteStatusTrainingSetClick: (TrainedExercise, TrainingMeasurementMetrics, Boolean) -> Unit
+    onChangeCompleteStatusTrainingSetClick: (TrainedExercise, TrainingMeasurementMetrics, Boolean) -> Unit,
+    onIncrementRestTimerClick: () -> Unit,
+    onDecrementRestTimerClick: () -> Unit,
+    onSkipRestTimerClick: () -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -274,9 +280,10 @@ internal fun StartWorkoutScreen(
                 durationIncrementAmountInSeconds = workoutInProgressUiState.durationIncrementAmountInSeconds,
                 totalDurationInSeconds = workoutInProgressUiState.totalRestDurationInSeconds,
                 remainingDurationInSeconds = workoutInProgressUiState.remainingRestDurationInSeconds,
-                onDecrementDurationClick = { /*TODO*/ },
-                onIncrementDurationClick = { /*TODO*/ },
-                onSkipClick = {/*TODO*/ })
+                onDecrementDurationClick = onDecrementRestTimerClick,
+                onIncrementDurationClick = onIncrementRestTimerClick,
+                onSkipClick = onSkipRestTimerClick
+            )
         }
         StrenFilledButton(
             text = "Add exercise",

@@ -205,38 +205,53 @@ class WorkoutInProgressViewModel @Inject constructor(
         _uiState.update { it.copy(isTraineeWorkingOut = true) }
     }
 
-    private fun startRestTimer(totalRestDurationInSeconds: Long = _uiState.value.totalRestDurationInSeconds) {
-        _uiState.update { it.copy(isTraineeResting = true) }
+    private fun startRestTimer(
+        remainingRestDurationInSeconds: Long = _uiState.value.totalRestDurationInSeconds,
+        durationIncrementAmountInSeconds: Long = _uiState.value.durationIncrementAmountInSeconds,
+        durationDecrementAmountInSeconds: Long = _uiState.value.durationDecrementAmountInSeconds,
+    ) {
+        restTimer?.cancel()
+        _uiState.update {
+            it.copy(
+                isTraineeResting = true,
+                durationIncrementAmountInSeconds = durationIncrementAmountInSeconds,
+                durationDecrementAmountInSeconds = durationDecrementAmountInSeconds
+            )
+        }
         restTimer =
-            object : CountDownTimer(totalRestDurationInSeconds * 1000, 1000) {
+            object : CountDownTimer(remainingRestDurationInSeconds * 1000, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
                     _uiState.update { it.copy(remainingRestDurationInSeconds = _uiState.value.remainingRestDurationInSeconds - 1) }
                 }
 
                 override fun onFinish() {
-                    _uiState.update { it.copy(isTraineeResting = false) }
-                    _uiState.update { it.copy(remainingRestDurationInSeconds = totalRestDurationInSeconds) }
+                    _uiState.update {
+                        it.copy(
+                            isTraineeResting = false,
+                            remainingRestDurationInSeconds = _uiState.value.totalRestDurationInSeconds
+                        )
+                    }
                 }
             }.start()
     }
 
-    fun incrementRestTimer(durationAmountToIncrementInSeconds: Long) {
+    fun incrementRestTimer() {
         val remainingRestDuration =
-            _uiState.value.remainingRestDurationInSeconds + durationAmountToIncrementInSeconds
+            _uiState.value.remainingRestDurationInSeconds + _uiState.value.durationIncrementAmountInSeconds
         _uiState.update { it.copy(remainingRestDurationInSeconds = remainingRestDuration) }
         startRestTimer(
-            totalRestDurationInSeconds = remainingRestDuration
+            remainingRestDurationInSeconds = remainingRestDuration
         )
     }
 
-    fun decrementRestTimer(durationAmountToDecrementInSeconds: Long) {
+    fun decrementRestTimer() {
         val remainingRestDuration =
-            _uiState.value.remainingRestDurationInSeconds - durationAmountToDecrementInSeconds
+            _uiState.value.remainingRestDurationInSeconds - _uiState.value.durationDecrementAmountInSeconds
         if (remainingRestDuration < 1) {
             restTimer?.onFinish()
         } else {
             _uiState.update { it.copy(remainingRestDurationInSeconds = remainingRestDuration) }
-            startRestTimer(totalRestDurationInSeconds = remainingRestDuration)
+            startRestTimer(remainingRestDurationInSeconds = remainingRestDuration)
         }
     }
 
