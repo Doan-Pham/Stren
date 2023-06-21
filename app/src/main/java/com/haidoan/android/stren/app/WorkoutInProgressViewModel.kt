@@ -1,5 +1,6 @@
 package com.haidoan.android.stren.app
 
+import android.os.CountDownTimer
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -38,6 +39,8 @@ class WorkoutInProgressViewModel @Inject constructor(
 
     private val initArgs = MutableStateFlow(WorkoutInProgressInitArgs())
     var workoutNameTextFieldValue by mutableStateOf("New workout")
+    private var restTimer: CountDownTimer? = null
+
     var currentSelectedRoutineId by mutableStateOf(NO_SELECTION_ROUTINE_ID)
         private set
 
@@ -67,6 +70,14 @@ class WorkoutInProgressViewModel @Inject constructor(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             listOf()
+        )
+
+    private val _uiState = MutableStateFlow(WorkoutInProgressUiState())
+    val uiState: StateFlow<WorkoutInProgressUiState> = _uiState
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            WorkoutInProgressUiState()
         )
 
     init {
@@ -186,6 +197,52 @@ class WorkoutInProgressViewModel @Inject constructor(
 
         _trainedExercises.value = updatedTrainedExercises
         Timber.d("_trainedExercises: ${_trainedExercises.value}")
+
+        if (isTrainingSetComplete) startRestTimer()
+    }
+
+    fun startWorkingOut() {
+        _uiState.update { it.copy(isTraineeWorkingOut = true) }
+    }
+
+    private fun startRestTimer(totalRestDurationInSeconds: Long = _uiState.value.totalRestDurationInSeconds) {
+        _uiState.update { it.copy(isTraineeResting = true) }
+        restTimer =
+            object : CountDownTimer(totalRestDurationInSeconds * 1000, 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    _uiState.update { it.copy(remainingRestDurationInSeconds = _uiState.value.remainingRestDurationInSeconds - 1) }
+                }
+
+                override fun onFinish() {
+                    _uiState.update { it.copy(isTraineeResting = false) }
+                    _uiState.update { it.copy(remainingRestDurationInSeconds = totalRestDurationInSeconds) }
+                }
+            }.start()
+    }
+
+    fun incrementRestTimer(durationAmountToIncrementInSeconds: Long) {
+        val remainingRestDuration =
+            _uiState.value.remainingRestDurationInSeconds + durationAmountToIncrementInSeconds
+        _uiState.update { it.copy(remainingRestDurationInSeconds = remainingRestDuration) }
+        startRestTimer(
+            totalRestDurationInSeconds = remainingRestDuration
+        )
+    }
+
+    fun decrementRestTimer(durationAmountToDecrementInSeconds: Long) {
+        val remainingRestDuration =
+            _uiState.value.remainingRestDurationInSeconds - durationAmountToDecrementInSeconds
+        if (remainingRestDuration < 1) {
+            restTimer?.onFinish()
+        } else {
+            _uiState.update { it.copy(remainingRestDurationInSeconds = remainingRestDuration) }
+            startRestTimer(totalRestDurationInSeconds = remainingRestDuration)
+        }
+    }
+
+    fun skipRestTimer() {
+        restTimer?.onFinish()
+        restTimer?.cancel()
     }
 
     fun addEmptyTrainingSet(
@@ -271,6 +328,11 @@ class WorkoutInProgressViewModel @Inject constructor(
             )
         }
     }
+
+    override fun onCleared() {
+        super.onCleared()
+        restTimer?.cancel()
+    }
 }
 
 /**
@@ -280,4 +342,13 @@ data class WorkoutInProgressInitArgs(
     val userId: String = UNDEFINED_USER_ID,
     val selectedDate: LocalDate = DateUtils.getCurrentDate(),
     val selectedRoutineId: String = NO_SELECTION_ROUTINE_ID
+)
+
+data class WorkoutInProgressUiState(
+    val isTraineeWorkingOut: Boolean = false,
+    val isTraineeResting: Boolean = false,
+    val durationDecrementAmountInSeconds: Long = 15L,
+    val durationIncrementAmountInSeconds: Long = 15L,
+    val totalRestDurationInSeconds: Long = 60L,
+    val remainingRestDurationInSeconds: Long = 60L,
 )

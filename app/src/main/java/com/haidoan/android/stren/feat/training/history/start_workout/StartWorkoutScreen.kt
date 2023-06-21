@@ -26,6 +26,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.LocalActivity
 import com.haidoan.android.stren.app.WorkoutInProgressInitArgs
+import com.haidoan.android.stren.app.WorkoutInProgressUiState
 import com.haidoan.android.stren.app.WorkoutInProgressViewModel
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
@@ -58,6 +59,7 @@ internal fun StartWorkoutRoute(
     val routines by workoutInProgressViewModel.routines.collectAsStateWithLifecycle()
     val snackbarHostState = LocalSnackbarHostState.current
     val coroutineScope = rememberCoroutineScope()
+    val workoutInProgressUiState by workoutInProgressViewModel.uiState.collectAsStateWithLifecycle()
 
     workoutInProgressViewModel.setInitArgs(
         WorkoutInProgressInitArgs(
@@ -66,6 +68,7 @@ internal fun StartWorkoutRoute(
             selectedRoutineId = viewModel.navArgs.selectedRoutineId
         )
     )
+    workoutInProgressViewModel.startWorkingOut()
     viewModel.setTrainedExercises(trainedExercises)
 
     if (exercisesIdsToAdd.isNotEmpty()) {
@@ -147,6 +150,7 @@ internal fun StartWorkoutRoute(
     StartWorkoutScreen(
         modifier = modifier,
         uiState = uiState,
+        workoutInProgressUiState = workoutInProgressUiState,
         workoutName = workoutInProgressViewModel.workoutNameTextFieldValue,
         routines = routines,
         selectedRoutineId = workoutInProgressViewModel.currentSelectedRoutineId,
@@ -180,6 +184,7 @@ internal fun StartWorkoutRoute(
 internal fun StartWorkoutScreen(
     modifier: Modifier = Modifier,
     uiState: StartWorkoutUiState,
+    workoutInProgressUiState: WorkoutInProgressUiState,
     workoutName: String,
     routines: List<Routine>,
     onSelectRoutine: (routineId: String) -> Unit,
@@ -263,7 +268,16 @@ internal fun StartWorkoutScreen(
                 }
             }
         }
-
+        if (workoutInProgressUiState.isTraineeResting) {
+            CountdownTimerCard(
+                durationDecrementAmountInSeconds = workoutInProgressUiState.durationDecrementAmountInSeconds,
+                durationIncrementAmountInSeconds = workoutInProgressUiState.durationIncrementAmountInSeconds,
+                totalDurationInSeconds = workoutInProgressUiState.totalRestDurationInSeconds,
+                remainingDurationInSeconds = workoutInProgressUiState.remainingRestDurationInSeconds,
+                onDecrementDurationClick = { /*TODO*/ },
+                onIncrementDurationClick = { /*TODO*/ },
+                onSkipClick = {/*TODO*/ })
+        }
         StrenFilledButton(
             text = "Add exercise",
             onClickHandler = onNavigateToAddExercise,
