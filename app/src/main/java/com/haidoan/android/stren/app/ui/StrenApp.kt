@@ -3,24 +3,38 @@ package com.haidoan.android.stren.app.ui
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.haidoan.android.stren.app.LocalActivity
 import com.haidoan.android.stren.app.StrenAppViewModel
+import com.haidoan.android.stren.app.WorkoutInProgressViewModel
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.StrenNavHost
 import com.haidoan.android.stren.core.designsystem.component.BottomNavigationBar
 import com.haidoan.android.stren.core.designsystem.component.SearchBar
 import com.haidoan.android.stren.core.designsystem.component.StrenSmallTopAppBar
 import com.haidoan.android.stren.core.designsystem.component.TEST_TAG_TOP_BAR
+import com.haidoan.android.stren.core.designsystem.theme.Gray90
+import com.haidoan.android.stren.core.utils.DateUtils
 import com.haidoan.android.stren.feat.auth.AUTH_GRAH_ROUTE
 import com.haidoan.android.stren.feat.dashboard.DASHBOARD_GRAPH_ROUTE
+import com.haidoan.android.stren.feat.training.history.navigateToStartWorkoutScreen
 import timber.log.Timber
 
 val LocalSnackbarHostState =
@@ -29,6 +43,7 @@ val LocalSnackbarHostState =
 @Composable
 fun StrenApp(
     viewModel: StrenAppViewModel = hiltViewModel(),
+    workoutInProgressViewModel: WorkoutInProgressViewModel = hiltViewModel(LocalActivity.current),
     appState: StrenAppState = rememberStrenAppState(),
     onAuthStateResolved: () -> Unit,
 ) {
@@ -36,6 +51,8 @@ fun StrenApp(
     val userId by rememberSaveable { viewModel.userId }
     val isUserSignedIn by rememberSaveable { viewModel.isUserSignedIn }
     val shouldShowOnboarding by rememberSaveable { viewModel.shouldShowOnboarding }
+    val workoutInProgressUiState by workoutInProgressViewModel.uiState.collectAsStateWithLifecycle()
+
     if (isUserSignedIn != null) {
         LaunchedEffect(true) {
             onAuthStateResolved()
@@ -71,20 +88,34 @@ fun StrenApp(
                 }
             }
         ) {
-            StrenNavHost(
-                modifier = Modifier.padding(it),
-                navController = appState.navController,
-                isUserSignedIn = isUserSignedIn ?: false,
-                appBarConfigurationChangeHandler = { newConfiguration ->
-                    appState.previousAppBarConfiguration = appState.currentAppBarConfiguration
-                    appState.currentAppBarConfiguration = newConfiguration
-                },
-                shouldShowOnboarding = shouldShowOnboarding,
-                userId = userId,
-                startDestination =
-                if (isUserSignedIn == true) DASHBOARD_GRAPH_ROUTE
-                else AUTH_GRAH_ROUTE
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(it)
+            ) {
+                StrenNavHost(
+                    modifier = Modifier.weight(1f),
+                    navController = appState.navController,
+                    isUserSignedIn = isUserSignedIn ?: false,
+                    appBarConfigurationChangeHandler = { newConfiguration ->
+                        appState.previousAppBarConfiguration = appState.currentAppBarConfiguration
+                        appState.currentAppBarConfiguration = newConfiguration
+                    },
+                    shouldShowOnboarding = shouldShowOnboarding,
+                    userId = userId,
+                    startDestination =
+                    if (isUserSignedIn == true) DASHBOARD_GRAPH_ROUTE
+                    else AUTH_GRAH_ROUTE
+                )
+                if (workoutInProgressUiState.isTraineeWorkingOut && appState.shouldShowBottomBar) {
+                    WorkoutInProgressCard {
+                        appState.navController.navigateToStartWorkoutScreen(
+                            userId,
+                            DateUtils.getCurrentDate()
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -121,6 +152,24 @@ private fun StrenTopAppBar(
                 )
             }
         }
+    }
+}
 
+
+@Composable
+private fun WorkoutInProgressCard(
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .clickable { onClick() }
+            .fillMaxWidth()
+            .border(width = (1.5).dp, color = Gray90, shape = RoundedCornerShape(15.dp))
+            .clip(RoundedCornerShape(15.dp))
+            .padding(dimensionResource(id = com.haidoan.android.stren.R.dimen.padding_medium)),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+
+        Text("Workout in progress", style = MaterialTheme.typography.titleMedium)
     }
 }
