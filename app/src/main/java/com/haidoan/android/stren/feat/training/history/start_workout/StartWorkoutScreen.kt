@@ -61,13 +61,15 @@ internal fun StartWorkoutRoute(
     val coroutineScope = rememberCoroutineScope()
     val workoutInProgressUiState by workoutInProgressViewModel.uiState.collectAsStateWithLifecycle()
 
-    workoutInProgressViewModel.setInitArgs(
-        WorkoutInProgressInitArgs(
-            userId = viewModel.navArgs.userId,
-            selectedDate = viewModel.navArgs.selectedDate,
-            selectedRoutineId = viewModel.navArgs.selectedRoutineId
+    if (!workoutInProgressViewModel.isInitialized) {
+        workoutInProgressViewModel.setInitArgs(
+            WorkoutInProgressInitArgs(
+                userId = viewModel.navArgs.userId,
+                selectedDate = viewModel.navArgs.selectedDate,
+                selectedRoutineId = viewModel.navArgs.selectedRoutineId
+            )
         )
-    )
+    }
     workoutInProgressViewModel.startWorkingOut()
     viewModel.setTrainedExercises(trainedExercises)
 
@@ -344,7 +346,6 @@ private fun TrainedExerciseRegion(
         is TrainingMeasurementMetrics.DurationOnly -> headerTitles.addAll(listOf("Seconds"))
 
         is TrainingMeasurementMetrics.WeightAndRep -> headerTitles.addAll(listOf("Kg", "Reps"))
-
     }
 
     val measurementMetricsTextFields = createTrainingSetTextFields(
