@@ -3,6 +3,7 @@ package com.haidoan.android.stren.app
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.*
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivityResultRegistryOwner
@@ -10,6 +11,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -26,6 +30,7 @@ import com.haidoan.android.stren.app.ui.StrenApp
 import com.haidoan.android.stren.core.designsystem.theme.StrenTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 
 val LocalFacebookCallbackManager =
@@ -42,6 +47,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var signInRequest: BeginSignInRequest
     private var isLoading = true
     private val workoutInProgressViewModel by viewModels<WorkoutInProgressViewModel>()
+    private var isTraineeWorkingOut: Boolean? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -51,6 +57,15 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 workoutInProgressViewModel.uiState.collect { uiState ->
+                    Timber.d(" workoutInProgressViewModel.uiState.collect() - uiState: $uiState")
+
+                    // collect() will be triggered multiple times since uiState has some fields
+                    // that change regularly, but we only need to notification once the moment
+                    // user starts working out
+                    if (isTraineeWorkingOut != uiState.isTraineeWorkingOut) {
+                        isTraineeWorkingOut = uiState.isTraineeWorkingOut
+                        if (isTraineeWorkingOut == true) showWorkoutInProgressNotification()
+                    }
                     if (uiState.isTraineeFinishResting) {
                         vibrateDevice()
                         workoutInProgressViewModel.finishRestTimer()
@@ -58,8 +73,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
-
 
         Firebase.firestore.firestoreSettings =
             FirebaseFirestoreSettings.Builder().setPersistenceEnabled(false).build()
@@ -94,7 +107,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun createNotificationChannel() {
-
         val name = "notification_channel_stren"
         val descriptionText = "notification_channel_stren"
         val importance = NotificationManager.IMPORTANCE_DEFAULT
@@ -105,7 +117,34 @@ class MainActivity : ComponentActivity() {
         val notificationManager: NotificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
+    }
 
+    private fun showWorkoutInProgressNotification() {
+//        val pendingIntent =
+//            NavDeepLinkBuilder(context = applicationContext)
+//
+//                .setDestination(
+//                    getStartWorkoutScreenRoute(userId = workoutInProgressViewModel.cachedUserId)
+//                )
+//                .createPendingIntent()
+        val builder =
+            NotificationCompat.Builder(applicationContext, "CHANNEL_ID_STREN")
+                .setSmallIcon(R.drawable.ic_app_logo_no_padding)
+                .setContentTitle("Stren")
+                .setContentText("A workout in progress!")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//                .setContentIntent(pendingIntent)
+
+        with(NotificationManagerCompat.from(applicationContext)) {
+            if (ActivityCompat.checkSelfPermission(
+                    applicationContext,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return
+            }
+            notify(1234, builder.build())
+        }
     }
 
     @Suppress("DEPRECATION")
