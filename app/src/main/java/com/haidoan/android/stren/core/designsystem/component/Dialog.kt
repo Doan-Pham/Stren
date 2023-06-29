@@ -60,6 +60,57 @@ fun SimpleConfirmationDialog(
     )
 }
 
+@Composable
+fun SimpleConfirmationDialog(
+    state: ConfirmationDialogState
+) {
+    AlertDialog(
+        onDismissRequest = state.onDismissDialog,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    state.onConfirmClick()
+                    state.onDismissDialog()
+                }
+            ) {
+                Text(text = "Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = state.onDismissDialog
+            ) {
+                Text(text = "Dismiss")
+            }
+        },
+        title = {
+            Text(text = state.title)
+        },
+        text = {
+            Text(text = state.body)
+        },
+        modifier = Modifier
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        containerColor = Color.White
+    )
+}
+
+data class ConfirmationDialogState constructor(
+    val title: String,
+    val body: String,
+    val onConfirmClick: () -> Unit,
+    val onDismissDialog: () -> Unit
+) {
+    companion object {
+        val undefined = ConfirmationDialogState(
+            title = "title",
+            body = "Body",
+            onConfirmClick = {},
+            onDismissDialog = {})
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddMeasurementDialog(
