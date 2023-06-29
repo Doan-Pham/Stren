@@ -38,6 +38,12 @@ class WorkoutInProgressViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val initArgs = MutableStateFlow(WorkoutInProgressInitArgs())
+    var cachedUserId = ""
+        private set
+
+    var isInitialized by mutableStateOf(false)
+        private set
+
     var workoutNameTextFieldValue by mutableStateOf("New workout")
     private var restTimer: CountDownTimer? = null
 
@@ -94,8 +100,11 @@ class WorkoutInProgressViewModel @Inject constructor(
      * [WorkoutInProgressViewModel]'s init args differ from screens' nav args in that [WorkoutInProgressViewModel] is not tied to any screen, so it can't use savedStateHandle to fetch such arguments. Therefore, this method is implemented to manually set such args
      */
     fun setInitArgs(initArgs: WorkoutInProgressInitArgs) {
+        cachedUserId = initArgs.userId
+        this.isInitialized = true
         this.initArgs.update { initArgs }
     }
+
 
     fun selectRoutine(newlySelectedRoutineId: String) {
         if (newlySelectedRoutineId == currentSelectedRoutineId) return
@@ -202,6 +211,7 @@ class WorkoutInProgressViewModel @Inject constructor(
     }
 
     fun startWorkingOut() {
+        Timber.d("startWorkingOut()")
         _uiState.update { it.copy(isTraineeWorkingOut = true) }
     }
 
@@ -214,6 +224,7 @@ class WorkoutInProgressViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 isTraineeResting = true,
+                remainingRestDurationInSeconds = remainingRestDurationInSeconds,
                 durationIncrementAmountInSeconds = durationIncrementAmountInSeconds,
                 durationDecrementAmountInSeconds = durationDecrementAmountInSeconds
             )
@@ -227,12 +238,21 @@ class WorkoutInProgressViewModel @Inject constructor(
                 override fun onFinish() {
                     _uiState.update {
                         it.copy(
+                            isTraineeFinishResting = true,
                             isTraineeResting = false,
                             remainingRestDurationInSeconds = _uiState.value.totalRestDurationInSeconds
                         )
                     }
                 }
             }.start()
+    }
+
+    fun finishRestTimer() {
+        _uiState.update {
+            it.copy(
+                isTraineeFinishResting = false,
+            )
+        }
     }
 
     fun incrementRestTimer() {
@@ -256,6 +276,13 @@ class WorkoutInProgressViewModel @Inject constructor(
     }
 
     fun skipRestTimer() {
+        _uiState.update {
+            it.copy(
+                isTraineeFinishResting = true,
+                isTraineeResting = false,
+                remainingRestDurationInSeconds = _uiState.value.totalRestDurationInSeconds
+            )
+        }
         restTimer?.onFinish()
         restTimer?.cancel()
     }
@@ -330,8 +357,8 @@ class WorkoutInProgressViewModel @Inject constructor(
         Timber.d("_trainedExercises: ${_trainedExercises.value}")
     }
 
-    fun addWorkout() {
-        Timber.d("addWorkout() - userId: ${initArgs.value.userId}")
+    fun finishWorkout() {
+        Timber.d("finishWorkout() - userId: ${initArgs.value.userId}")
         viewModelScope.launch {
             workoutsRepository.addWorkout(
                 userId = initArgs.value.userId,
@@ -342,6 +369,33 @@ class WorkoutInProgressViewModel @Inject constructor(
                 )
             )
         }
+        restTimer?.cancel()
+        _uiState.update {
+            it.copy(
+                isTraineeWorkingOut = false,
+                isTraineeResting = false,
+                isTraineeFinishResting = false
+            )
+        }
+        _trainedExercises.value = listOf()
+        currentSelectedRoutineId = NO_SELECTION_ROUTINE_ID
+        isInitialized = false
+        workoutNameTextFieldValue = "New Workout"
+    }
+
+    fun cancelWorkout() {
+        restTimer?.cancel()
+        _uiState.update {
+            it.copy(
+                isTraineeWorkingOut = false,
+                isTraineeResting = false,
+                isTraineeFinishResting = false
+            )
+        }
+        _trainedExercises.value = listOf()
+        currentSelectedRoutineId = NO_SELECTION_ROUTINE_ID
+        isInitialized = false
+        workoutNameTextFieldValue = "New Workout"
     }
 
     override fun onCleared() {
@@ -362,6 +416,7 @@ data class WorkoutInProgressInitArgs(
 data class WorkoutInProgressUiState(
     val isTraineeWorkingOut: Boolean = false,
     val isTraineeResting: Boolean = false,
+    val isTraineeFinishResting: Boolean = false,
     val durationDecrementAmountInSeconds: Long = 15L,
     val durationIncrementAmountInSeconds: Long = 15L,
     val totalRestDurationInSeconds: Long = 60L,

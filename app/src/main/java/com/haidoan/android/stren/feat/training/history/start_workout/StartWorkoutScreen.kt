@@ -60,6 +60,7 @@ internal fun StartWorkoutRoute(
     val snackbarHostState = LocalSnackbarHostState.current
     val coroutineScope = rememberCoroutineScope()
     val workoutInProgressUiState by workoutInProgressViewModel.uiState.collectAsStateWithLifecycle()
+    var isWorkoutFinished by remember { mutableStateOf(false) }
 
     if (!workoutInProgressViewModel.isInitialized) {
         workoutInProgressViewModel.setInitArgs(
@@ -70,44 +71,34 @@ internal fun StartWorkoutRoute(
             )
         )
     }
-    workoutInProgressViewModel.startWorkingOut()
+
+    // Without this check, workout will be started for an unpredictable number of times
+    // since recompositions happen irregularly
+    if (!isWorkoutFinished) {
+        workoutInProgressViewModel.startWorkingOut()
+    }
+
     viewModel.setTrainedExercises(trainedExercises)
 
     if (exercisesIdsToAdd.isNotEmpty()) {
         workoutInProgressViewModel.setExercisesIdsToAdd(exercisesIdsToAdd)
         onAddExercisesCompleted()
     }
-
-    if (secondaryUiState.shouldShowBackConfirmDialog) {
-        SimpleConfirmationDialog(
-            onDismissDialog = { viewModel.updateBackConfirmDialogState(false) },
-            title = "Your changes are not saved",
-            body = "This action can't be undone. Are you sure don't want to save your changes?"
-        ) {
-            onBackToPreviousScreen()
-        }
-    }
-    if (secondaryUiState.shouldShowRoutineWarningDialog) {
-        SimpleConfirmationDialog(
-            onDismissDialog = { viewModel.updateRoutineWarningDialogState(false) },
-            title = "Switch to another routine",
-            body = "Once you you switch to another routine, the exercises you've added will be lost. Are you sure you want to continue?"
-        ) {
-            secondaryUiState.onConfirmSwitchRoutine()
-        }
+    if (secondaryUiState.shouldShowConfirmDialog) {
+        SimpleConfirmationDialog(state = secondaryUiState.confirmDialogState)
     }
 
     val startWorkoutAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         title = "Workout",
         navigationIcon = IconButtonInfo.BACK_ICON.copy(clickHandler = onBackToPreviousScreen),
         actionIcons = listOf(
-            IconButtonInfo(
-                drawableResourceId = R.drawable.ic_clock,
-                description = "Menu Item Clock",
-                clickHandler = {
-//TODO: Clock Menu Item Click
-                }
-            ),
+//            IconButtonInfo(
+//                drawableResourceId = R.drawable.ic_clock,
+//                description = "Menu Item Clock",
+//                clickHandler = {
+////TODO: Clock Menu Item Click
+//                }
+//            ),
             IconButtonInfo(
                 drawableResourceId = R.drawable.ic_check_mark,
                 description = "Menu Item Finish Workout",
@@ -134,8 +125,20 @@ internal fun StartWorkoutRoute(
                                 )
                             }
                         } else {
-                            workoutInProgressViewModel.addWorkout()
-                            onBackToPreviousScreen()
+                            if (trainedExercises.flatMap { it.trainingSets }
+                                    .none { it.isComplete }) {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "Please complete your training",
+                                        duration = SnackbarDuration.Short,
+                                        withDismissAction = true
+                                    )
+                                }
+                            } else {
+                                isWorkoutFinished = true
+                                workoutInProgressViewModel.finishWorkout()
+                                onBackToPreviousScreen()
+                            }
                         }
                     }
                 }
@@ -181,9 +184,17 @@ internal fun StartWorkoutRoute(
         onIncrementRestTimerClick = workoutInProgressViewModel::incrementRestTimer,
         onDecrementRestTimerClick = workoutInProgressViewModel::decrementRestTimer,
         onSkipRestTimerClick = workoutInProgressViewModel::skipRestTimer,
+        onCancelWorkoutClick = {
+            viewModel.cancelWorkout(onCancelWorkout = {
+                isWorkoutFinished = true
+                workoutInProgressViewModel.cancelWorkout()
+                onBackToPreviousScreen()
+            })
+        }
     )
 }
 
+// TODO: Encapsulate the below fields and methods in some state holder
 @SuppressLint("NewApi")
 @Composable
 internal fun StartWorkoutScreen(
@@ -194,6 +205,7 @@ internal fun StartWorkoutScreen(
     routines: List<Routine>,
     onSelectRoutine: (routineId: String) -> Unit,
     selectedRoutineId: String,
+    onCancelWorkoutClick: () -> Unit,
     onWorkoutNameChange: (String) -> Unit,
     onNavigateToAddExercise: () -> Unit,
     onUpdateExercise: (
@@ -275,6 +287,16 @@ internal fun StartWorkoutScreen(
                     }
                 }
             }
+            item {
+                StrenTextButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = dimensionResource(id = R.dimen.padding_small)),
+                    text = "Cancel workout",
+                    onClickHandler = onCancelWorkoutClick,
+                    textStyle = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
         if (workoutInProgressUiState.isTraineeResting) {
             CountdownTimerCard(
@@ -298,6 +320,7 @@ internal fun StartWorkoutScreen(
 @Composable
 private fun LazyItemScope.EmptyScreen() {
     Column(
+        // TODO: Show empty screen as half of remainning space
         // This is a workaround since mixing scrollable column and lazycolum is
         // impossible
         modifier = Modifier

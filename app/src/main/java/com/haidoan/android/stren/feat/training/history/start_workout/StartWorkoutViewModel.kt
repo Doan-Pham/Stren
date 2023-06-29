@@ -55,6 +55,26 @@ internal class StartWorkoutViewModel @Inject constructor(
     }
 
     /**
+     * Since [StartWorkoutViewModel] simply holds uiState for [StartWorkoutScreen] and doesn't hold any business logic (Which is hoisted up in [WorkoutInProgressViewModel] for use across different screens), this method simply does some checks before delegating the actual business logic to [onCancelWorkout] param
+     */
+
+    fun cancelWorkout(onCancelWorkout: () -> Unit) {
+        _secondaryUiState.update { currentState ->
+            currentState.copy(
+                shouldShowConfirmDialog = true,
+                confirmDialogState = ConfirmationDialogState(
+                    title = "Cancel workout",
+                    body = "Are you sure you want to cancel this workout? This action can't be undone ",
+                    onDismissDialog = {
+                        _secondaryUiState.update { it.copy(shouldShowConfirmDialog = false) }
+                    },
+                    onConfirmClick = onCancelWorkout
+                )
+            )
+        }
+    }
+
+    /**
      * Since [StartWorkoutViewModel] simply holds uiState for [StartWorkoutScreen] and doesn't hold any business logic (Which is hoisted up in [WorkoutInProgressViewModel] for use across different screens), this method simply does some checks before delegating the actual logic selection to [onToggleTrainingSetCompleteState] param
      */
     fun toggleTrainingSetCompleteState(
