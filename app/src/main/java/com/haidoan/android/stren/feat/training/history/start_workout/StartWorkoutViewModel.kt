@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.haidoan.android.stren.core.designsystem.component.ConfirmationDialogState
 import com.haidoan.android.stren.core.model.*
 import com.haidoan.android.stren.feat.training.history.StartWorkoutArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,31 +31,25 @@ internal class StartWorkoutViewModel @Inject constructor(
     private val _secondaryUiState = MutableStateFlow(StartWorkoutSecondaryUiState())
     val secondaryUiState: StateFlow<StartWorkoutSecondaryUiState> = _secondaryUiState
 
-    fun updateBackConfirmDialogState(shouldShowDialog: Boolean) {
-        _secondaryUiState.update { currentState -> currentState.copy(shouldShowBackConfirmDialog = shouldShowDialog) }
-    }
-
-    fun updateRoutineWarningDialogState(shouldShowDialog: Boolean) {
-        _secondaryUiState.update { currentState ->
-            currentState.copy(shouldShowRoutineWarningDialog = shouldShowDialog)
-        }
-    }
-
     /**
      * Since [StartWorkoutViewModel] simply holds uiState for [StartWorkoutScreen] and doesn't hold any business logic (Which is hoisted up in [WorkoutInProgressViewModel] for use across different screens), this method simply does some checks before delegating the actual routine selection to [onSelectRoutine] param
      */
     fun selectRoutineDropdownOption(selectedOptionRoutineId: String, onSelectRoutine: () -> Unit) {
         if (_trainedExercises.value.isEmpty()) {
-            if (selectedOptionRoutineId != NO_SELECTION_ROUTINE_ID) {
-                onSelectRoutine()
-            }
+            if (selectedOptionRoutineId != NO_SELECTION_ROUTINE_ID) onSelectRoutine()
         } else {
             _secondaryUiState.update { currentState ->
                 currentState.copy(
-                    shouldShowRoutineWarningDialog = true,
-                    onConfirmSwitchRoutine = {
-                        onSelectRoutine()
-                    })
+                    shouldShowConfirmDialog = true,
+                    confirmDialogState = ConfirmationDialogState(
+                        title = "Switch to another routine",
+                        body = "Once you you switch to another routine, the exercises you've added will be lost. Are you sure you want to continue?",
+                        onDismissDialog = {
+                            _secondaryUiState.update { it.copy(shouldShowConfirmDialog = false) }
+                        },
+                        onConfirmClick = onSelectRoutine
+                    )
+                )
             }
         }
     }
@@ -89,5 +84,4 @@ internal class StartWorkoutViewModel @Inject constructor(
         }.stateIn(
             viewModelScope, SharingStarted.WhileSubscribed(5000), StartWorkoutUiState.Loading
         )
-
 }
