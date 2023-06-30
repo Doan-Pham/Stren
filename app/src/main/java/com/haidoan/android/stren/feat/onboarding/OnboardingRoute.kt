@@ -158,7 +158,7 @@ private fun BasicProfileOnboardingScreen(
             modifier = Modifier.fillMaxWidth(),
             number = age,
             onValueChange = {
-                onUiStateChange(uiState.copy(age = it.toLong()))
+                onUiStateChange(uiState.copy(age = it))
             },
             label = "Age",
             isError = age == 0L,
@@ -169,7 +169,7 @@ private fun BasicProfileOnboardingScreen(
             modifier = Modifier.fillMaxWidth(),
             number = weight,
             onValueChange = {
-                onUiStateChange(uiState.copy(weight = it.toFloat()))
+                onUiStateChange(uiState.copy(weight = it))
             },
             label = "Weight",
             suffixText = "kg",
@@ -180,7 +180,7 @@ private fun BasicProfileOnboardingScreen(
             modifier = Modifier.fillMaxWidth(),
             number = height,
             onValueChange = {
-                onUiStateChange(uiState.copy(height = it.toFloat()))
+                onUiStateChange(uiState.copy(height = it))
             },
             label = "Height",
             suffixText = "cm",

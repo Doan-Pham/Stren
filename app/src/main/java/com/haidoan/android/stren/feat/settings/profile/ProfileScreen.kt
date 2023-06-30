@@ -137,7 +137,7 @@ private fun ProfileScreen(
                     modifier = Modifier.fillMaxWidth(),
                     number = age,
                     onValueChange = {
-                        onUiStateChange(currentUser.copy(age = it.toLong()))
+                        onUiStateChange(currentUser.copy(age = it))
                     },
                     label = "Age",
                     isError = age == 0L,
@@ -149,7 +149,7 @@ private fun ProfileScreen(
                         number = record.value,
                         onValueChange = { value ->
                             val newRecords =
-                                biometrics.replaceWith(record.copy(value = value.toFloat())) {
+                                biometrics.replaceWith(record.copy(value = value)) {
                                     it.biometricsId == record.biometricsId
                                 }
                             onUiStateChange(currentUser.copy(biometricsRecords = newRecords))
