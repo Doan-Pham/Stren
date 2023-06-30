@@ -164,7 +164,11 @@ private fun WorkoutInProgressCard(
         modifier = Modifier
             .clickable { onClick() }
             .fillMaxWidth()
-            .border(width = (1.5).dp, color = Gray90, shape = RoundedCornerShape(15.dp))
+            .border(
+                width = (1).dp,
+                color = Gray90,
+                shape = RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp)
+            )
             .clip(RoundedCornerShape(15.dp))
             .padding(dimensionResource(id = com.haidoan.android.stren.R.dimen.padding_medium)),
         horizontalAlignment = Alignment.CenterHorizontally,
