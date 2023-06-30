@@ -157,7 +157,7 @@ fun AddMeasurementDialog(
                     modifier = Modifier.fillMaxWidth(),
                     number = inputValue,
                     onValueChange = {
-                        inputValue = it.toFloat()
+                        inputValue = it
                     },
                     label = "Value",
                     suffixText = selectedBiometrics.measurementUnit,
