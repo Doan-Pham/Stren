@@ -29,13 +29,11 @@ internal fun NavController.navigateToStartWorkoutScreen(
     Timber.d(
         START_WORKOUT_SCREEN_ROUTE +
                 "/" + userId +
-                "/" + true +
                 "?" + "selectedDate=${selectedDate.toEpochDay()}"
     )
     this.navigate(
         START_WORKOUT_SCREEN_ROUTE +
                 "/" + userId +
-                "/" + true +
                 "?" + "selectedDate=${selectedDate.toEpochDay()}"
     )
 }
@@ -125,7 +123,6 @@ internal class LogWorkoutArgs(
 // to easily grabs nav args. Or else, it has to know all the nav args' names
 internal class StartWorkoutArgs(
     val userId: String,
-    val isAddingWorkout: Boolean,
     val workoutId: String,
     val selectedDate: LocalDate,
     val selectedRoutineId: String
@@ -133,7 +130,6 @@ internal class StartWorkoutArgs(
     constructor(savedStateHandle: SavedStateHandle) :
             this(
                 checkNotNull(savedStateHandle["userId"]),
-                checkNotNull(savedStateHandle["isAddingWorkout"]),
                 checkNotNull(savedStateHandle["workoutId"]),
                 checkNotNull(
                     LocalDate.ofEpochDay(
@@ -210,17 +206,12 @@ internal fun NavGraphBuilder.trainingHistoryGraph(
     composable(
         route = START_WORKOUT_SCREEN_ROUTE +
                 "/" + "{userId}" +
-                "/" + "{isAddingWorkout}" +
                 "?" + "workoutId={workoutId}" +
                 "&" + "selectedDate={selectedDate}" +
                 "&" + "selectedRoutineId={selectedRoutineId}",
-
         arguments = listOf(
             navArgument("userId") {
                 type = NavType.StringType
-            },
-            navArgument("isAddingWorkout") {
-                type = NavType.BoolType
             },
             navArgument("workoutId") {
                 type = NavType.StringType
@@ -235,7 +226,6 @@ internal fun NavGraphBuilder.trainingHistoryGraph(
                 defaultValue = NO_SELECTION_ROUTINE_ID
             },
         )
-
     ) { navBackStackEntry ->
         val exercisesIdsToAdd: List<String> by navBackStackEntry
             .savedStateHandle
