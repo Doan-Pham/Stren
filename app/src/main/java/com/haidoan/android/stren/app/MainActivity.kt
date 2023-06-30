@@ -32,7 +32,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-
+private const val NOTIFICATION_ID = 1234
 val LocalFacebookCallbackManager =
     staticCompositionLocalOf<CallbackManager> { error("No CallbackManager provided") }
 val LocalActivity = staticCompositionLocalOf<ComponentActivity> {
@@ -48,6 +48,7 @@ class MainActivity : ComponentActivity() {
     private var isLoading = true
     private val workoutInProgressViewModel by viewModels<WorkoutInProgressViewModel>()
     private var isTraineeWorkingOut: Boolean? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -60,11 +61,19 @@ class MainActivity : ComponentActivity() {
                     Timber.d(" workoutInProgressViewModel.uiState.collect() - uiState: $uiState")
 
                     // collect() will be triggered multiple times since uiState has some fields
-                    // that change regularly, but we only need to notification once the moment
-                    // user starts working out
+                    // that change regularly, but we only need to show notification once
                     if (isTraineeWorkingOut != uiState.isTraineeWorkingOut) {
+                        // If isTraineeWorkingOut == true && uiState.isTraineeWorkingOut == false, which means user's finished working out, remove notification
+                        if (isTraineeWorkingOut == true) {
+                            NotificationManagerCompat.from(applicationContext).cancel(
+                                NOTIFICATION_ID
+                            )
+                        } else if (isTraineeWorkingOut == false) {
+                            // If isTraineeWorkingOut == false && uiState.isTraineeWorkingOut == true, it means user's has started working out, then show notification
+                            showWorkoutInProgressNotification()
+                        }
                         isTraineeWorkingOut = uiState.isTraineeWorkingOut
-                        if (isTraineeWorkingOut == true) showWorkoutInProgressNotification()
+
                     }
                     if (uiState.isTraineeFinishResting) {
                         vibrateDevice()
@@ -78,20 +87,13 @@ class MainActivity : ComponentActivity() {
             FirebaseFirestoreSettings.Builder().setPersistenceEnabled(false).build()
 
         oneTapClient = Identity.getSignInClient(this)
-        signInRequest = BeginSignInRequest.builder()
-            .setPasswordRequestOptions(
-                BeginSignInRequest.PasswordRequestOptions.builder()
-                    .setSupported(true)
-                    .build()
-            )
-            .setGoogleIdTokenRequestOptions(
-                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
-                    .setSupported(true)
-                    // Your server's client ID, not your Android client ID.
-                    .setServerClientId(getString(R.string.GOOGLE_WEB_CLIENT_ID))
-                    .build()
-            )
-            .build()
+        signInRequest = BeginSignInRequest.builder().setPasswordRequestOptions(
+            BeginSignInRequest.PasswordRequestOptions.builder().setSupported(true).build()
+        ).setGoogleIdTokenRequestOptions(
+            BeginSignInRequest.GoogleIdTokenRequestOptions.builder().setSupported(true)
+                // Your server's client ID, not your Android client ID.
+                .setServerClientId(getString(R.string.GOOGLE_WEB_CLIENT_ID)).build()
+        ).build()
 
         setContent {
             StrenTheme {
@@ -127,23 +129,20 @@ class MainActivity : ComponentActivity() {
 //                    getStartWorkoutScreenRoute(userId = workoutInProgressViewModel.cachedUserId)
 //                )
 //                .createPendingIntent()
-        val builder =
-            NotificationCompat.Builder(applicationContext, "CHANNEL_ID_STREN")
-                .setSmallIcon(R.drawable.ic_app_logo_no_padding)
-                .setContentTitle("Stren")
-                .setContentText("A workout in progress!")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        val builder = NotificationCompat.Builder(applicationContext, "CHANNEL_ID_STREN")
+            .setSmallIcon(R.drawable.ic_app_logo_no_padding).setContentTitle("Stren")
+            .setContentText("A workout in progress!")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 //                .setContentIntent(pendingIntent)
 
         with(NotificationManagerCompat.from(applicationContext)) {
             if (ActivityCompat.checkSelfPermission(
-                    applicationContext,
-                    android.Manifest.permission.POST_NOTIFICATIONS
+                    applicationContext, android.Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 return
             }
-            notify(1234, builder.build())
+            notify(NOTIFICATION_ID, builder.build())
         }
     }
 
