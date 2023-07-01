@@ -105,7 +105,7 @@ internal fun EditFoodEntryScreen(
 
                     SimpleNumberTextField(
                         modifier = Modifier.weight(1f),
-                        number = foodAmountInGram,
+                        value = foodAmountInGram,
                         onValueChange = {
                             onChangeFoodAmount(it)
                         })

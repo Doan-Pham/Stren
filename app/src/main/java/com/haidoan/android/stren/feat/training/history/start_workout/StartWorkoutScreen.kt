@@ -490,7 +490,7 @@ private fun createTrainingSetTextFields(
             return listOf({ modifierParam, oldMetrics ->
                 SimpleNumberTextField(
                     modifier = modifierParam,
-                    number = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).kilometers,
+                    value = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).kilometers,
                     onValueChange = {
                         onUpdateExercise(
                             trainedExercise, oldMetrics, oldMetrics.copy(
@@ -501,7 +501,7 @@ private fun createTrainingSetTextFields(
             }, { modifierParam, oldMetrics ->
                 SimpleNumberTextField(
                     modifier = modifierParam,
-                    number = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).hours,
+                    value = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).hours,
                     onValueChange = {
                         onUpdateExercise(
                             trainedExercise, oldMetrics, oldMetrics.copy(
@@ -515,7 +515,7 @@ private fun createTrainingSetTextFields(
             return listOf { modifierParam, oldMetrics ->
                 SimpleNumberTextField(
                     modifier = modifierParam,
-                    number = (oldMetrics as TrainingMeasurementMetrics.DurationOnly).seconds,
+                    value = (oldMetrics as TrainingMeasurementMetrics.DurationOnly).seconds,
                     onValueChange = {
                         onUpdateExercise(
                             trainedExercise, oldMetrics, oldMetrics.copy(
@@ -529,7 +529,7 @@ private fun createTrainingSetTextFields(
             return listOf({ modifierParam, oldMetrics ->
                 SimpleNumberTextField(
                     modifier = modifierParam,
-                    number = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).weight,
+                    value = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).weight,
                     onValueChange = {
                         onUpdateExercise(
                             trainedExercise, oldMetrics, oldMetrics.copy(
@@ -540,7 +540,7 @@ private fun createTrainingSetTextFields(
             }, { modifierParam, oldMetrics ->
                 SimpleNumberTextField(
                     modifier = modifierParam,
-                    number = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).repAmount,
+                    value = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).repAmount,
                     onValueChange = {
                         onUpdateExercise(
                             trainedExercise, oldMetrics, oldMetrics.copy(
