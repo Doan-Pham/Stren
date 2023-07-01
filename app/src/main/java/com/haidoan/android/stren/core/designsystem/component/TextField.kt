@@ -24,6 +24,7 @@ import com.haidoan.android.stren.R
 import com.haidoan.android.stren.core.designsystem.theme.Gray95
 import com.haidoan.android.stren.core.utils.NumberUtils.castTo
 import com.haidoan.android.stren.core.utils.ValidationUtils
+import timber.log.Timber
 import java.math.RoundingMode
 import java.text.DecimalFormat
 
@@ -68,8 +69,10 @@ fun StrenOutlinedTextField(
             if (isError) Text(text = errorText)
         },
         colors = TextFieldDefaults.colors(
+            unfocusedContainerColor = Transparent,
+            focusedContainerColor = Transparent,
             disabledTextColor = MaterialTheme.colorScheme.onBackground,
-            disabledContainerColor = Color.Transparent,
+            disabledContainerColor = Transparent,
             disabledIndicatorColor = MaterialTheme.colorScheme.onBackground,
             disabledLabelColor = MaterialTheme.colorScheme.onBackground,
         ),
@@ -114,8 +117,8 @@ fun SimpleTextField(
                 focusedContainerColor = Gray95,
                 unfocusedContainerColor = Gray95,
                 focusedTextColor = Black,
-                focusedIndicatorColor = Color.Transparent, //hide the indicator
-                unfocusedIndicatorColor = Color.Transparent
+                focusedIndicatorColor = Transparent, //hide the indicator
+                unfocusedIndicatorColor = Transparent
             ),
         )
     }
@@ -123,9 +126,11 @@ fun SimpleTextField(
 
 @Composable
 inline fun <reified NumberType : Number> SimpleNumberTextField(
-    modifier: Modifier, number: NumberType, crossinline onValueChange: (NumberType) -> Unit
+    modifier: Modifier,
+    value: NumberType,
+    crossinline onValueChange: (NumberType) -> Unit
 ) {
-    NumberTextFieldWrapper(value = number, onValueChange = onValueChange) { text, onTextChange ->
+    NumberTextFieldWrapper(value = value, onValueChange = onValueChange) { text, onTextChange ->
         SimpleTextField(
             modifier = modifier,
             value = text,
@@ -158,6 +163,14 @@ inline fun <reified NumberType : Number> OutlinedNumberTextField(
                     }
                 },
                 isError = isError,
+                colors = TextFieldDefaults.colors(
+                    unfocusedContainerColor = Transparent,
+                    focusedContainerColor = Transparent,
+                    disabledTextColor = MaterialTheme.colorScheme.onBackground,
+                    disabledContainerColor = Transparent,
+                    disabledIndicatorColor = MaterialTheme.colorScheme.onBackground,
+                    disabledLabelColor = MaterialTheme.colorScheme.onBackground,
+                ),
                 supportingText = {
                     if (isError) Text(text = errorText)
                 },
@@ -176,12 +189,13 @@ inline fun <reified NumberType : Number> OutlinedNumberTextField(
 inline fun <reified NumberType : Number> NumberTextFieldWrapper(
     value: NumberType,
     crossinline onValueChange: (NumberType) -> Unit,
+    digitCountBehindDecimalPoint: Int = 2,
     numberTextFieldComposable: @Composable
         (text: String, onTextChange: (String) -> Unit) -> Unit
 ) {
     when (NumberType::class) {
         Byte::class, Short::class, Long::class, Int::class -> {
-            val textFieldValue = if (value == 0L) "" else value.toString()
+            val textFieldValue = if (value.toByte().compareTo(0) == 0) "" else value.toString()
             numberTextFieldComposable(text = textFieldValue, onTextChange = {
                 val newTextFieldValue = it.filter { char -> char.isDigit() }
                 val newNumberValue =
@@ -195,7 +209,7 @@ inline fun <reified NumberType : Number> NumberTextFieldWrapper(
         Double::class, Float::class -> {
             /**
              * TextField should only show decimal point in 2 cases:
-             * - The value behind decimal point is not 0.0
+             * - The value behind decimal point is not 0
              * - That decimal point is input from user
              *
              * So "hasDecimalPoint" var solves the 2nd case and "previousTextFieldValue" helps
@@ -203,20 +217,26 @@ inline fun <reified NumberType : Number> NumberTextFieldWrapper(
              */
             var hasDecimalPoint by remember { mutableStateOf(false) }
             var previousTextFieldValue by remember { mutableStateOf("") }
+            var isUserTyping by remember { mutableStateOf(false) }
 
-            val df = DecimalFormat("#.#")
-            df.roundingMode = RoundingMode.CEILING
+            val decimalFormatPattern = buildString {
+                append("#.")
+                append("#".repeat(digitCountBehindDecimalPoint))
+            }
+            Timber.d("decimalFormatPattern: $decimalFormatPattern")
+            val df = DecimalFormat(decimalFormatPattern)
+            df.roundingMode = RoundingMode.UNNECESSARY
 
             val numberAfterCasting = df.format(value).toDouble()
 
-            val textFieldValue = if (numberAfterCasting == 0.0) ""
-            else if (numberAfterCasting.rem(1) == 0.0) {
-                if (hasDecimalPoint) value.toLong().toString() + "."
-                else numberAfterCasting.toLong().toString()
-            } else numberAfterCasting.toString()
+            val textFieldValue =
+                if (numberAfterCasting == 0.0 && !isUserTyping) ""
+                else if (numberAfterCasting.rem(1) == 0.0) {
+                    if (hasDecimalPoint) value.toLong().toString() + "."
+                    else numberAfterCasting.toLong().toString()
+                } else numberAfterCasting.toString()
 
             numberTextFieldComposable(text = textFieldValue, onTextChange = { newTextFieldValue ->
-
                 /**
                  *  This block solves the decimal point input problem:
                 - When user adds decimal point, it should be shown,
@@ -226,7 +246,7 @@ inline fun <reified NumberType : Number> NumberTextFieldWrapper(
                 which is confusing, and a "40.0" value when deleting the decimal point
                 will become "400" not "40", since the zero behind decimal point is not deleted
                  */
-                val decimalSanitizedTextFieldValue: String
+                var decimalSanitizedTextFieldValue: String
 
                 if (newTextFieldValue.contains('.')) {
                     hasDecimalPoint = true
@@ -242,8 +262,17 @@ inline fun <reified NumberType : Number> NumberTextFieldWrapper(
                     }
                 }
 
+                if (decimalSanitizedTextFieldValue.contains('.') &&
+                    decimalSanitizedTextFieldValue.substringAfter('.').length > digitCountBehindDecimalPoint
+                ) {
+                    decimalSanitizedTextFieldValue = decimalSanitizedTextFieldValue.dropLast(1)
+                }
+                Timber.d("decimalSanitizedTextFieldValue: $decimalSanitizedTextFieldValue")
                 val sanitizedTextFieldValue =
                     ValidationUtils.validateDouble(decimalSanitizedTextFieldValue)
+
+                isUserTyping =
+                    sanitizedTextFieldValue.isNotEmpty() && sanitizedTextFieldValue.isNotBlank()
 
                 val newNumberValue =
                     if (sanitizedTextFieldValue.isEmpty() || sanitizedTextFieldValue.isBlank()) 0.0 else sanitizedTextFieldValue.toDouble()
@@ -343,6 +372,14 @@ fun PasswordTextField(
         supportingText = {
             if (isError) Text(text = errorText)
         },
+        colors = TextFieldDefaults.colors(
+            unfocusedContainerColor = Transparent,
+            focusedContainerColor = Transparent,
+            disabledTextColor = MaterialTheme.colorScheme.onBackground,
+            disabledContainerColor = Transparent,
+            disabledIndicatorColor = MaterialTheme.colorScheme.onBackground,
+            disabledLabelColor = MaterialTheme.colorScheme.onBackground,
+        ),
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation()
     )
 }
