@@ -16,8 +16,8 @@ import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.component.LoadingAnimation
-import com.haidoan.android.stren.core.designsystem.component.NumberTextField
 import com.haidoan.android.stren.core.designsystem.component.PieChartWithLegend
+import com.haidoan.android.stren.core.designsystem.component.SimpleNumberTextField
 import com.haidoan.android.stren.core.model.FoodNutrient.Companion.with
 import timber.log.Timber
 import kotlin.math.roundToLong
@@ -103,11 +103,11 @@ internal fun EditFoodEntryScreen(
                         style = MaterialTheme.typography.titleMedium
                     )
 
-                    NumberTextField(
+                    SimpleNumberTextField(
                         modifier = Modifier.weight(1f),
                         number = foodAmountInGram,
                         onValueChange = {
-                            onChangeFoodAmount(it.toFloat())
+                            onChangeFoodAmount(it)
                         })
                 }
                 Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_small)))
