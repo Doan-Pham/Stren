@@ -122,82 +122,15 @@ fun SimpleTextField(
 }
 
 @Composable
-fun NumberTextField(
-    modifier: Modifier, number: Number, onValueChange: (Number) -> Unit
+inline fun <reified NumberType : Number> SimpleNumberTextField(
+    modifier: Modifier, number: NumberType, crossinline onValueChange: (NumberType) -> Unit
 ) {
-    when (number) {
-        is Long -> {
-            val textFieldValue = if (number == 0L) "" else number.toString()
-
-            SimpleTextField(modifier = modifier, value = textFieldValue, onValueChange = {
-                val newTextFieldValue = it.filter { char -> char.isDigit() }
-                val newNumberValue =
-                    if (newTextFieldValue.isEmpty() || newTextFieldValue.isBlank()) 0L
-                    else newTextFieldValue.toLong()
-                onValueChange(newNumberValue)
-            })
-        }
-        is Double, is Float -> {
-            /**
-             * TextField should only show decimal point in 2 cases:
-             * - The value behind decimal point is not 0.0
-             * - That decimal point is input from user
-             *
-             * So "hasDecimalPoint" var solves the 2nd case and "previousTextFieldValue" helps
-            when user deletes the decimal point and reset "hasDecimalPoint"
-             */
-            var hasDecimalPoint by remember { mutableStateOf(false) }
-            var previousTextFieldValue by remember { mutableStateOf("") }
-
-            val df = DecimalFormat("#.#")
-            df.roundingMode = RoundingMode.CEILING
-
-            val numberAfterCasting = df.format(number).toDouble()
-
-            val textFieldValue = if (numberAfterCasting == 0.0) ""
-            else if (numberAfterCasting.rem(1) == 0.0) {
-                if (hasDecimalPoint) number.toLong().toString() + "."
-                else numberAfterCasting.toLong().toString()
-            } else numberAfterCasting.toString()
-
-            SimpleTextField(
-                modifier = modifier,
-                value = textFieldValue,
-                onValueChange = { newTextFieldValue ->
-
-                    /**
-                     *  This block solves the decimal point input problem:
-                    - When user adds decimal point, it should be shown,
-                    - When user deletes decimal point, it should be gone and the value become
-                    the digits before decimal point
-                    Without this block, a "40" value will be shown as "40.0" automatically
-                    which is confusing, and a "40.0" value when deleting the decimal point
-                    will become "400" not "40", since the zero behind decimal point is not deleted
-                     */
-                    val decimalSanitizedTextFieldValue: String
-
-                    if (newTextFieldValue.contains('.')) {
-                        hasDecimalPoint = true
-                        previousTextFieldValue = newTextFieldValue
-                        decimalSanitizedTextFieldValue = newTextFieldValue
-                    } else {
-                        if (hasDecimalPoint) {
-                            decimalSanitizedTextFieldValue =
-                                previousTextFieldValue.substringBefore('.')
-                            hasDecimalPoint = false
-                        } else {
-                            decimalSanitizedTextFieldValue = newTextFieldValue
-                        }
-                    }
-
-                    val sanitizedTextFieldValue =
-                        ValidationUtils.validateDouble(decimalSanitizedTextFieldValue)
-
-                    val newNumberValue =
-                        if (sanitizedTextFieldValue.isEmpty() || sanitizedTextFieldValue.isBlank()) 0.0 else sanitizedTextFieldValue.toDouble()
-                    onValueChange(df.format(newNumberValue).toDouble())
-                })
-        }
+    NumberTextFieldWrapper(value = number, onValueChange = onValueChange) { text, onTextChange ->
+        SimpleTextField(
+            modifier = modifier,
+            value = text,
+            onValueChange = onTextChange
+        )
     }
 }
 
