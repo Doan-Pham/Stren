@@ -26,6 +26,7 @@ import com.haidoan.android.stren.core.utils.DateUtils
 import com.haidoan.android.stren.core.utils.DateUtils.defaultFormat
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -158,15 +159,99 @@ private fun DashboardScreen(
     var shouldShowConfirmDialog by remember { mutableStateOf(false) }
     var dataSourceIdToDelete by remember { mutableStateOf("") }
     var dataSourceTitleToDelete by remember { mutableStateOf("") }
-    val progressItemListState = rememberLazyListState()
-    var previousDataOutputsSize: Int? by rememberSaveable { mutableStateOf(null) }
-
     if (dataOutputsAsState.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             LoadingAnimation()
         }
         return
     }
+
+    val progressItemComposable: @Composable (DashboardViewModel.DataOutput) -> Unit =
+        { dataOutput ->
+            if (chartEntryModelProducers.containsKey(dataOutput.dataSourceId)) {
+                ProgressItem(
+                    chartEntryModelProducer = chartEntryModelProducers[dataOutput.dataSourceId]!!,
+                    onDateOptionClick = { startDate, endDate ->
+                        onDateOptionClick(
+                            dataOutput.dataSourceId,
+                            startDate,
+                            endDate
+                        )
+                    },
+                    dataOutput = dataOutput,
+                    onRemoveOptionClick = {
+                        dataSourceIdToDelete = dataOutput.dataSourceId
+                        dataSourceTitleToDelete = dataOutput.title
+                        shouldShowConfirmDialog = true
+                    }
+                )
+            }
+        }
+
+    TabLayout(
+        userScrollEnabled = false,
+        tabNamesAndScreenComposables = listOf(
+            Pair("Nutrition") {
+                ProgressItemList(
+                    modifier = modifier,
+                    dataOutputsAsState = dataOutputsAsState
+                        .filter {
+                            it.value is DashboardViewModel.DataOutput.EmptyData ||
+                                    it.value is DashboardViewModel.DataOutput.Calories
+                        },
+                    item = progressItemComposable
+                )
+            },
+            Pair("Training") {
+                ProgressItemList(
+                    modifier = modifier,
+                    dataOutputsAsState = dataOutputsAsState
+                        .filter {
+                            it.value is DashboardViewModel.DataOutput.EmptyData ||
+                                    it.value is DashboardViewModel.DataOutput.Exercise
+                        },
+                    item = progressItemComposable
+                )
+            },
+            Pair("Biometrics") {
+                ProgressItemList(
+                    modifier = modifier,
+                    dataOutputsAsState = dataOutputsAsState
+                        .filter {
+                            it.value is DashboardViewModel.DataOutput.EmptyData ||
+                                    it.value is DashboardViewModel.DataOutput.Biometrics
+                        },
+                    item = progressItemComposable
+                )
+            },
+        )
+    )
+
+    if (shouldShowConfirmDialog) {
+        SimpleConfirmationDialog(
+            onDismissDialog = { shouldShowConfirmDialog = false },
+            title = "Stop tracking category",
+            body = "Are you sure you want to stop tracking this category: $dataSourceTitleToDelete"
+        ) {
+            onRemoveItemClick(dataSourceIdToDelete)
+        }
+    }
+
+    bottomSheetWrappers.forEach {
+        if (it.shouldShow.value) {
+            it.bottomSheetComposable(onDismiss = { onDismissBottomSheet(it) })
+        }
+    }
+}
+
+@Composable
+private fun ProgressItemList(
+    modifier: Modifier = Modifier,
+    dataOutputsAsState: List<State<DashboardViewModel.DataOutput>>,
+    item: @Composable (dataOutput: DashboardViewModel.DataOutput) -> Unit
+) {
+    val progressItemListState = rememberLazyListState()
+    var previousDataOutputsSize: Int? by rememberSaveable { mutableStateOf(null) }
     LazyColumn(
         state = progressItemListState,
         modifier = modifier
@@ -188,42 +273,19 @@ private fun DashboardScreen(
                 is DashboardViewModel.DataOutput.Calories,
                 is DashboardViewModel.DataOutput.Exercise,
                 is DashboardViewModel.DataOutput.Biometrics -> {
-                    if (chartEntryModelProducers.containsKey(dataOutput.dataSourceId)) {
-                        ProgressItem(
-                            chartEntryModelProducer = chartEntryModelProducers[dataOutput.dataSourceId]!!,
-                            onDateOptionClick = { startDate, endDate ->
-                                onDateOptionClick(
-                                    dataOutput.dataSourceId,
-                                    startDate,
-                                    endDate
-                                )
-                            },
-                            dataOutput = dataOutput,
-                            onRemoveOptionClick = {
-                                dataSourceIdToDelete = dataOutput.dataSourceId
-                                dataSourceTitleToDelete = dataOutput.title
-                                shouldShowConfirmDialog = true
-                            }
-                        )
-                    }
+                    item(dataOutput)
                 }
             }
         }
     }
 
-    if (shouldShowConfirmDialog) {
-        SimpleConfirmationDialog(
-            onDismissDialog = { shouldShowConfirmDialog = false },
-            title = "Stop tracking category",
-            body = "Are you sure you want to stop tracking this category: $dataSourceTitleToDelete"
-        ) {
-            onRemoveItemClick(dataSourceIdToDelete)
-        }
-    }
-
     val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(dataOutputsAsState.size) {
+        Timber.d("dataOutputsAsState.size: ${dataOutputsAsState.size}")
+        Timber.d("previousDataOutputsSize: $previousDataOutputsSize")
+
         if (previousDataOutputsSize != null && dataOutputsAsState.size > previousDataOutputsSize!!) {
+            Timber.d("scrolling to : ${dataOutputsAsState.size - 1}")
             coroutineScope.launch {
                 progressItemListState.animateScrollToItem(dataOutputsAsState.size - 1)
             }
@@ -231,11 +293,6 @@ private fun DashboardScreen(
         previousDataOutputsSize = dataOutputsAsState.size
     }
 
-    bottomSheetWrappers.forEach {
-        if (it.shouldShow.value) {
-            it.bottomSheetComposable(onDismiss = { onDismissBottomSheet(it) })
-        }
-    }
 }
 
 @Composable
