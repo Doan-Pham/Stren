@@ -1,8 +1,10 @@
 package com.haidoan.android.stren.feat.training.history.start_workout
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -25,7 +27,9 @@ internal class StartWorkoutViewModel @Inject constructor(
     var workoutNameTextFieldValue by mutableStateOf("New workout")
 
     val navArgs: StartWorkoutArgs = StartWorkoutArgs(savedStateHandle)
-    private val _trainedExercises: MutableStateFlow<List<TrainedExercise>> =
+
+    private val _trainedExercises: SnapshotStateList<TrainedExercise> = mutableStateListOf()
+    private val _trainedExercisesStream: MutableStateFlow<List<TrainedExercise>> =
         MutableStateFlow(listOf())
 
     private val _secondaryUiState = MutableStateFlow(StartWorkoutSecondaryUiState())
@@ -35,7 +39,7 @@ internal class StartWorkoutViewModel @Inject constructor(
      * Since [StartWorkoutViewModel] simply holds uiState for [StartWorkoutScreen] and doesn't hold any business logic (Which is hoisted up in [WorkoutInProgressViewModel] for use across different screens), this method simply does some checks before delegating the actual routine selection to [onSelectRoutine] param
      */
     fun selectRoutineDropdownOption(selectedOptionRoutineId: String, onSelectRoutine: () -> Unit) {
-        if (_trainedExercises.value.isEmpty()) {
+        if (_trainedExercisesStream.value.isEmpty()) {
             if (selectedOptionRoutineId != NO_SELECTION_ROUTINE_ID) onSelectRoutine()
         } else {
             _secondaryUiState.update { currentState ->
@@ -92,15 +96,46 @@ internal class StartWorkoutViewModel @Inject constructor(
 
 
     fun setTrainedExercises(trainedExercises: List<TrainedExercise>) {
-        _trainedExercises.update { trainedExercises }
+        _trainedExercisesStream.update { trainedExercises }
+    }
+
+    private fun resolveToState(newValue: List<TrainedExercise>) {
+        // Timber.d("resolveToState() - _trainedExercises - before All: ${_trainedExercises.toList()}")
+        // Timber.d("resolveToState() - newValue: $newValue")
+
+        val exerciseIterator = _trainedExercises.iterator()
+        while (exerciseIterator.hasNext()) {
+            val curExercise = exerciseIterator.next()
+            if (curExercise.id !in newValue.map { it.id }) {
+                _trainedExercises.remove(curExercise)
+            }
+        }
+
+        newValue.forEachIndexed { index, curExercise ->
+            //   Timber.d("resolveToState() - curExercise: $curExercise")
+            // Timber.d("resolveToState() - _trainedExercises - before: ${_trainedExercises.toList()}")
+            if (curExercise.id !in _trainedExercises.map { it.id }) {
+                _trainedExercises.add(index, curExercise)
+            } else if (curExercise != _trainedExercises.find { it.id == curExercise.id }) {
+                _trainedExercises.removeIf { it.id == curExercise.id }
+                _trainedExercises.add(index, curExercise)
+            }
+            // Timber.d("resolveToState() - _trainedExercises - after: ${_trainedExercises.toList()}")
+        }
+
+        //Timber.d("resolveToState() - _trainedExercises - After all: ${_trainedExercises.toList()}")
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<StartWorkoutUiState> =
-        _trainedExercises.flatMapLatest { _trainedExercises ->
-            if (_trainedExercises.isEmpty()) flowOf(StartWorkoutUiState.EmptyWorkout) else flowOf(
-                StartWorkoutUiState.IsLogging(navArgs.selectedDate, _trainedExercises)
-            )
+        _trainedExercisesStream.flatMapLatest { newTrainedExercises ->
+            resolveToState(newTrainedExercises)
+
+            if (newTrainedExercises.isEmpty()) {
+                flowOf(StartWorkoutUiState.EmptyWorkout)
+            } else {
+                flowOf(StartWorkoutUiState.IsLogging(navArgs.selectedDate, _trainedExercises))
+            }
         }.stateIn(
             viewModelScope, SharingStarted.WhileSubscribed(5000), StartWorkoutUiState.Loading
         )

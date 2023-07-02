@@ -105,6 +105,51 @@ class WorkoutInProgressViewModel @Inject constructor(
         this.initArgs.update { initArgs }
     }
 
+    fun startWorkingOut() {
+        Timber.d("startWorkingOut()")
+        _uiState.update { it.copy(isTraineeWorkingOut = true) }
+    }
+
+    fun finishWorkout() {
+        Timber.d("finishWorkout() - userId: ${initArgs.value.userId}")
+        viewModelScope.launch {
+            workoutsRepository.addWorkout(
+                userId = initArgs.value.userId,
+                workout = Workout(
+                    name = workoutNameTextFieldValue,
+                    date = initArgs.value.selectedDate,
+                    trainedExercises = _trainedExercises.value
+                )
+            )
+        }
+        restTimer?.cancel()
+        _uiState.update {
+            it.copy(
+                isTraineeWorkingOut = false,
+                isTraineeResting = false,
+                isTraineeFinishResting = false
+            )
+        }
+        _trainedExercises.value = listOf()
+        currentSelectedRoutineId = NO_SELECTION_ROUTINE_ID
+        isInitialized = false
+        workoutNameTextFieldValue = "New Workout"
+    }
+
+    fun cancelWorkout() {
+        restTimer?.cancel()
+        _uiState.update {
+            it.copy(
+                isTraineeWorkingOut = false,
+                isTraineeResting = false,
+                isTraineeFinishResting = false
+            )
+        }
+        _trainedExercises.value = listOf()
+        currentSelectedRoutineId = NO_SELECTION_ROUTINE_ID
+        isInitialized = false
+        workoutNameTextFieldValue = "New Workout"
+    }
 
     fun selectRoutine(newlySelectedRoutineId: String) {
         if (newlySelectedRoutineId == currentSelectedRoutineId) return
@@ -133,86 +178,16 @@ class WorkoutInProgressViewModel @Inject constructor(
         }
     }
 
-    fun updateExerciseTrainingSet(
-        exerciseToUpdate: TrainedExercise,
-        trainingSetToUpdate: TrainingMeasurementMetrics,
-        updatedTrainingSetData: TrainingMeasurementMetrics
+    fun deleteExercise(
+        exerciseToDelete: TrainedExercise,
     ) {
-        Timber.d("exerciseToUpdate - unique identifier: ${exerciseToUpdate.id}; content: $exerciseToUpdate")
-        Timber.d(
-            "trainingSetToUpdate - unique identifier: ${
-                trainingSetToUpdate.id
-            }; content: $trainingSetToUpdate"
-        )
-        Timber.d(
-            "updatedTrainingSetData - unique identifier: ${
-                updatedTrainingSetData.id
-            }; content: $updatedTrainingSetData"
-        )
+        val updatedTrainedExercises = _trainedExercises.value.toMutableList()
+        updatedTrainedExercises.removeIf { it.id == exerciseToDelete.id }
 
-        val updatedTrainingSets = _trainedExercises.value.first { trainedExercise ->
-            Timber.d("Finding exercise - id: ${trainedExercise.id}")
-            trainedExercise.id == exerciseToUpdate.id
-        }.trainingSets.replaceWith(updatedTrainingSetData) { trainingSet ->
-            Timber.d("Replacing training set - id: ${trainingSet.id}")
-            trainingSet.id == trainingSetToUpdate.id
-        }
-        Timber.d("updatedTrainingSets: $updatedTrainingSets")
-
-        val updatedExercise = _trainedExercises.value.first {
-            Timber.d("Finding exercise - id: ${it.id}")
-            it.id == exerciseToUpdate.id
-        }.copy(trainingSets = updatedTrainingSets)
-        Timber.d("updatedExercise: $updatedExercise")
-
-        val updatedTrainedExercises = mutableListOf<TrainedExercise>()
-        updatedTrainedExercises.addAll(_trainedExercises.value.replaceWith(updatedExercise) { it.id == exerciseToUpdate.id })
         Timber.d("updatedTrainedExercises: $updatedTrainedExercises")
 
         _trainedExercises.value = updatedTrainedExercises
         Timber.d("_trainedExercises: ${_trainedExercises.value}")
-    }
-
-    fun toggleTrainingSetCompleteState(
-        exerciseToUpdate: TrainedExercise,
-        trainingSetToUpdate: TrainingMeasurementMetrics,
-        isTrainingSetComplete: Boolean
-    ) {
-        Timber.d("exerciseToUpdate - unique identifier: ${exerciseToUpdate.id}; content: $exerciseToUpdate")
-        Timber.d(
-            "trainingSetToUpdate - unique identifier: ${
-                trainingSetToUpdate.id
-            }; content: $trainingSetToUpdate"
-        )
-
-        val updatedTrainingSets = _trainedExercises.value.first { trainedExercise ->
-            Timber.d("Finding exercise - id: ${trainedExercise.id}")
-            trainedExercise.id == exerciseToUpdate.id
-        }.trainingSets.replaceWith(trainingSetToUpdate.withCompleteState(isTrainingSetComplete)) { trainingSet ->
-            Timber.d("Replacing training set - id: ${trainingSet.id}")
-            trainingSet.id == trainingSetToUpdate.id
-        }
-        Timber.d("updatedTrainingSets: $updatedTrainingSets")
-
-        val updatedExercise = _trainedExercises.value.first {
-            Timber.d("Finding exercise - id: ${it.id}")
-            it.id == exerciseToUpdate.id
-        }.copy(trainingSets = updatedTrainingSets)
-        Timber.d("updatedExercise: $updatedExercise")
-
-        val updatedTrainedExercises = mutableListOf<TrainedExercise>()
-        updatedTrainedExercises.addAll(_trainedExercises.value.replaceWith(updatedExercise) { it.id == exerciseToUpdate.id })
-        Timber.d("updatedTrainedExercises: $updatedTrainedExercises")
-
-        _trainedExercises.value = updatedTrainedExercises
-        Timber.d("_trainedExercises: ${_trainedExercises.value}")
-
-        if (isTrainingSetComplete) startRestTimer()
-    }
-
-    fun startWorkingOut() {
-        Timber.d("startWorkingOut()")
-        _uiState.update { it.copy(isTraineeWorkingOut = true) }
     }
 
     private fun startRestTimer(
@@ -287,6 +262,83 @@ class WorkoutInProgressViewModel @Inject constructor(
         restTimer?.cancel()
     }
 
+    fun updateExerciseTrainingSet(
+        exerciseToUpdate: TrainedExercise,
+        trainingSetToUpdate: TrainingMeasurementMetrics,
+        updatedTrainingSetData: TrainingMeasurementMetrics
+    ) {
+        Timber.d("exerciseToUpdate - unique identifier: ${exerciseToUpdate.id}; content: $exerciseToUpdate")
+        Timber.d(
+            "trainingSetToUpdate - unique identifier: ${
+                trainingSetToUpdate.id
+            }; content: $trainingSetToUpdate"
+        )
+        Timber.d(
+            "updatedTrainingSetData - unique identifier: ${
+                updatedTrainingSetData.id
+            }; content: $updatedTrainingSetData"
+        )
+
+        val updatedTrainingSets = _trainedExercises.value.first { trainedExercise ->
+            Timber.d("Finding exercise - id: ${trainedExercise.id}")
+            trainedExercise.id == exerciseToUpdate.id
+        }.trainingSets.replaceWith(updatedTrainingSetData) { trainingSet ->
+            Timber.d("Replacing training set - id: ${trainingSet.id}")
+            trainingSet.id == trainingSetToUpdate.id
+        }
+        Timber.d("updatedTrainingSets: $updatedTrainingSets")
+
+        val updatedExercise = _trainedExercises.value.first {
+            Timber.d("Finding exercise - id: ${it.id}")
+            it.id == exerciseToUpdate.id
+        }.copy(id = exerciseToUpdate.id, trainingSets = updatedTrainingSets)
+        Timber.d("updatedExercise: $updatedExercise")
+
+        val updatedTrainedExercises = mutableListOf<TrainedExercise>()
+        updatedTrainedExercises.addAll(_trainedExercises.value.replaceWith(updatedExercise) { it.id == exerciseToUpdate.id })
+        Timber.d("updatedTrainedExercises: $updatedTrainedExercises")
+
+        _trainedExercises.value = updatedTrainedExercises
+        Timber.d("_trainedExercises: ${_trainedExercises.value}")
+    }
+
+    fun toggleTrainingSetCompleteState(
+        exerciseToUpdate: TrainedExercise,
+        trainingSetToUpdate: TrainingMeasurementMetrics,
+        isTrainingSetComplete: Boolean
+    ) {
+        Timber.d("exerciseToUpdate - unique identifier: ${exerciseToUpdate.id}; content: $exerciseToUpdate")
+        Timber.d(
+            "trainingSetToUpdate - unique identifier: ${
+                trainingSetToUpdate.id
+            }; content: $trainingSetToUpdate"
+        )
+
+        val updatedTrainingSets = _trainedExercises.value.first { trainedExercise ->
+            Timber.d("Finding exercise - id: ${trainedExercise.id}")
+            trainedExercise.id == exerciseToUpdate.id
+        }.trainingSets.replaceWith(trainingSetToUpdate.withCompleteState(isTrainingSetComplete)) { trainingSet ->
+            Timber.d("Replacing training set - id: ${trainingSet.id}")
+            trainingSet.id == trainingSetToUpdate.id
+        }
+        Timber.d("updatedTrainingSets: $updatedTrainingSets")
+
+        val updatedExercise = _trainedExercises.value.first {
+            Timber.d("Finding exercise - id: ${it.id}")
+            it.id == exerciseToUpdate.id
+        }.copy(id = exerciseToUpdate.id, trainingSets = updatedTrainingSets)
+        Timber.d("updatedExercise: $updatedExercise")
+
+        val updatedTrainedExercises = mutableListOf<TrainedExercise>()
+        updatedTrainedExercises.addAll(_trainedExercises.value.replaceWith(updatedExercise) { it.id == exerciseToUpdate.id })
+        Timber.d("updatedTrainedExercises: $updatedTrainedExercises")
+
+        _trainedExercises.value = updatedTrainedExercises
+        Timber.d("_trainedExercises: ${_trainedExercises.value}")
+
+        if (isTrainingSetComplete) startRestTimer()
+    }
+
     fun addEmptyTrainingSet(
         exerciseToUpdate: TrainedExercise,
     ) {
@@ -302,7 +354,7 @@ class WorkoutInProgressViewModel @Inject constructor(
         val updatedExercise = _trainedExercises.value.first {
 //            Timber.d("Finding exercise - id: ${it.id}")
             it.id == exerciseToUpdate.id
-        }.copy(trainingSets = updatedTrainingSets)
+        }.copy(id = exerciseToUpdate.id, trainingSets = updatedTrainingSets)
 
         val updatedTrainedExercises = mutableListOf<TrainedExercise>()
         updatedTrainedExercises.addAll(_trainedExercises.value.replaceWith(updatedExercise) { it.id == exerciseToUpdate.id })
@@ -310,18 +362,6 @@ class WorkoutInProgressViewModel @Inject constructor(
 
         _trainedExercises.value = updatedTrainedExercises
 //        Timber.d("_trainedExercises: ${_trainedExercises.value}")
-    }
-
-    fun deleteExercise(
-        exerciseToDelete: TrainedExercise,
-    ) {
-        val updatedTrainedExercises = _trainedExercises.value.toMutableList()
-        updatedTrainedExercises.removeIf { it.id == exerciseToDelete.id }
-
-        Timber.d("updatedTrainedExercises: $updatedTrainedExercises")
-
-        _trainedExercises.value = updatedTrainedExercises
-        Timber.d("_trainedExercises: ${_trainedExercises.value}")
     }
 
     fun deleteTrainingSet(
@@ -346,7 +386,7 @@ class WorkoutInProgressViewModel @Inject constructor(
         val updatedExercise = _trainedExercises.value.first {
             Timber.d("Finding exercise - id: ${it.id}")
             it.id == exerciseToUpdate.id
-        }.copy(trainingSets = updatedTrainingSets)
+        }.copy(id = exerciseToUpdate.id, trainingSets = updatedTrainingSets)
         Timber.d("updatedExercise: $updatedExercise")
 
         val updatedTrainedExercises = mutableListOf<TrainedExercise>()
@@ -355,47 +395,6 @@ class WorkoutInProgressViewModel @Inject constructor(
 
         _trainedExercises.value = updatedTrainedExercises
         Timber.d("_trainedExercises: ${_trainedExercises.value}")
-    }
-
-    fun finishWorkout() {
-        Timber.d("finishWorkout() - userId: ${initArgs.value.userId}")
-        viewModelScope.launch {
-            workoutsRepository.addWorkout(
-                userId = initArgs.value.userId,
-                workout = Workout(
-                    name = workoutNameTextFieldValue,
-                    date = initArgs.value.selectedDate,
-                    trainedExercises = _trainedExercises.value
-                )
-            )
-        }
-        restTimer?.cancel()
-        _uiState.update {
-            it.copy(
-                isTraineeWorkingOut = false,
-                isTraineeResting = false,
-                isTraineeFinishResting = false
-            )
-        }
-        _trainedExercises.value = listOf()
-        currentSelectedRoutineId = NO_SELECTION_ROUTINE_ID
-        isInitialized = false
-        workoutNameTextFieldValue = "New Workout"
-    }
-
-    fun cancelWorkout() {
-        restTimer?.cancel()
-        _uiState.update {
-            it.copy(
-                isTraineeWorkingOut = false,
-                isTraineeResting = false,
-                isTraineeFinishResting = false
-            )
-        }
-        _trainedExercises.value = listOf()
-        currentSelectedRoutineId = NO_SELECTION_ROUTINE_ID
-        isInitialized = false
-        workoutNameTextFieldValue = "New Workout"
     }
 
     override fun onCleared() {
