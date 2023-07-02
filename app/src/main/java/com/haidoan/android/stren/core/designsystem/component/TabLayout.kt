@@ -20,7 +20,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TabLayout(
-    tabNamesAndScreenComposables: List<Pair<String, @Composable () -> Unit>>
+    tabNamesAndScreenComposables: List<Pair<String, @Composable () -> Unit>>,
+    userScrollEnabled: Boolean = true
 ) {
     val pagerState = rememberPagerState(initialPage = 0)
     val currentTabIndex = pagerState.currentPage
@@ -57,6 +58,7 @@ fun TabLayout(
 
         HorizontalPager(
             modifier = Modifier.fillMaxSize(),
+            userScrollEnabled = userScrollEnabled,
             state = pagerState,
             pageCount = tabNamesAndScreenComposables.size
         ) { page ->
