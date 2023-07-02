@@ -25,9 +25,7 @@ import com.haidoan.android.stren.core.designsystem.theme.Gray90
 import com.haidoan.android.stren.core.utils.DateUtils
 import com.haidoan.android.stren.core.utils.DateUtils.defaultFormat
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,6 +37,9 @@ internal fun DashboardRoute(
 ) {
     val exercisesToTrack by viewModel.exercisesToTrack.collectAsStateWithLifecycle()
     val biometricsToTrack by viewModel.biometricsToTrack.collectAsStateWithLifecycle()
+
+    viewModel.dataOutputsCentralStateFlow.collectAsStateWithLifecycle()
+    val dataOutputsAsState = viewModel.dataOutputsStreams.map { it.collectAsStateWithLifecycle() }
 
     val trackExercisesBottomSheet = BottomSheetWrapper(
         type = DashBoardBottomSheetType.TRACK_EXERCISE,
@@ -129,16 +130,8 @@ internal fun DashboardRoute(
         isAppBarConfigured = true
     }
 
-    val dataOutputStateFlows by viewModel.dataOutputs.collectAsStateWithLifecycle()
-    val dataOutputsAsState = mutableListOf<State<DashboardViewModel.DataOutput>>()
-    dataOutputStateFlows.forEach { dataOutputStateFlow ->
-        dataOutputsAsState.add(dataOutputStateFlow.collectAsStateWithLifecycle())
-    }
-
     DashboardScreen(
         modifier = modifier,
-        isUpdating = viewModel.isUpdating,
-        onUpdateComplete = { viewModel.isUpdating = false },
         chartEntryModelProducers = viewModel.chartEntryModelProducers,
         dataOutputsAsState = dataOutputsAsState,
         onDateOptionClick = viewModel::updateDateRange,
@@ -155,8 +148,6 @@ internal fun DashboardRoute(
 @Composable
 private fun DashboardScreen(
     modifier: Modifier = Modifier,
-    isUpdating: Boolean,
-    onUpdateComplete: () -> Unit,
     chartEntryModelProducers: Map<String, ChartEntryModelProducer>,
     dataOutputsAsState: List<State<DashboardViewModel.DataOutput>>,
     onDateOptionClick: (dataSourceId: String, startDate: LocalDate, endDate: LocalDate) -> Unit,
@@ -167,11 +158,8 @@ private fun DashboardScreen(
     var shouldShowConfirmDialog by remember { mutableStateOf(false) }
     var dataSourceIdToDelete by remember { mutableStateOf("") }
     var dataSourceTitleToDelete by remember { mutableStateOf("") }
-
     val progressItemListState = rememberLazyListState()
-    var previousFirstVisibleItemIndex by
-    rememberSaveable { mutableStateOf(progressItemListState.firstVisibleItemIndex) }
-    var previousDataOutputsSize by rememberSaveable { mutableStateOf(dataOutputsAsState.size) }
+    var previousDataOutputsSize: Int? by rememberSaveable { mutableStateOf(null) }
 
     if (dataOutputsAsState.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -191,7 +179,7 @@ private fun DashboardScreen(
                     Box(
                         modifier = Modifier
                             .fillParentMaxWidth()
-                            .height(dimensionResource(id = R.dimen.icon_size_large)),
+                            .aspectRatio(1f),
                         contentAlignment = Alignment.Center
                     ) {
                         LoadingAnimation()
@@ -204,13 +192,6 @@ private fun DashboardScreen(
                         ProgressItem(
                             chartEntryModelProducer = chartEntryModelProducers[dataOutput.dataSourceId]!!,
                             onDateOptionClick = { startDate, endDate ->
-
-                                val itemToUpdateIndex = dataOutputsAsState
-                                    .indexOfFirst { it.value.dataSourceId == dataOutput.dataSourceId }
-
-                                previousFirstVisibleItemIndex = itemToUpdateIndex
-
-
                                 onDateOptionClick(
                                     dataOutput.dataSourceId,
                                     startDate,
@@ -236,35 +217,18 @@ private fun DashboardScreen(
             title = "Stop tracking category",
             body = "Are you sure you want to stop tracking this category: $dataSourceTitleToDelete"
         ) {
-            val itemToRemoveIndex = dataOutputsAsState
-                .indexOfFirst { it.value.dataSourceId == dataSourceIdToDelete }
-            previousFirstVisibleItemIndex = itemToRemoveIndex - 1
             onRemoveItemClick(dataSourceIdToDelete)
         }
     }
 
     val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(dataOutputsAsState.size) {
-        if (dataOutputsAsState.size > previousDataOutputsSize) {
+        if (previousDataOutputsSize != null && dataOutputsAsState.size > previousDataOutputsSize!!) {
             coroutineScope.launch {
-                previousFirstVisibleItemIndex = dataOutputsAsState.size - 1
-                previousDataOutputsSize = dataOutputsAsState.size
+                progressItemListState.animateScrollToItem(dataOutputsAsState.size - 1)
             }
         }
-    }
-    LaunchedEffect(isUpdating) {
-        Timber.d("LaunchedEffect(isUpdating) - isUpdating: $isUpdating")
-        if (isUpdating) {
-            coroutineScope.launch {
-                // Delay a bit to wait for the list to be completely updated before
-                // scrolling, or else the scrolling will happen on an incomplete list
-                // TODO: This is very brittle, and more like a workaround
-                delay(1000)
-                progressItemListState.animateScrollToItem(previousFirstVisibleItemIndex)
-            }
-            onUpdateComplete()
-        }
-
+        previousDataOutputsSize = dataOutputsAsState.size
     }
 
     bottomSheetWrappers.forEach {
