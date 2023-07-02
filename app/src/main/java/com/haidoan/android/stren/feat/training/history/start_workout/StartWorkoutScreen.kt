@@ -102,7 +102,6 @@ internal fun StartWorkoutRoute(
                 drawableResourceId = R.drawable.ic_check_mark,
                 description = "Menu Item Finish Workout",
                 clickHandler = {
-                    //TODO: Finish Workout Click
                     if (uiState is StartWorkoutUiState.EmptyWorkout) {
                         coroutineScope.launch {
                             snackbarHostState.showSnackbar(
