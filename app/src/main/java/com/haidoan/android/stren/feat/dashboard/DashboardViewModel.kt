@@ -34,8 +34,6 @@ internal class DashboardViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val getUserFullDataUseCase: GetUserFullDataUseCase
 ) : ViewModel() {
-
-    var isUpdating by mutableStateOf(false)
     private var currentUserId = MutableStateFlow(UNDEFINED_USER_ID)
     private var cachedTrackedCategories = listOf<TrackedCategory>()
 
