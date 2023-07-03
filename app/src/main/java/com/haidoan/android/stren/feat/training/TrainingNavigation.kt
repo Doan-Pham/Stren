@@ -52,6 +52,12 @@ fun NavGraphBuilder.trainingGraph(
                                     userId = userId,
                                     workoutId = workoutId
                                 )
+                            },
+                            onNavigateToWorkoutDetailScreen = { userId, workoutId ->
+                                navController.navigateToWorkoutDetailScreen(
+                                    userId = userId,
+                                    workoutId = workoutId
+                                )
                             }
                         )
                     },

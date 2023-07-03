@@ -13,6 +13,8 @@ import com.haidoan.android.stren.feat.training.exercises.navigateToCreateExercis
 import com.haidoan.android.stren.feat.training.history.log_workout.LOG_WORKOUT_SCREEN_ROUTE
 import com.haidoan.android.stren.feat.training.history.log_workout.LogWorkoutRoute
 import com.haidoan.android.stren.feat.training.history.start_workout.*
+import com.haidoan.android.stren.feat.training.history.workout_detail.WORKOUT_DETAIL_SCREEN_ROUTE
+import com.haidoan.android.stren.feat.training.history.workout_detail.WorkoutDetailRoute
 import com.haidoan.android.stren.feat.training.routines.add_edit.*
 import timber.log.Timber
 import java.time.LocalDate
@@ -95,6 +97,22 @@ internal fun NavController.navigateToEditWorkoutScreen(
     )
 }
 
+internal fun NavController.navigateToWorkoutDetailScreen(
+    userId: String,
+    workoutId: String,
+) {
+    Timber.d(
+        WORKOUT_DETAIL_SCREEN_ROUTE +
+                "/" + userId +
+                "/" + workoutId
+    )
+    this.navigate(
+        WORKOUT_DETAIL_SCREEN_ROUTE +
+                "/" + userId +
+                "/" + workoutId
+    )
+}
+
 // This encapsulate the SavedStateHandle access to allow ViewModel
 // to easily grabs nav args. Or else, it has to know all the nav args' names
 internal class LogWorkoutArgs(
@@ -116,6 +134,19 @@ internal class LogWorkoutArgs(
                     )
                 ),
                 checkNotNull(savedStateHandle["selectedRoutineId"]),
+            )
+}
+
+// This encapsulate the SavedStateHandle access to allow ViewModel
+// to easily grabs nav args. Or else, it has to know all the nav args' names
+internal class WorkoutDetailArgs(
+    val userId: String,
+    val workoutId: String,
+) {
+    constructor(savedStateHandle: SavedStateHandle) :
+            this(
+                checkNotNull(savedStateHandle["userId"]),
+                checkNotNull(savedStateHandle["workoutId"]),
             )
 }
 
@@ -151,6 +182,29 @@ internal fun NavGraphBuilder.trainingHistoryGraph(
     navController: NavController,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit
 ) {
+    composable(
+        route = WORKOUT_DETAIL_SCREEN_ROUTE +
+                "/" + "{userId}" +
+                "/" + "{workoutId}",
+        arguments = listOf(
+            navArgument("userId") {
+                type = NavType.StringType
+            },
+            navArgument("workoutId") {
+                type = NavType.StringType
+            }
+        )
+
+    ) {
+        WorkoutDetailRoute(
+            appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
+            onBackToPreviousScreen = { navController.popBackStack() },
+            onNavigateToEditWorkout = { userId, workoutId ->
+                navController.navigateToEditWorkoutScreen(userId, workoutId)
+            }
+        )
+    }
+
     composable(
         route = LOG_WORKOUT_SCREEN_ROUTE +
                 "/" + "{userId}" +
