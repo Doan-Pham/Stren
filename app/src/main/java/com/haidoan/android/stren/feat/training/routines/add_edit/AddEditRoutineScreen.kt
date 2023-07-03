@@ -214,7 +214,7 @@ private fun ColumnScope.EmptyScreen() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            painter = painterResource(id = R.drawable.ic_edit), contentDescription = "Icon edit"
+            painter = painterResource(id = R.drawable.ic_edit_72), contentDescription = "Icon edit"
         )
         Text(
             text = "Empty routine",
