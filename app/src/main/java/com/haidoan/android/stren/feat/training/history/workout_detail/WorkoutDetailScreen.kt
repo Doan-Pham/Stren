@@ -21,6 +21,7 @@ import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.component.*
 import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics
+import com.haidoan.android.stren.core.utils.DateUtils.defaultFormat
 import timber.log.Timber
 
 internal const val WORKOUT_DETAIL_SCREEN_ROUTE = "WORKOUT_DETAIL_SCREEN_ROUTE"
@@ -35,7 +36,13 @@ internal fun WorkoutDetailRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val logWorkoutAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
-        title = "Workout",
+        title = when (uiState) {
+            is WorkoutDetailUiState.LoadComplete -> {
+                val workout = (uiState as WorkoutDetailUiState.LoadComplete).workout
+                workout.name + "(${workout.date.defaultFormat()})"
+            }
+            is WorkoutDetailUiState.Loading -> "Workout"
+        },
         navigationIcon = IconButtonInfo.BACK_ICON.copy(clickHandler = onBackToPreviousScreen),
         actionIcons = listOf(
             IconButtonInfo(
@@ -49,7 +56,7 @@ internal fun WorkoutDetailRoute(
     )
 
     var isAppBarConfigured by remember { mutableStateOf(false) }
-    if (!isAppBarConfigured) {
+    if (!isAppBarConfigured && uiState is WorkoutDetailUiState.LoadComplete) {
         appBarConfigurationChangeHandler(logWorkoutAppBarConfiguration)
         isAppBarConfigured = true
     }
@@ -91,10 +98,10 @@ internal fun WorkoutDetailScreen(
                     }
                 }
 
-                is WorkoutDetailUiState.IsLogging -> {
+                is WorkoutDetailUiState.LoadComplete -> {
 //                    Timber.d("IsAdding")
 //                    Timber.d("trainedExercises: ${uiState.trainedExercises}")
-                    items(uiState.trainedExercises) { trainedExercise ->
+                    items(uiState.workout.trainedExercises) { trainedExercise ->
                         TrainedExerciseRegion(
                             modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.padding_medium)),
                             trainedExercise = trainedExercise
