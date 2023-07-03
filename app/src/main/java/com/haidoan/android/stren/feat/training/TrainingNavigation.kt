@@ -30,20 +30,6 @@ fun NavGraphBuilder.trainingGraph(
         composable(route = TRAINING_GRAPH_STARTING_ROUTE) {
             TabLayout(
                 tabNamesAndScreenComposables = listOf(
-                    Pair("Exercises") {
-                        ExercisesRoute(
-                            appBarConfigurationChangeHandler = {
-                                appBarConfigurationChangeHandler(it)
-                                Timber.d("App bar configured")
-                            },
-                            onNavigateToExerciseDetailScreen = {
-                                navController.navigateToExerciseDetail(it)
-                            },
-                            onNavigateToCreateExerciseScreen = {
-                                navController.navigateToCreateExercise(it)
-                            })
-
-                    },
                     Pair("History") {
                         TrainingHistoryRoute(
                             appBarConfigurationChangeHandler = {
@@ -95,6 +81,20 @@ fun NavGraphBuilder.trainingGraph(
                             }
                         )
                     },
+                    Pair("Exercises") {
+                        ExercisesRoute(
+                            appBarConfigurationChangeHandler = {
+                                appBarConfigurationChangeHandler(it)
+                                Timber.d("App bar configured")
+                            },
+                            onNavigateToExerciseDetailScreen = {
+                                navController.navigateToExerciseDetail(it)
+                            },
+                            onNavigateToCreateExerciseScreen = {
+                                navController.navigateToCreateExercise(it)
+                            })
+
+                    }
                 )
             )
         }
