@@ -37,27 +37,18 @@ internal class DashboardViewModel @Inject constructor(
     private var currentUserId = MutableStateFlow(UNDEFINED_USER_ID)
     private var cachedTrackedCategories = listOf<TrackedCategory>()
 
-    private val _allTrainedExercises = MutableStateFlow(listOf<TrainedExercise>())
-    private val _allBiometrics = MutableStateFlow(listOf<BiometricsRecord>())
+    private val _exercisesToTrack = MutableStateFlow<List<TrainedExercise>>(listOf())
 
     //TODO: This only works for exercises' 1RM and not other exercises-related metrics
-    val exercisesToTrack = _allTrainedExercises.mapLatest { allTrainedExercises ->
-        val alreadyTrackedExercisesIds =
-            cachedTrackedCategories.filterIsInstance(TrackedCategory.ExerciseOneRepMax::class.java)
-                .map {
-                    it.exerciseId
-                }
-        allTrainedExercises.filter { it.exercise.id !in alreadyTrackedExercisesIds }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
+    val exercisesToTrack = _exercisesToTrack.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        listOf()
+    )
 
-    val biometricsToTrack = _allBiometrics.mapLatest { allBiometrics ->
-        val alreadyTrackedBiometricsIds =
-            cachedTrackedCategories.filterIsInstance(TrackedCategory.Biometrics::class.java)
-                .map {
-                    it.biometricsId
-                }
-        allBiometrics.filter { it.biometricsId !in alreadyTrackedBiometricsIds }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
+    private val _biometricsToTrack = MutableStateFlow<List<BiometricsRecord>>(listOf())
+    val biometricsToTrack =
+        _biometricsToTrack.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
 
     val chartEntryModelProducers = mutableStateMapOf<String, ChartEntryModelProducer>()
 
@@ -141,18 +132,38 @@ internal class DashboardViewModel @Inject constructor(
 
     fun refreshAllTrainedExercises() {
         viewModelScope.launch {
-            _allTrainedExercises.value =
+            val allTrainedExercises =
                 workoutsRepository.getAllExercisesTrained(userId = currentUserId.value)
+            val alreadyTrackedExercisesIds =
+                cachedTrackedCategories.filterIsInstance(TrackedCategory.ExerciseOneRepMax::class.java)
+                    .map {
+                        it.exerciseId
+                    }
+            _exercisesToTrack.update { allTrainedExercises.filter { it.exercise.id !in alreadyTrackedExercisesIds } }
 
-            Timber.d("_allTrainedExercises.value: ${_allTrainedExercises.value}")
+            Timber.d(
+                "_exercisesToTrack.value: ${
+                    _exercisesToTrack.value.map { it.exercise.name }
+                }"
+            )
         }
     }
 
     fun refreshAllBiometrics() {
         viewModelScope.launch {
-            _allBiometrics.value =
+            val allBiometrics =
                 userRepository.getAllBiometricsToTrack(userId = currentUserId.value)
-            Timber.d("_allBiometrics.value: ${_allBiometrics.value}")
+            val alreadyTrackedBiometricsIds =
+                cachedTrackedCategories
+                    .filterIsInstance(TrackedCategory.Biometrics::class.java)
+                    .map { it.biometricsId }
+            _biometricsToTrack.update { allBiometrics.filter { it.biometricsId !in alreadyTrackedBiometricsIds } }
+
+            Timber.d(
+                "_biometricsToTrack.value: ${
+                    _biometricsToTrack.value.map { it.biometricsName }
+                }"
+            )
         }
     }
 
@@ -166,7 +177,7 @@ internal class DashboardViewModel @Inject constructor(
                     userId = currentUserId.value,
                     category = TrackedCategory.ExerciseOneRepMax(
                         exerciseId = exerciseId,
-                        exerciseName = _allTrainedExercises.value.first { it.exercise.id == exerciseId }.exercise.name,
+                        exerciseName = _exercisesToTrack.value.first { it.exercise.id == exerciseId }.exercise.name,
                         isDefaultCategory = false
                     )
                 )
@@ -183,7 +194,7 @@ internal class DashboardViewModel @Inject constructor(
                     userId = currentUserId.value,
                     category = TrackedCategory.Biometrics(
                         biometricsId = biometricsId,
-                        biometricsName = _allBiometrics.value.first { it.biometricsId == biometricsId }.biometricsName,
+                        biometricsName = biometricsToTrack.value.first { it.biometricsId == biometricsId }.biometricsName,
                         isDefaultCategory = false
                     )
                 )
