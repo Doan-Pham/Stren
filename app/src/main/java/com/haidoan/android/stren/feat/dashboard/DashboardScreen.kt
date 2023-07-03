@@ -48,7 +48,7 @@ internal fun DashboardRoute(
         bottomSheetComposable = { onDismiss ->
             ListModalBottomSheet(
                 onDismissRequest = onDismiss,
-                bottomSheetState = rememberModalBottomSheetState(),
+                bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                 title = "Track exercise",
                 sheetItems =
                 exercisesToTrack.map {
@@ -68,7 +68,7 @@ internal fun DashboardRoute(
         bottomSheetComposable = { onDismiss ->
             ListModalBottomSheet(
                 onDismissRequest = onDismiss,
-                bottomSheetState = rememberModalBottomSheetState(),
+                bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                 title = "Track biometrics",
                 sheetItems =
                 biometricsToTrack.map {
@@ -88,7 +88,6 @@ internal fun DashboardRoute(
         bottomSheetComposable = { onDismiss ->
             ListModalBottomSheet(
                 onDismissRequest = onDismiss,
-                bottomSheetState = rememberModalBottomSheetState(),
                 title = "Track category",
                 sheetItems = listOf(
                     BottomSheetItem(

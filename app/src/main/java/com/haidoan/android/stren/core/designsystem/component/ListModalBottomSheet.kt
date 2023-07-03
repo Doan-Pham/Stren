@@ -2,8 +2,8 @@ package com.haidoan.android.stren.core.designsystem.component
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,34 +21,32 @@ import com.haidoan.android.stren.R
 fun ListModalBottomSheet(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
-    bottomSheetState: SheetState,
+    bottomSheetState: SheetState = rememberModalBottomSheetState(),
     title: String,
     sheetItems: List<BottomSheetItem>
 ) {
     ModalBottomSheet(
         modifier = modifier,
         onDismissRequest = onDismissRequest,
-        sheetState = bottomSheetState,
-        containerColor = Color.White,
         tonalElevation = 0.dp,
+        containerColor = Color.White,
+        sheetState = bottomSheetState,
     ) {
-        Column(
+        Text(
             modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .weight(1f, false)
+                .fillMaxWidth()
+                .padding(
+                    start = dimensionResource(id = R.dimen.padding_medium),
+                    bottom = dimensionResource(id = R.dimen.padding_medium)
+                )
+                .align(Alignment.CenterHorizontally),
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = TextAlign.Start
+        )
 
-        ) {
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(dimensionResource(id = R.dimen.padding_medium))
-                    .align(Alignment.CenterHorizontally),
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Start
-            )
-            sheetItems.forEach {
+        LazyColumn {
+            items(sheetItems) {
                 Row(
                     modifier = Modifier
                         .clickable { it.onClickHandler() }
