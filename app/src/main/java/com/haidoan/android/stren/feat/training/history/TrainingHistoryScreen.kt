@@ -44,7 +44,8 @@ internal fun TrainingHistoryRoute(
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onNavigateToAddWorkoutScreen: (userId: String, selectedDate: LocalDate) -> Unit,
     onNavigateToStartWorkoutScreen: (userId: String, selectedDate: LocalDate) -> Unit,
-    onNavigateToEditWorkoutScreen: (userId: String, workoutId: String) -> Unit
+    onNavigateToEditWorkoutScreen: (userId: String, workoutId: String) -> Unit,
+    onNavigateToWorkoutDetailScreen: (userId: String, workoutId: String) -> Unit
 ) {
     var shouldShowCalendarDialog by remember {
         mutableStateOf(false)
@@ -95,6 +96,10 @@ internal fun TrainingHistoryRoute(
         onNavigateToEditWorkoutScreen = { workoutId ->
             val uiStateValue = viewModel.uiState.value as TrainingHistoryUiState.LoadComplete
             onNavigateToEditWorkoutScreen(uiStateValue.userId, workoutId)
+        },
+        onWorkoutItemClick = { workoutId ->
+            val uiStateValue = viewModel.uiState.value as TrainingHistoryUiState.LoadComplete
+            onNavigateToWorkoutDetailScreen(uiStateValue.userId, workoutId)
         }
     )
 }
@@ -113,6 +118,7 @@ internal fun TrainingHistoryScreen(
     onLogWorkoutButtonClick: () -> Unit,
     onStartWorkoutButtonClick: () -> Unit,
     onNavigateToEditWorkoutScreen: (String) -> Unit,
+    onWorkoutItemClick: (String) -> Unit,
 ) {
     when (uiState) {
         is TrainingHistoryUiState.Loading -> {
@@ -130,6 +136,7 @@ internal fun TrainingHistoryScreen(
                 .capitalize(Locale.current)
             val currentYear = uiState.selectedDate.year
             val selectedDate = uiState.selectedDate
+
             Column(
                 modifier = modifier
                     .fillMaxSize()
@@ -160,6 +167,7 @@ internal fun TrainingHistoryScreen(
                 if (uiState.workouts.isNotEmpty()) {
                     WorkoutList(
                         onNavigateToEditWorkoutScreen = onNavigateToEditWorkoutScreen,
+                        onWorkoutItemClick = onWorkoutItemClick,
                         workouts = uiState.workouts
                     )
                 } else {
@@ -269,21 +277,27 @@ private fun DateItem(
 @Composable
 private fun WorkoutList(
     onNavigateToEditWorkoutScreen: (String) -> Unit,
+    onWorkoutItemClick: (String) -> Unit,
     workouts: List<Workout>
 ) {
-    workouts.forEach {
-        WorkoutItem(workout = it, onEditWorkoutClickHandler = onNavigateToEditWorkoutScreen)
+    workouts.forEach { workout ->
+        WorkoutItem(
+            workout = workout,
+            onItemClickHandler = { onWorkoutItemClick(workout.id) },
+            onEditWorkoutClickHandler = onNavigateToEditWorkoutScreen
+        )
     }
 }
 
 @Composable
 private fun WorkoutItem(
-    workout: Workout, onItemClickHandler: (Workout) -> Unit = {
-        //TODO
-    }, onEditWorkoutClickHandler: (workoutId: String) -> Unit
+    workout: Workout,
+    onItemClickHandler: () -> Unit,
+    onEditWorkoutClickHandler: (workoutId: String) -> Unit
 ) {
     Column(
         modifier = Modifier
+            .clickable { onItemClickHandler() }
             .padding(vertical = dimensionResource(id = R.dimen.padding_large))
             .fillMaxWidth()
             .border(width = (1.5).dp, color = Gray90, shape = RoundedCornerShape(15.dp))
@@ -352,7 +366,7 @@ private fun EmptyScreen(
             horizontalAlignment = CenterHorizontally
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_edit),
+                painter = painterResource(id = R.drawable.ic_edit_72),
                 contentDescription = "Icon edit"
             )
             Text(
