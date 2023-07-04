@@ -14,6 +14,7 @@ import com.haidoan.android.stren.feat.training.history.StartWorkoutArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import timber.log.Timber
 import javax.inject.Inject
 
 internal const val NO_SELECTION_ROUTINE_ID = "NO SELECTION ROUTINE ID"
@@ -100,30 +101,24 @@ internal class StartWorkoutViewModel @Inject constructor(
     }
 
     private fun resolveToState(newValue: List<TrainedExercise>) {
-        // Timber.d("resolveToState() - _trainedExercises - before All: ${_trainedExercises.toList()}")
-        // Timber.d("resolveToState() - newValue: $newValue")
+        Timber.d("resolveToState() - _trainedExercises - before All: ${_trainedExercises.toList()}")
+        Timber.d("resolveToState() - newValue: $newValue")
 
-        val exerciseIterator = _trainedExercises.iterator()
-        while (exerciseIterator.hasNext()) {
-            val curExercise = exerciseIterator.next()
-            if (curExercise.id !in newValue.map { it.id }) {
-                _trainedExercises.remove(curExercise)
-            }
-        }
+        _trainedExercises.removeAll { curExercise -> curExercise.id !in newValue.map { it.id } }
 
         newValue.forEachIndexed { index, curExercise ->
-            //   Timber.d("resolveToState() - curExercise: $curExercise")
-            // Timber.d("resolveToState() - _trainedExercises - before: ${_trainedExercises.toList()}")
+            Timber.d("resolveToState() - curExercise: $curExercise")
+            Timber.d("resolveToState() - _trainedExercises - before: ${_trainedExercises.toList()}")
             if (curExercise.id !in _trainedExercises.map { it.id }) {
                 _trainedExercises.add(index, curExercise)
             } else if (curExercise != _trainedExercises.find { it.id == curExercise.id }) {
                 _trainedExercises.removeIf { it.id == curExercise.id }
                 _trainedExercises.add(index, curExercise)
             }
-            // Timber.d("resolveToState() - _trainedExercises - after: ${_trainedExercises.toList()}")
+            Timber.d("resolveToState() - _trainedExercises - after: ${_trainedExercises.toList()}")
         }
 
-        //Timber.d("resolveToState() - _trainedExercises - After all: ${_trainedExercises.toList()}")
+        Timber.d("resolveToState() - _trainedExercises - After all: ${_trainedExercises.toList()}")
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
