@@ -3,12 +3,14 @@ package com.haidoan.android.stren.feat.training.history
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.haidoan.android.stren.core.designsystem.component.ConfirmationDialogState
 import com.haidoan.android.stren.core.repository.base.WorkoutsRepository
 import com.haidoan.android.stren.core.service.AuthenticationService
 import com.haidoan.android.stren.core.utils.DateUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -31,20 +33,8 @@ internal class TrainingHistoryViewModel @Inject constructor(
     private val _dataFetchingTriggers: MutableStateFlow<DataFetchingTriggers> = MutableStateFlow(
         DataFetchingTriggers(userId = UNDEFINED_USER_ID, selectedDate = DateUtils.getCurrentDate())
     )
-
-    init {
-        authenticationService.addAuthStateListeners(
-            onUserAuthenticated = {
-                _dataFetchingTriggers.value = _dataFetchingTriggers.value.copy(userId = it)
-                Timber.d("authStateListen - User signed in - userId: $it")
-            },
-            onUserNotAuthenticated = {
-                _dataFetchingTriggers.value =
-                    _dataFetchingTriggers.value.copy(userId = UNDEFINED_USER_ID)
-                Timber.d("authStateListen - User signed out")
-            })
-    }
-
+    private val _secondaryUiState = MutableStateFlow(TrainingHistorySecondaryUiState())
+    val secondaryUiState: StateFlow<TrainingHistorySecondaryUiState> = _secondaryUiState
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<TrainingHistoryUiState> =
@@ -54,7 +44,7 @@ internal class TrainingHistoryViewModel @Inject constructor(
 
             if (userId != UNDEFINED_USER_ID) {
                 combine(
-                    workoutsRepository.getWorkoutsByUserIdAndDate(userId, selectedDate),
+                    workoutsRepository.getWorkoutsStreamByUserIdAndDate(userId, selectedDate),
                     workoutsRepository.getDatesThatHaveWorkoutByUserId(userId)
                 ) { workouts, datesThatHaveWorkouts ->
                     TrainingHistoryUiState.LoadComplete(
@@ -72,6 +62,20 @@ internal class TrainingHistoryViewModel @Inject constructor(
             SharingStarted.WhileSubscribed(5000), TrainingHistoryUiState.Loading
         )
 
+    init {
+        authenticationService.addAuthStateListeners(
+            onUserAuthenticated = {
+                _dataFetchingTriggers.value = _dataFetchingTriggers.value.copy(userId = it)
+                Timber.d("authStateListen - User signed in - userId: $it")
+            },
+            onUserNotAuthenticated = {
+                _dataFetchingTriggers.value =
+                    _dataFetchingTriggers.value.copy(userId = UNDEFINED_USER_ID)
+                Timber.d("authStateListen - User signed out")
+            })
+    }
+
+
     fun selectDate(date: LocalDate) {
         _dataFetchingTriggers.value = _dataFetchingTriggers.value.copy(selectedDate = date)
     }
@@ -88,6 +92,24 @@ internal class TrainingHistoryViewModel @Inject constructor(
     fun moveToPreviousWeek() {
         val selectedDate = _dataFetchingTriggers.value.selectedDate
         selectDate(selectedDate.with(TemporalAdjusters.previous(DayOfWeek.MONDAY)))
+    }
+
+    fun deleteWorkout(workoutId: String) {
+        _secondaryUiState.update { currentState ->
+            currentState.copy(
+                shouldShowConfirmDialog = true,
+                confirmDialogState = ConfirmationDialogState(
+                    title = "Delete workout",
+                    body = "Are you sure you want to delete this workout? This action can't be undone ",
+                    onDismissDialog = {
+                        _secondaryUiState.update { it.copy(shouldShowConfirmDialog = false) }
+                    },
+                    onConfirmClick = {
+                        viewModelScope.launch { workoutsRepository.deleteWorkout(workoutId) }
+                    }
+                )
+            )
+        }
     }
 }
 
