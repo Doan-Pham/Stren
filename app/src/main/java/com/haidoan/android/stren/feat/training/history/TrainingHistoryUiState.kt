@@ -1,5 +1,6 @@
 package com.haidoan.android.stren.feat.training.history
 
+import com.haidoan.android.stren.core.designsystem.component.ConfirmationDialogState
 import com.haidoan.android.stren.core.model.Workout
 import java.time.LocalDate
 
@@ -12,3 +13,8 @@ internal sealed interface TrainingHistoryUiState {
         val datesThatHaveWorkouts: List<LocalDate>
     ) : TrainingHistoryUiState
 }
+
+data class TrainingHistorySecondaryUiState(
+    val shouldShowConfirmDialog: Boolean = false,
+    val confirmDialogState: ConfirmationDialogState = ConfirmationDialogState.undefined,
+)

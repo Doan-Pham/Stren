@@ -47,13 +47,21 @@ internal fun TrainingHistoryRoute(
     onNavigateToEditWorkoutScreen: (userId: String, workoutId: String) -> Unit,
     onNavigateToWorkoutDetailScreen: (userId: String, workoutId: String) -> Unit
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val secondaryUiState by viewModel.secondaryUiState.collectAsStateWithLifecycle()
+
+    if (secondaryUiState.shouldShowConfirmDialog) {
+        SimpleConfirmationDialog(state = secondaryUiState.confirmDialogState)
+    }
+
     var shouldShowCalendarDialog by remember {
         mutableStateOf(false)
     }
 
     val trainingHistoryAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons = listOf(
-            IconButtonInfo(drawableResourceId = R.drawable.ic_add,
+            IconButtonInfo(
+                drawableResourceId = R.drawable.ic_add,
                 description = "MenuItem-Add",
                 clickHandler = {
                     val uiStateValue =
@@ -74,8 +82,6 @@ internal fun TrainingHistoryRoute(
         isAppBarConfigured = true
     }
 
-
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     TrainingHistoryScreen(
         modifier = modifier,
         uiState = uiState,
@@ -93,6 +99,7 @@ internal fun TrainingHistoryRoute(
             val uiStateValue = viewModel.uiState.value as TrainingHistoryUiState.LoadComplete
             onNavigateToStartWorkoutScreen(uiStateValue.userId, uiStateValue.selectedDate)
         },
+        onDeleteWorkoutClick = viewModel::deleteWorkout,
         onNavigateToEditWorkoutScreen = { workoutId ->
             val uiStateValue = viewModel.uiState.value as TrainingHistoryUiState.LoadComplete
             onNavigateToEditWorkoutScreen(uiStateValue.userId, workoutId)
@@ -119,6 +126,7 @@ internal fun TrainingHistoryScreen(
     onStartWorkoutButtonClick: () -> Unit,
     onNavigateToEditWorkoutScreen: (String) -> Unit,
     onWorkoutItemClick: (String) -> Unit,
+    onDeleteWorkoutClick: (String) -> Unit
 ) {
     when (uiState) {
         is TrainingHistoryUiState.Loading -> {
@@ -168,6 +176,7 @@ internal fun TrainingHistoryScreen(
                     WorkoutList(
                         onNavigateToEditWorkoutScreen = onNavigateToEditWorkoutScreen,
                         onWorkoutItemClick = onWorkoutItemClick,
+                        onDeleteWorkoutClick = onDeleteWorkoutClick,
                         workouts = uiState.workouts
                     )
                 } else {
@@ -278,12 +287,14 @@ private fun DateItem(
 private fun WorkoutList(
     onNavigateToEditWorkoutScreen: (String) -> Unit,
     onWorkoutItemClick: (String) -> Unit,
+    onDeleteWorkoutClick: (String) -> Unit,
     workouts: List<Workout>
 ) {
     workouts.forEach { workout ->
         WorkoutItem(
             workout = workout,
             onItemClickHandler = { onWorkoutItemClick(workout.id) },
+            onDeleteWorkoutClick = { onDeleteWorkoutClick(workout.id) },
             onEditWorkoutClickHandler = onNavigateToEditWorkoutScreen
         )
     }
@@ -293,6 +304,7 @@ private fun WorkoutList(
 private fun WorkoutItem(
     workout: Workout,
     onItemClickHandler: () -> Unit,
+    onDeleteWorkoutClick: () -> Unit,
     onEditWorkoutClickHandler: (workoutId: String) -> Unit
 ) {
     Column(
@@ -318,7 +330,8 @@ private fun WorkoutItem(
             Spacer(Modifier.weight(1f))
             DropDownMenuScaffold(
                 menuItemsTextAndClickHandler = mapOf(
-                    "Edit" to { onEditWorkoutClickHandler(workout.id) })
+                    "Edit" to { onEditWorkoutClickHandler(workout.id) },
+                    "Delete" to { onDeleteWorkoutClick() }),
             ) { onExpandMenu ->
                 Icon(
                     modifier = Modifier
