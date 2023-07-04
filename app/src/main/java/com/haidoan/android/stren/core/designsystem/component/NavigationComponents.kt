@@ -3,6 +3,7 @@ package com.haidoan.android.stren.core.designsystem.component
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -13,6 +14,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
@@ -57,12 +59,33 @@ fun StrenSmallTopAppBar(
         }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
         actions = {
             appBarConfiguration.actionIcons.forEach {
-                IconButton(onClick = it.clickHandler) {
-                    Icon(
-                        painter = painterResource(it.drawableResourceId),
-                        contentDescription = it.description
-                    )
+                if (it.shouldShowBadge.value) {
+                    BadgedBox(badge = {
+                        Badge(
+                            modifier = Modifier
+                                .size(12.dp)
+                                .offset(
+                                    y = (14).dp,
+                                    x = (-14).dp
+                                )
+                        )
+                    }) {
+                        IconButton(onClick = it.clickHandler) {
+                            Icon(
+                                painter = painterResource(it.drawableResourceId),
+                                contentDescription = it.description
+                            )
+                        }
+                    }
+                } else {
+                    IconButton(onClick = it.clickHandler) {
+                        Icon(
+                            painter = painterResource(it.drawableResourceId),
+                            contentDescription = it.description
+                        )
+                    }
                 }
+
             }
 
         }

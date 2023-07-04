@@ -1,8 +1,10 @@
 package com.haidoan.android.stren.feat.training.history.log_workout
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -33,7 +35,9 @@ internal class LogWorkoutViewModel @Inject constructor(
     private lateinit var currentWorkoutInfo: Workout
 
     private val navArgs: LogWorkoutArgs = LogWorkoutArgs(savedStateHandle)
-    private val _trainedExercises: MutableStateFlow<List<TrainedExercise>> =
+
+    private val _trainedExercises: SnapshotStateList<TrainedExercise> = mutableStateListOf()
+    private val _trainedExercisesStream: MutableStateFlow<List<TrainedExercise>> =
         MutableStateFlow(listOf())
 
     private var _currentSelectedRoutineId = NO_SELECTION_ROUTINE_ID
@@ -42,6 +46,21 @@ internal class LogWorkoutViewModel @Inject constructor(
 
     private val _secondaryUiState = MutableStateFlow(LogWorkoutSecondaryUiState())
     val secondaryUiState: StateFlow<LogWorkoutSecondaryUiState> = _secondaryUiState
+
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState: StateFlow<LogWorkoutUiState> =
+        _trainedExercisesStream.flatMapLatest { newTrainedExercises ->
+            resolveToState(newTrainedExercises)
+
+            if (newTrainedExercises.isEmpty()) {
+                flowOf(LogWorkoutUiState.EmptyWorkout)
+            } else {
+                flowOf(LogWorkoutUiState.IsLogging(navArgs.selectedDate, _trainedExercises))
+            }
+        }.stateIn(
+            viewModelScope, SharingStarted.WhileSubscribed(5000), LogWorkoutUiState.Loading
+        )
 
     init {
         Timber.d("init() - userId: ${navArgs.userId} - selectedDate: ${navArgs.selectedDate}")
@@ -68,11 +87,11 @@ internal class LogWorkoutViewModel @Inject constructor(
             viewModelScope.launch {
                 val workout = workoutsRepository.getWorkoutById(navArgs.workoutId)
                 workoutNameTextFieldValue = workout.name
-                _trainedExercises.value = workout.trainedExercises
+                _trainedExercisesStream.value = workout.trainedExercises
                 currentWorkoutInfo = workout
 
                 Timber.d("workout: $workout")
-                Timber.d(" _trainedExercises.value: ${_trainedExercises.value}")
+                Timber.d(" _trainedExercises.value: ${_trainedExercisesStream.value}")
             }
         }
     }
@@ -90,10 +109,10 @@ internal class LogWorkoutViewModel @Inject constructor(
     fun selectRoutine(newlySelectedRoutineId: String) {
         if (newlySelectedRoutineId == _currentSelectedRoutineId) return
 
-        if (_trainedExercises.value.isEmpty()) {
+        if (_trainedExercisesStream.value.isEmpty()) {
             if (newlySelectedRoutineId != NO_SELECTION_ROUTINE_ID) {
                 _currentSelectedRoutineId = newlySelectedRoutineId
-                _trainedExercises.value =
+                _trainedExercisesStream.value =
                     routines.value.first { it.id == _currentSelectedRoutineId }.trainedExercises
                 _secondaryUiState.update { currentState ->
                     currentState.copy(selectedRoutineId = _currentSelectedRoutineId)
@@ -105,7 +124,7 @@ internal class LogWorkoutViewModel @Inject constructor(
                     shouldShowRoutineWarningDialog = true,
                     onConfirmSwitchRoutine = {
                         _currentSelectedRoutineId = newlySelectedRoutineId
-                        _trainedExercises.value =
+                        _trainedExercisesStream.value =
                             routines.value.first { it.id == _currentSelectedRoutineId }.trainedExercises
                         _secondaryUiState.update { currentState ->
                             currentState.copy(selectedRoutineId = _currentSelectedRoutineId)
@@ -122,11 +141,11 @@ internal class LogWorkoutViewModel @Inject constructor(
             //Timber.d("exercisesToAdd: $exercisesToAdd")
 
             val currentTrainedExercises = mutableListOf<TrainedExercise>()
-            currentTrainedExercises.addAll(_trainedExercises.value)
+            currentTrainedExercises.addAll(_trainedExercisesStream.value)
             currentTrainedExercises.addAll(exercisesToAdd.map { it.asTrainedExerciseWithOneSet() })
 
-            _trainedExercises.value = currentTrainedExercises
-            Timber.d("_trainedExercises.value.size: ${_trainedExercises.value.size}")
+            _trainedExercisesStream.value = currentTrainedExercises
+            Timber.d("_trainedExercises.value.size: ${_trainedExercisesStream.value.size}")
         }
     }
 
@@ -147,7 +166,7 @@ internal class LogWorkoutViewModel @Inject constructor(
             }; content: $updatedTrainingSetData"
         )
 
-        val updatedTrainingSets = _trainedExercises.value.first { trainedExercise ->
+        val updatedTrainingSets = _trainedExercisesStream.value.first { trainedExercise ->
             Timber.d("Finding exercise - id: ${trainedExercise.id}")
             trainedExercise.id == exerciseToUpdate.id
         }.trainingSets.replace(updatedTrainingSetData) { trainingSet ->
@@ -156,18 +175,18 @@ internal class LogWorkoutViewModel @Inject constructor(
         }
         Timber.d("updatedTrainingSets: $updatedTrainingSets")
 
-        val updatedExercise = _trainedExercises.value.first {
+        val updatedExercise = _trainedExercisesStream.value.first {
             Timber.d("Finding exercise - id: ${it.id}")
             it.id == exerciseToUpdate.id
         }.copy(trainingSets = updatedTrainingSets)
         Timber.d("updatedExercise: $updatedExercise")
 
         val updatedTrainedExercises = mutableListOf<TrainedExercise>()
-        updatedTrainedExercises.addAll(_trainedExercises.value.replace(updatedExercise) { it.id == exerciseToUpdate.id })
+        updatedTrainedExercises.addAll(_trainedExercisesStream.value.replace(updatedExercise) { it.id == exerciseToUpdate.id })
         Timber.d("updatedTrainedExercises: $updatedTrainedExercises")
 
-        _trainedExercises.value = updatedTrainedExercises
-        Timber.d("_trainedExercises: ${_trainedExercises.value}")
+        _trainedExercisesStream.value = updatedTrainedExercises
+        Timber.d("_trainedExercises: ${_trainedExercisesStream.value}")
     }
 
     fun addEmptyTrainingSet(
@@ -176,35 +195,35 @@ internal class LogWorkoutViewModel @Inject constructor(
 
 //        Timber.d("addTrainingSet - exerciseToUpdate: unique identifier: ${exerciseToUpdate.id}; content: $exerciseToUpdate")
 
-        val updatedTrainingSets = _trainedExercises.value.first { trainedExercise ->
+        val updatedTrainingSets = _trainedExercisesStream.value.first { trainedExercise ->
             Timber.d("Finding exercise - id: ${trainedExercise.id}")
             trainedExercise.id == exerciseToUpdate.id
         }.trainingSets.toMutableList()
         updatedTrainingSets.addEmptyTrainingSet()
 
-        val updatedExercise = _trainedExercises.value.first {
+        val updatedExercise = _trainedExercisesStream.value.first {
 //            Timber.d("Finding exercise - id: ${it.id}")
             it.id == exerciseToUpdate.id
         }.copy(trainingSets = updatedTrainingSets)
 
         val updatedTrainedExercises = mutableListOf<TrainedExercise>()
-        updatedTrainedExercises.addAll(_trainedExercises.value.replace(updatedExercise) { it.id == exerciseToUpdate.id })
+        updatedTrainedExercises.addAll(_trainedExercisesStream.value.replace(updatedExercise) { it.id == exerciseToUpdate.id })
 //        Timber.d("updatedTrainedExercises: $updatedTrainedExercises")
 
-        _trainedExercises.value = updatedTrainedExercises
+        _trainedExercisesStream.value = updatedTrainedExercises
 //        Timber.d("_trainedExercises: ${_trainedExercises.value}")
     }
 
     fun deleteExercise(
         exerciseToDelete: TrainedExercise,
     ) {
-        val updatedTrainedExercises = _trainedExercises.value.toMutableList()
+        val updatedTrainedExercises = _trainedExercisesStream.value.toMutableList()
         updatedTrainedExercises.removeIf { it.id == exerciseToDelete.id }
 
         Timber.d("updatedTrainedExercises: $updatedTrainedExercises")
 
-        _trainedExercises.value = updatedTrainedExercises
-        Timber.d("_trainedExercises: ${_trainedExercises.value}")
+        _trainedExercisesStream.value = updatedTrainedExercises
+        Timber.d("_trainedExercises: ${_trainedExercisesStream.value}")
     }
 
     fun deleteTrainingSet(
@@ -218,7 +237,7 @@ internal class LogWorkoutViewModel @Inject constructor(
             }; content: $trainingSetToDelete"
         )
 
-        val updatedTrainingSets = _trainedExercises.value.first { trainedExercise ->
+        val updatedTrainingSets = _trainedExercisesStream.value.first { trainedExercise ->
             Timber.d("Finding exercise - id: ${trainedExercise.id}")
             trainedExercise.id == exerciseToUpdate.id
         }.trainingSets.toMutableList()
@@ -226,18 +245,18 @@ internal class LogWorkoutViewModel @Inject constructor(
 
         Timber.d("updatedTrainingSets: $updatedTrainingSets")
 
-        val updatedExercise = _trainedExercises.value.first {
+        val updatedExercise = _trainedExercisesStream.value.first {
             Timber.d("Finding exercise - id: ${it.id}")
             it.id == exerciseToUpdate.id
         }.copy(trainingSets = updatedTrainingSets)
         Timber.d("updatedExercise: $updatedExercise")
 
         val updatedTrainedExercises = mutableListOf<TrainedExercise>()
-        updatedTrainedExercises.addAll(_trainedExercises.value.replace(updatedExercise) { it.id == exerciseToUpdate.id })
+        updatedTrainedExercises.addAll(_trainedExercisesStream.value.replace(updatedExercise) { it.id == exerciseToUpdate.id })
         Timber.d("updatedTrainedExercises: $updatedTrainedExercises")
 
-        _trainedExercises.value = updatedTrainedExercises
-        Timber.d("_trainedExercises: ${_trainedExercises.value}")
+        _trainedExercisesStream.value = updatedTrainedExercises
+        Timber.d("_trainedExercises: ${_trainedExercisesStream.value}")
     }
 
     fun addEditWorkout() {
@@ -249,7 +268,7 @@ internal class LogWorkoutViewModel @Inject constructor(
                     workout = Workout(
                         name = workoutNameTextFieldValue,
                         date = navArgs.selectedDate,
-                        trainedExercises = _trainedExercises.value
+                        trainedExercises = _trainedExercisesStream.value
                     )
                 )
             }
@@ -259,23 +278,33 @@ internal class LogWorkoutViewModel @Inject constructor(
                     userId = navArgs.userId,
                     workout = currentWorkoutInfo.copy(
                         name = workoutNameTextFieldValue,
-                        trainedExercises = _trainedExercises.value
+                        trainedExercises = _trainedExercisesStream.value
                     )
                 )
             }
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val uiState: StateFlow<LogWorkoutUiState> =
-        _trainedExercises.flatMapLatest { _trainedExercises ->
-            if (_trainedExercises.isEmpty()) flowOf(LogWorkoutUiState.EmptyWorkout) else flowOf(
-                LogWorkoutUiState.IsLogging(navArgs.selectedDate, _trainedExercises)
-            )
-        }.stateIn(
-            viewModelScope, SharingStarted.WhileSubscribed(5000), LogWorkoutUiState.Loading
-        )
+    private fun resolveToState(newValue: List<TrainedExercise>) {
+        Timber.d("resolveToState() - _trainedExercises - before All: ${_trainedExercises.toList()}")
+        Timber.d("resolveToState() - newValue: $newValue")
 
+        _trainedExercises.removeAll { curExercise -> curExercise.id !in newValue.map { it.id } }
+
+        newValue.forEachIndexed { index, curExercise ->
+            Timber.d("resolveToState() - curExercise: $curExercise")
+            Timber.d("resolveToState() - _trainedExercises - before: ${_trainedExercises.toList()}")
+            if (curExercise.id !in _trainedExercises.map { it.id }) {
+                _trainedExercises.add(index, curExercise)
+            } else if (curExercise != _trainedExercises.find { it.id == curExercise.id }) {
+                _trainedExercises.removeIf { it.id == curExercise.id }
+                _trainedExercises.add(index, curExercise)
+            }
+            Timber.d("resolveToState() - _trainedExercises - after: ${_trainedExercises.toList()}")
+        }
+
+        Timber.d("resolveToState() - _trainedExercises - After all: ${_trainedExercises.toList()}")
+    }
 }
 
 private fun <T> List<T>.replace(newValue: T, block: (T) -> Boolean): List<T> {

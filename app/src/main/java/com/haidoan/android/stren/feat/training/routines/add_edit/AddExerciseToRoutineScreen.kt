@@ -89,6 +89,8 @@ internal fun AddExerciseToRoutineRoute(
         },
         onLabelSelected = { chosenLabel -> viewModel.toggleMuscleGroupSelection(chosenLabel.id) },
     )
+    val shouldShowFilterBadge =
+        remember { derivedStateOf { muscleGroups.any { it.isSelected } || exerciseCategories.any { it.isSelected } } }
 
     val exercisesAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         title = "Add exercise",
@@ -116,6 +118,7 @@ internal fun AddExerciseToRoutineRoute(
                     appBarConfigurationChangeHandler(searchBarConfiguration)
                 }),
             IconButtonInfo(
+                _shouldShowBadge = shouldShowFilterBadge,
                 drawableResourceId = R.drawable.ic_filter,
                 description = "Menu Item Filter",
                 clickHandler = { shouldShowFilterSheet = true })
@@ -146,7 +149,7 @@ internal fun AddExerciseToRoutineRoute(
 }
 
 /**
- * This composable is basically [ExercisesScreen] with minor modifications
+ * This composable is basically ExercisesScreen with minor modifications
  *
  * TODO: Probably extract some shared components
  */
