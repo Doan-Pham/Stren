@@ -46,8 +46,13 @@ internal class AddEditRoutineViewModel @Inject constructor(
     fun setExercisesIdsToAdd(ids: List<String>) {
         //Timber.d("setExercisesIdsToAdd - ids: $ids")
         viewModelScope.launch {
-            val exercisesToAdd = exercisesRepository.getExercisesByIds(ids)
-            //Timber.d("exercisesToAdd: $exercisesToAdd")
+
+            // Since [exercisesRepository.getExercisesByIds] returns exercises in a different order from the original, this helps correct the exercises order
+            val correctOrderOfExercise = ids.indexMap()
+            val exercisesToAdd =
+                exercisesRepository.getExercisesByIds(ids)
+                    .sortedBy { correctOrderOfExercise[it.id] }
+            Timber.d("exercisesToAdd: $exercisesToAdd")
 
             val currentTrainedExercises = mutableListOf<TrainedExercise>()
             currentTrainedExercises.addAll(_trainedExercises.value)
@@ -205,6 +210,17 @@ internal class AddEditRoutineViewModel @Inject constructor(
             SharingStarted.WhileSubscribed(5000), AddEditRoutineUiState.Loading
         )
 
+}
+
+/**
+ * Returns a map
+ */
+private fun <T> Iterable<T>.indexMap(): Map<T, Int> {
+    val map = mutableMapOf<T, Int>()
+    this.forEachIndexed { i, v ->
+        map[v] = i
+    }
+    return map
 }
 
 private fun <T> List<T>.replace(newValue: T, block: (T) -> Boolean): List<T> {
