@@ -36,6 +36,7 @@ internal class AddExerciseToRoutineViewModel @Inject constructor(exercisesReposi
     var shouldShowSnackBar by mutableStateOf(false)
     private var _isSearching = MutableStateFlow(false)
     val isSearching: StateFlow<Boolean> = _isSearching
+    var shouldScrollToTop = mutableStateOf(false)
 
     val snackBarErrorMessage = "Max 30 selected exercises at a time"
 
@@ -194,7 +195,10 @@ internal class AddExerciseToRoutineViewModel @Inject constructor(exercisesReposi
             Timber.d("val exercises - filterStandards: $filterStandards")
             exercisesRepository.searchExercises(filterStandards = filterStandards)
         }
-        .onEach { _isSearching.update { false } }
+        .onEach {
+            _isSearching.update { false }
+            shouldScrollToTop.value = true
+        }
         .cachedIn(viewModelScope)
 }
 
