@@ -1,5 +1,6 @@
 package com.haidoan.android.stren.core.designsystem.component
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -7,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
@@ -227,5 +229,81 @@ fun AddMeasurementDialog(
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SingleSelectionDialog(
+    state: SingleSelectionDialogState,
+) {
+    AlertDialog(
+        onDismissRequest = state.onDismissDialog,
+    ) {
+        Column(
+            modifier = Modifier
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color.White)
+                .padding(dimensionResource(id = R.dimen.padding_large))
+        ) {
+            Text(text = state.title, style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.size(dimensionResource(R.dimen.padding_medium)))
+
+            var selectedIndex by remember {
+                mutableStateOf(0)
+            }
+            RadioGroup(
+                modifier = Modifier.fillMaxWidth(),
+                radioOptions = state.options.map { option ->
+                    { modifier ->
+                        Text(modifier = modifier, text = option)
+                    }
+                },
+                selectedOptionIndex = selectedIndex,
+                onOptionSelected = {
+                    selectedIndex = it
+                })
+
+            Spacer(Modifier.size(dimensionResource(R.dimen.padding_medium)))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                StrenTextButton(
+                    modifier = Modifier.weight(1f),
+                    onClickHandler = state.onDismissDialog,
+                    text = "Cancel",
+                    textStyle = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(Modifier.size(dimensionResource(id = R.dimen.padding_small)))
+                StrenFilledButton(
+                    modifier = Modifier.weight(1f),
+                    onClickHandler = {
+                        state.onConfirmClick(selectedIndex)
+                        state.onDismissDialog()
+                    },
+                    text = "Confirm",
+                    textStyle = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+    }
+}
+
+data class SingleSelectionDialogState constructor(
+    val title: String,
+    val options: List<String>,
+    val onConfirmClick: (selectedOptionIndex: Int) -> Unit,
+    val onDismissDialog: () -> Unit
+) {
+    companion object {
+        val undefined = SingleSelectionDialogState(
+            title = "Title",
+            options = listOf(),
+            onConfirmClick = {},
+            onDismissDialog = {})
     }
 }

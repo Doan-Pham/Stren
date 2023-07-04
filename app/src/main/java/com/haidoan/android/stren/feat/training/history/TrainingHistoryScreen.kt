@@ -56,6 +56,10 @@ internal fun TrainingHistoryRoute(
         SimpleConfirmationDialog(state = secondaryUiState.confirmDialogState)
     }
 
+    if (secondaryUiState.shouldShowSingleSelectionDialog) {
+        SingleSelectionDialog(state = secondaryUiState.workoutOptionDialogState)
+    }
+
     var shouldShowCalendarDialog by remember {
         mutableStateOf(false)
     }
@@ -68,7 +72,24 @@ internal fun TrainingHistoryRoute(
                 clickHandler = {
                     val uiStateValue =
                         viewModel.uiState.value as TrainingHistoryUiState.LoadComplete
-                    onNavigateToAddWorkoutScreen(uiStateValue.userId, uiStateValue.selectedDate)
+                    if (uiStateValue.selectedDate.isEqual(DateUtils.getCurrentDate())) {
+                        viewModel.showWorkoutOptions(listOf(
+                            "Log workout" to {
+                                onNavigateToAddWorkoutScreen(
+                                    uiStateValue.userId,
+                                    uiStateValue.selectedDate
+                                )
+                            },
+                            "Start workout" to {
+                                onNavigateToStartWorkoutScreen(
+                                    uiStateValue.userId,
+                                    uiStateValue.selectedDate
+                                )
+                            }
+                        ))
+                    } else {
+                        onNavigateToAddWorkoutScreen(uiStateValue.userId, uiStateValue.selectedDate)
+                    }
                 }),
             IconButtonInfo(
                 drawableResourceId = R.drawable.ic_calendar,
