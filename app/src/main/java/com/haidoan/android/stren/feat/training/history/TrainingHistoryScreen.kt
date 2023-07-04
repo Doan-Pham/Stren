@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -290,13 +292,18 @@ private fun WorkoutList(
     onDeleteWorkoutClick: (String) -> Unit,
     workouts: List<Workout>
 ) {
-    workouts.forEach { workout ->
-        WorkoutItem(
-            workout = workout,
-            onItemClickHandler = { onWorkoutItemClick(workout.id) },
-            onDeleteWorkoutClick = { onDeleteWorkoutClick(workout.id) },
-            onEditWorkoutClickHandler = onNavigateToEditWorkoutScreen
-        )
+    LazyColumn(
+        modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.padding_medium)),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+    ) {
+        items(workouts) { workout ->
+            WorkoutItem(
+                workout = workout,
+                onItemClickHandler = { onWorkoutItemClick(workout.id) },
+                onDeleteWorkoutClick = { onDeleteWorkoutClick(workout.id) },
+                onEditWorkoutClickHandler = onNavigateToEditWorkoutScreen
+            )
+        }
     }
 }
 
@@ -309,11 +316,10 @@ private fun WorkoutItem(
 ) {
     Column(
         modifier = Modifier
-            .clickable { onItemClickHandler() }
-            .padding(vertical = dimensionResource(id = R.dimen.padding_large))
             .fillMaxWidth()
             .border(width = (1.5).dp, color = Gray90, shape = RoundedCornerShape(15.dp))
             .clip(RoundedCornerShape(15.dp))
+            .clickable { onItemClickHandler() }
             .padding(dimensionResource(id = R.dimen.padding_medium)),
         verticalArrangement = Arrangement.Top,
     ) {
