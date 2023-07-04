@@ -32,7 +32,7 @@ internal data class FirestoreTrainedExercise(
     val trainingSets: Map<String, Double> = mapOf(),
 ) {
     fun asTrainedExercise(): TrainedExercise {
-        val firestoreTrainingSets = this.trainingSets
+        val firestoreTrainingSets = this.trainingSets.toSortedMap()
         val trainingSets: MutableList<TrainingMeasurementMetrics> = mutableListOf()
 
         when (this.exerciseCategory) {
@@ -40,7 +40,10 @@ internal data class FirestoreTrainedExercise(
                 firestoreTrainingSets.forEach {
                     trainingSets.add(
                         TrainingMeasurementMetrics.DistanceAndDuration(
-                            it.key.substringBefore(DEFAULT_SEPARATOR_CHAR).toDouble(),
+                            it.key
+                                .substringAfter(DEFAULT_SEPARATOR_CHAR)
+                                .substringBefore(DEFAULT_SEPARATOR_CHAR)
+                                .toDouble(),
                             it.value
                         )
                     )
@@ -55,7 +58,10 @@ internal data class FirestoreTrainedExercise(
                 firestoreTrainingSets.forEach {
                     trainingSets.add(
                         TrainingMeasurementMetrics.WeightAndRep(
-                            it.key.substringBefore(DEFAULT_SEPARATOR_CHAR).toDouble(),
+                            it.key
+                                .substringAfter(DEFAULT_SEPARATOR_CHAR)
+                                .substringBefore(DEFAULT_SEPARATOR_CHAR)
+                                .toDouble(),
                             it.value.toLong()
                         )
                     )
@@ -82,8 +88,8 @@ internal data class FirestoreTrainedExercise(
                 CARDIO.fieldValue -> {
                     iteratedMetricsFrequency.clear()
 
-                    trainingSets.forEach {
-                        val metrics = it as TrainingMeasurementMetrics.DistanceAndDuration
+                    trainingSets.forEachIndexed { index, trainingSet ->
+                        val metrics = trainingSet as TrainingMeasurementMetrics.DistanceAndDuration
                         val kilometers = metrics.kilometers.toString()
                         val hours = metrics.hours
 
@@ -91,7 +97,9 @@ internal data class FirestoreTrainedExercise(
                             (iteratedMetricsFrequency[kilometers] ?: 0) + 1
 
                         val metricsKeyWithIndex =
-                            kilometers + "_" + iteratedMetricsFrequency[kilometers]
+                            (index + 1).toString() + DEFAULT_SEPARATOR_CHAR +
+                                    kilometers + DEFAULT_SEPARATOR_CHAR +
+                                    iteratedMetricsFrequency[kilometers]
                         firestoreTrainingSets[metricsKeyWithIndex] = hours
 
                         Timber.d("from(trainedExercise: TrainedExercise) - CARDIO - metricsKeyWithIndex:$metricsKeyWithIndex")
@@ -106,8 +114,8 @@ internal data class FirestoreTrainedExercise(
                 }
                 else -> {
                     iteratedMetricsFrequency.clear()
-                    trainingSets.forEach {
-                        val metrics = it as TrainingMeasurementMetrics.WeightAndRep
+                    trainingSets.forEachIndexed { index, trainingSet ->
+                        val metrics = trainingSet as TrainingMeasurementMetrics.WeightAndRep
                         val weight = metrics.weight.toString()
                         val repAmount = metrics.repAmount
 
@@ -115,7 +123,9 @@ internal data class FirestoreTrainedExercise(
                             (iteratedMetricsFrequency[weight] ?: 0) + 1
 
                         val metricsKeyWithIndex =
-                            weight + "_" + iteratedMetricsFrequency[weight]
+                            (index + 1).toString() + DEFAULT_SEPARATOR_CHAR +
+                                    weight + DEFAULT_SEPARATOR_CHAR +
+                                    iteratedMetricsFrequency[weight]
                         firestoreTrainingSets[metricsKeyWithIndex] = repAmount.toDouble()
 
                         Timber.d("from(trainedExercise: TrainedExercise) - WEIGHT AND REP - metrics:$metrics")

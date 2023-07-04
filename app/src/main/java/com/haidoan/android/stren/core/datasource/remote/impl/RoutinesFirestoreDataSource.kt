@@ -32,10 +32,14 @@ class RoutinesFirestoreDataSource @Inject constructor() : RoutinesRemoteDataSour
         firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH")
             .document(routineId).get().await().toRoutine()
 
-    override suspend fun addRoutine(userId: String, routine: Routine): String =
-        firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH")
+    override suspend fun addRoutine(userId: String, routine: Routine): String {
+        Timber.d("addRoutine() - routine: $routine")
+        Timber.d("addRoutine() - FirestoreRoutine: ${FirestoreRoutine.from(routine)}")
+        return firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH")
             .add(FirestoreRoutine.from(routine))
             .await().id
+    }
+
 
     override suspend fun updateRoutine(userId: String, routine: Routine) {
         firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH")
@@ -47,7 +51,7 @@ class RoutinesFirestoreDataSource @Inject constructor() : RoutinesRemoteDataSour
     private fun DocumentSnapshot.toRoutine(): Routine {
         Timber.d("document: $this")
         val routinesData = this.toObject(FirestoreRoutine::class.java)
-        Timber.d("toFirestoreRoutine() - : $routinesData")
+        Timber.d("toRoutine() - routinesData: $routinesData")
         return routinesData?.asRoutine() ?: Routine(name = "Undefined", trainedExercises = listOf())
     }
 
