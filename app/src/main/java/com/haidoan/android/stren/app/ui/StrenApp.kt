@@ -5,10 +5,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -143,6 +140,9 @@ private fun StrenTopAppBar(
             }
             is AppBarConfiguration.SearchAppBar -> {
                 SearchBar(
+                    modifier = Modifier.padding(
+                        top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+                    ),
                     text = configuration.text.value,
                     placeholder = configuration.placeholder,
                     onTextChange = configuration.onTextChange,
