@@ -6,10 +6,12 @@ import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 interface WorkoutsRepository {
+    fun getWorkoutsStreamByUserIdAndDate(userId: String, date: LocalDate): Flow<List<Workout>>
+
     fun getWorkoutsByUserIdAndDate(userId: String, date: LocalDate): Flow<List<Workout>>
     fun getDatesThatHaveWorkoutByUserId(userId: String): Flow<List<LocalDate>>
     suspend fun addWorkout(userId: String, workout: Workout): String
-
+    suspend fun deleteWorkout(workoutId: String)
     suspend fun getWorkoutById(workoutId: String): Workout
     suspend fun updateWorkout(userId: String, workout: Workout)
     suspend fun getAllExercisesTrained(userId: String): List<TrainedExercise>
@@ -19,4 +21,6 @@ interface WorkoutsRepository {
         startDate: LocalDate,
         endDate: LocalDate
     ): Flow<Map<LocalDate, Float>>
+
+
 }

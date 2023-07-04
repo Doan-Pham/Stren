@@ -18,6 +18,13 @@ class FakeWorkoutsRepository : WorkoutsRepository {
         _workoutsFlow.tryEmit(mapOf(userId to workouts))
     }
 
+    override fun getWorkoutsStreamByUserIdAndDate(
+        userId: String,
+        date: LocalDate
+    ): Flow<List<Workout>> {
+        TODO("Not yet implemented")
+    }
+
     override fun getWorkoutsByUserIdAndDate(userId: String, date: LocalDate): Flow<List<Workout>> =
         _workoutsFlow.map {
             it.getOrDefault(userId, listOf()).filter { workout -> workout.date.isEqual(date) }
@@ -28,6 +35,10 @@ class FakeWorkoutsRepository : WorkoutsRepository {
     }
 
     override suspend fun addWorkout(userId: String, workout: Workout): String {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteWorkout(workoutId: String) {
         TODO("Not yet implemented")
     }
 

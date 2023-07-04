@@ -17,6 +17,7 @@ import com.haidoan.android.stren.core.utils.DateUtils.toTimeStampDayStart
 import com.haidoan.android.stren.core.utils.ListUtils.mergeLists
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import java.time.LocalDate
@@ -26,6 +27,16 @@ private const val WORKOUT_COLLECTION_PATH = "Workout"
 
 class WorkoutFirestoreDataSource @Inject constructor() : WorkoutRemoteDataSource {
     private val firestore = FirebaseFirestore.getInstance()
+    override fun getWorkoutsStreamByUserIdAndDate(
+        userId: String,
+        date: LocalDate
+    ): Flow<List<Workout>> =
+        firestore.collection(WORKOUT_COLLECTION_PATH)
+            .whereEqualTo("userId", userId)
+            .whereGreaterThanOrEqualTo("date", date.toTimeStampDayStart())
+            .whereLessThanOrEqualTo("date", date.toTimeStampDayEnd())
+            .snapshots()
+            .mapNotNull { it.toWorkoutsList() }
 
 
     override suspend fun getWorkoutsByUserIdAndDate(
@@ -82,6 +93,11 @@ class WorkoutFirestoreDataSource @Inject constructor() : WorkoutRemoteDataSource
         firestore.collection(WORKOUT_COLLECTION_PATH)
             .add(FirestoreWorkout.from(userId, workout))
             .await().id
+
+    override suspend fun deleteWorkout(workoutId: String) {
+        firestore.collection(WORKOUT_COLLECTION_PATH)
+            .document(workoutId).delete().await()
+    }
 
     override suspend fun getWorkoutById(workoutId: String): Workout =
         firestore.collection(WORKOUT_COLLECTION_PATH)

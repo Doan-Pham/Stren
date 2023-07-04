@@ -13,6 +13,19 @@ import javax.inject.Inject
 
 class WorkoutsRepositoryImpl @Inject constructor(private val workoutRemoteDataSource: WorkoutRemoteDataSource) :
     WorkoutsRepository {
+    override fun getWorkoutsStreamByUserIdAndDate(
+        userId: String,
+        date: LocalDate
+    ): Flow<List<Workout>> {
+        Timber.d("getWorkoutsStreamByUserIdAndDate() is called; userId: $userId,date: $date ")
+
+        return workoutRemoteDataSource
+            .getWorkoutsStreamByUserIdAndDate(userId, date)
+            .catch {
+                Timber.e("getWorkoutsStreamByUserIdAndDate() - Exception: $it ${it.printStackTrace()}")
+            }
+    }
+
     override fun getWorkoutsByUserIdAndDate(userId: String, date: LocalDate): Flow<List<Workout>> =
         flow {
             Timber.d("getWorkoutsByUserIdAndDate() has been called - userId: $userId; date: $date")
@@ -62,6 +75,15 @@ class WorkoutsRepositoryImpl @Inject constructor(private val workoutRemoteDataSo
         } catch (exception: Exception) {
             Timber.e("addWorkout() - Exception: ${exception.message}")
             "Undefined Workout ID"
+        }
+    }
+
+    override suspend fun deleteWorkout(workoutId: String) {
+        try {
+            Timber.d("deleteWorkout() -  workoutId: $workoutId")
+            workoutRemoteDataSource.deleteWorkout(workoutId)
+        } catch (exception: Exception) {
+            Timber.e("deleteWorkout() - Exception: $exception ${exception.printStackTrace()}")
         }
     }
 
