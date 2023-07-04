@@ -48,6 +48,11 @@ class RoutinesFirestoreDataSource @Inject constructor() : RoutinesRemoteDataSour
             .await()
     }
 
+    override suspend fun deleteRoutine(userId: String, routineId: String) {
+        firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH")
+            .document(routineId).delete().await()
+    }
+
     private fun DocumentSnapshot.toRoutine(): Routine {
         Timber.d("document: $this")
         val routinesData = this.toObject(FirestoreRoutine::class.java)

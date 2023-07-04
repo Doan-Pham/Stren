@@ -38,6 +38,12 @@ internal fun RoutinesRoute(
     onNavigateToEditRoutineScreen: (userId: String, routineId: String) -> Unit,
     onNavigateToAddWorkoutScreen: (userId: String, routineId: String) -> Unit
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val secondaryUiState by viewModel.secondaryUiState.collectAsStateWithLifecycle()
+
+    if (secondaryUiState.shouldShowConfirmDialog) {
+        SimpleConfirmationDialog(state = secondaryUiState.confirmDialogState)
+    }
 
     val trainingHistoryAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons = listOf(
@@ -69,7 +75,7 @@ internal fun RoutinesRoute(
         isAppBarConfigured = true
     }
 
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     RoutinesScreen(
         modifier = modifier,
         uiState = uiState,
@@ -79,7 +85,8 @@ internal fun RoutinesRoute(
         },
         onNavigateToAddWorkoutScreen = { routineId ->
             onNavigateToAddWorkoutScreen(viewModel.cachedUserId, routineId)
-        }
+        },
+        onDeleteRoutineClick = viewModel::deleteRoutine
     )
 }
 
@@ -90,7 +97,8 @@ internal fun RoutinesScreen(
     uiState: RoutinesUiState,
     onNavigateToAddRoutineScreen: () -> Unit,
     onNavigateToEditRoutineScreen: (routineId: String) -> Unit,
-    onNavigateToAddWorkoutScreen: (routineId: String) -> Unit
+    onNavigateToAddWorkoutScreen: (routineId: String) -> Unit,
+    onDeleteRoutineClick: (String) -> Unit
 ) {
     when (uiState) {
         is RoutinesUiState.Loading -> {
@@ -104,13 +112,15 @@ internal fun RoutinesScreen(
             LazyColumn(
                 modifier = modifier
                     .fillMaxSize()
-                    .padding(horizontal = dimensionResource(id = R.dimen.padding_medium))
+                    .padding(dimensionResource(id = R.dimen.padding_medium)),
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
             ) {
                 items(uiState.routines) { routine ->
                     RoutineItem(
                         routine = routine,
                         onEditRoutineClickHandler = onNavigateToEditRoutineScreen,
-                        onItemClickHandler = onNavigateToAddWorkoutScreen
+                        onItemClickHandler = onNavigateToAddWorkoutScreen,
+                        onDeleteRoutineClick = { onDeleteRoutineClick(routine.id) }
                     )
                 }
             }
@@ -126,14 +136,15 @@ internal fun RoutinesScreen(
 private fun RoutineItem(
     routine: Routine,
     onItemClickHandler: (routineId: String) -> Unit,
-    onEditRoutineClickHandler: (routineId: String) -> Unit
+    onEditRoutineClickHandler: (routineId: String) -> Unit,
+    onDeleteRoutineClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
-            .padding(vertical = dimensionResource(id = R.dimen.padding_large))
             .fillMaxWidth()
             .border(width = (1.5).dp, color = Gray90, shape = RoundedCornerShape(15.dp))
             .clip(RoundedCornerShape(15.dp))
+//            .clickable { onItemClickHandler(routine.id) }
             .padding(dimensionResource(id = R.dimen.padding_medium)),
         verticalArrangement = Arrangement.Top,
     ) {
@@ -150,7 +161,8 @@ private fun RoutineItem(
             Spacer(Modifier.weight(1f))
             DropDownMenuScaffold(
                 menuItemsTextAndClickHandler = mapOf(
-                    "Edit" to { onEditRoutineClickHandler(routine.id) })
+                    "Edit" to { onEditRoutineClickHandler(routine.id) },
+                    "Delete" to { onDeleteRoutineClick() })
             )
             { onExpandMenu ->
                 Icon(

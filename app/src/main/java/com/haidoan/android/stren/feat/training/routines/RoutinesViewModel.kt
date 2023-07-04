@@ -3,6 +3,7 @@ package com.haidoan.android.stren.feat.training.routines
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.haidoan.android.stren.core.designsystem.component.ConfirmationDialogState
 import com.haidoan.android.stren.core.model.Routine
 import com.haidoan.android.stren.core.repository.base.RoutinesRepository
 import com.haidoan.android.stren.core.service.AuthenticationService
@@ -18,7 +19,7 @@ const val UNDEFINED_USER_ID = "Undefined User ID"
 @HiltViewModel
 internal class RoutinesViewModel @Inject constructor(
     authenticationService: AuthenticationService,
-    routinesRepository: RoutinesRepository
+    private val routinesRepository: RoutinesRepository
 ) : ViewModel() {
 
     /**
@@ -38,6 +39,9 @@ internal class RoutinesViewModel @Inject constructor(
 
     // Text to show on search bar
     var searchBarText = mutableStateOf("")
+
+    private val _secondaryUiState = MutableStateFlow(RoutinesSecondaryUiState())
+    val secondaryUiState: StateFlow<RoutinesSecondaryUiState> = _secondaryUiState
 
     init {
         authenticationService.addAuthStateListeners(
@@ -100,6 +104,33 @@ internal class RoutinesViewModel @Inject constructor(
 
     fun searchRoutineByName(name: String) {
         _dataFetchingTriggers.value = _dataFetchingTriggers.value.copy(searchQuery = name)
+    }
+
+    fun deleteRoutine(routineId: String) {
+        _secondaryUiState.update { currentState ->
+            currentState.copy(
+                shouldShowConfirmDialog = true,
+                confirmDialogState = ConfirmationDialogState(
+                    title = "Delete routine",
+                    body = "Are you sure you want to delete this routine? This action can't be undone ",
+                    onDismissDialog = {
+                        _secondaryUiState.update { it.copy(shouldShowConfirmDialog = false) }
+                    },
+                    onConfirmClick = {
+                        val newRoutines =
+                            cachedRoutines.toMutableList()
+                        newRoutines.removeIf { it.id == routineId }
+                        cachedRoutines = newRoutines
+                        viewModelScope.launch {
+                            routinesRepository.deleteRoutine(
+                                userId = cachedUserId,
+                                routineId = routineId
+                            )
+                        }
+                    }
+                )
+            )
+        }
     }
 
     /**

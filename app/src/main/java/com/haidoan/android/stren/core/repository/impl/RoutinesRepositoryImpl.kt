@@ -56,4 +56,13 @@ class RoutinesRepositoryImpl @Inject constructor(
             Timber.e("updateRoutine() - Exception: ${exception.message}")
         }
     }
+
+    override suspend fun deleteRoutine(userId: String, routineId: String) {
+        try {
+            Timber.d("deleteRoutine() -  routineId: $routineId")
+            routinesRemoteDataSource.deleteRoutine(userId, routineId)
+        } catch (exception: Exception) {
+            Timber.e("deleteRoutine() - Exception: $exception ${exception.printStackTrace()}")
+        }
+    }
 }
