@@ -4,6 +4,7 @@ package com.haidoan.android.stren.feat.training.history
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.designsystem.component.ConfirmationDialogState
+import com.haidoan.android.stren.core.designsystem.component.SingleSelectionDialogState
 import com.haidoan.android.stren.core.repository.base.WorkoutsRepository
 import com.haidoan.android.stren.core.service.AuthenticationService
 import com.haidoan.android.stren.core.utils.DateUtils
@@ -106,6 +107,24 @@ internal class TrainingHistoryViewModel @Inject constructor(
                     },
                     onConfirmClick = {
                         viewModelScope.launch { workoutsRepository.deleteWorkout(workoutId) }
+                    }
+                )
+            )
+        }
+    }
+
+    fun showWorkoutOptions(options: List<Pair<String, () -> Unit>>) {
+        _secondaryUiState.update { currentState ->
+            currentState.copy(
+                shouldShowSingleSelectionDialog = true,
+                workoutOptionDialogState = SingleSelectionDialogState(
+                    title = "Workout option",
+                    onDismissDialog = {
+                        _secondaryUiState.update { it.copy(shouldShowSingleSelectionDialog = false) }
+                    },
+                    options = options.map { it.first },
+                    onConfirmClick = {
+                        options[it].second()
                     }
                 )
             )
