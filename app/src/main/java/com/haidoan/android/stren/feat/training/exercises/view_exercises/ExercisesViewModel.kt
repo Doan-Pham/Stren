@@ -8,7 +8,6 @@ import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.model.ExerciseQueryParameters
 import com.haidoan.android.stren.core.model.MuscleGroup
 import com.haidoan.android.stren.core.repository.base.ExercisesRepository
-import com.haidoan.android.stren.core.repository.base.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -17,13 +16,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 internal class ExercisesViewModel @Inject constructor(
-    exercisesRepository: ExercisesRepository,
-    userRepository: UserRepository
+    exercisesRepository: ExercisesRepository
 ) :
     ViewModel() {
     var searchBarText = mutableStateOf("")
     private var _isSearching = MutableStateFlow(false)
     val isSearching: StateFlow<Boolean> = _isSearching
+    var shouldScrollToTop = mutableStateOf(false)
 
     private val _selectedCategoriesIds: MutableStateFlow<List<String>> =
         MutableStateFlow(listOf())
@@ -170,7 +169,10 @@ internal class ExercisesViewModel @Inject constructor(
                 exercisesRepository.searchExercises(filterStandards = filterStandards)
             }
         }
-        .onEach { _isSearching.update { false } }
+        .onEach {
+            _isSearching.update { false }
+            shouldScrollToTop.value = true
+        }
         .cachedIn(viewModelScope)
 
 }

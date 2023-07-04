@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -133,6 +134,7 @@ internal fun AddExerciseToRoutineRoute(
     AddExerciseToRoutineScreen(
         modifier = modifier,
         isSearching = isSearching,
+        shouldScrollToTop = viewModel.shouldScrollToTop,
         pagedExercises = pagedAddExerciseToRoutine,
         shouldShowFilterSheet = shouldShowFilterSheet,
         onHideFilterSheet = { shouldShowFilterSheet = false },
@@ -158,6 +160,7 @@ internal fun AddExerciseToRoutineRoute(
 internal fun AddExerciseToRoutineScreen(
     modifier: Modifier = Modifier,
     isSearching: Boolean,
+    shouldScrollToTop: MutableState<Boolean>,
     pagedExercises: LazyPagingItems<Exercise>,
     selectedExercisesIds: List<String>,
     filterStandards: List<FilterStandard> = listOf(),
@@ -182,7 +185,9 @@ internal fun AddExerciseToRoutineScreen(
         }
     } else {
         Column(modifier = Modifier.fillMaxSize()) {
+            val lazyListState = rememberLazyListState()
             LazyColumn(
+                state = lazyListState,
                 modifier = modifier
                     .weight(1f)
                     .testTag(EXERCISES_EXERCISE_LIST_TEST_TAG),
@@ -259,6 +264,13 @@ internal fun AddExerciseToRoutineScreen(
                     is LoadState.Error -> TODO()
                 }
             }
+
+            LaunchedEffect(key1 = shouldScrollToTop, block = {
+                if (shouldScrollToTop.value) {
+                    lazyListState.scrollToItem(0)
+                    shouldScrollToTop.value = false
+                }
+            })
 
             if (selectedExercisesIds.isNotEmpty()) {
                 StrenFilledButton(

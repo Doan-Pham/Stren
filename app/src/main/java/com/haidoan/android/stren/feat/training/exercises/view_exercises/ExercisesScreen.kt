@@ -3,6 +3,7 @@ package com.haidoan.android.stren.feat.training.exercises.view_exercises
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -115,6 +116,7 @@ internal fun ExercisesRoute(
     ExercisesScreen(
         modifier = modifier,
         isSearching = isSearching,
+        shouldScrollToTop = viewModel.shouldScrollToTop,
         pagedExercises = pagedExercises,
         shouldShowFilterSheet = shouldShowFilterSheet,
         onHideFilterSheet = { shouldShowFilterSheet = false },
@@ -133,6 +135,7 @@ internal fun ExercisesRoute(
 internal fun ExercisesScreen(
     modifier: Modifier = Modifier,
     isSearching: Boolean,
+    shouldScrollToTop: MutableState<Boolean>,
     pagedExercises: LazyPagingItems<Exercise>,
     filterStandards: List<FilterStandard> = listOf(),
     shouldShowFilterSheet: Boolean = false,
@@ -154,13 +157,14 @@ internal fun ExercisesScreen(
             )
         }
     } else {
+        val lazyListState = rememberLazyListState()
         LazyColumn(
+            state = lazyListState,
             modifier = modifier
                 .fillMaxSize()
                 .testTag(EXERCISES_EXERCISE_LIST_TEST_TAG)
         )
         {
-
             items(
                 count = pagedExercises.itemCount,
                 key = pagedExercises.itemKey(),
@@ -234,6 +238,12 @@ internal fun ExercisesScreen(
             }
         }
 
+        LaunchedEffect(key1 = shouldScrollToTop, block = {
+            if (shouldScrollToTop.value) {
+                lazyListState.scrollToItem(0)
+                shouldScrollToTop.value = false
+            }
+        })
     }
 
     if (shouldShowFilterSheet) {
