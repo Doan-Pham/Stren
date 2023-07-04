@@ -1,6 +1,9 @@
 package com.haidoan.android.stren.app.navigation
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import com.haidoan.android.stren.R
 
 /**
@@ -27,10 +30,13 @@ sealed interface AppBarConfiguration {
  */
 data class IconButtonInfo(
     val isEnabled: Boolean = true,
+    private val _shouldShowBadge: State<Boolean> = mutableStateOf(false),
     val drawableResourceId: Int,
     val description: String,
     val clickHandler: () -> Unit
 ) {
+    val shouldShowBadge @Composable get() = _shouldShowBadge
+
     companion object {
         val APP_ICON = IconButtonInfo(
             isEnabled = false,

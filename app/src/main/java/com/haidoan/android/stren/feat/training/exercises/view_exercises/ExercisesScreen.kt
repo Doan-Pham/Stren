@@ -73,6 +73,9 @@ internal fun ExercisesRoute(
         onLabelSelected = { chosenLabel -> viewModel.toggleMuscleGroupSelection(chosenLabel.id) },
     )
 
+    val shouldShowFilterBadge =
+        remember { derivedStateOf { muscleGroups.any { it.isSelected } || exerciseCategories.any { it.isSelected } } }
+
     val exercisesAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons =
         listOf(
@@ -97,6 +100,7 @@ internal fun ExercisesRoute(
                     appBarConfigurationChangeHandler(searchBarConfiguration)
                 }),
             IconButtonInfo(
+                _shouldShowBadge = shouldShowFilterBadge,
                 drawableResourceId = R.drawable.ic_filter,
                 description = "MenuItem-Filter",
                 clickHandler = { shouldShowFilterSheet = true })
