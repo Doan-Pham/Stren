@@ -13,4 +13,5 @@ interface RoutinesRemoteDataSource {
     suspend fun addRoutine(userId: String, routine: Routine): String
 
     suspend fun updateRoutine(userId: String, routine: Routine)
+    suspend fun deleteRoutine(userId: String, routineId: String)
 }

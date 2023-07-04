@@ -9,4 +9,5 @@ interface RoutinesRepository {
     suspend fun getRoutineById(userId: String, routineId: String): Routine
     suspend fun addRoutine(userId: String, routine: Routine): String
     suspend fun updateRoutine(userId: String, routine: Routine)
+    suspend fun deleteRoutine(userId: String, routineId: String)
 }
