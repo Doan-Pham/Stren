@@ -124,111 +124,111 @@ fun AddMeasurementDialog(
     AlertDialog(
         onDismissRequest = onDismissDialog,
     ) {
-        Surface(
+        Column(
             modifier = Modifier
-                .wrapContentWidth()
-                .wrapContentHeight(),
-            shape = RoundedCornerShape(20.dp),
+                .wrapContentHeight(unbounded = true)
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color.White)
+                .padding(dimensionResource(id = R.dimen.padding_large))
         ) {
-            Column(modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large))) {
 
-                Text(text = "Add Measurement", style = MaterialTheme.typography.titleLarge)
-                Spacer(Modifier.size(dimensionResource(R.dimen.padding_medium)))
+            Text(text = "Add Measurement", style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.size(dimensionResource(R.dimen.padding_medium)))
 
-                var selectedBiometrics by remember { mutableStateOf(biometricsToAddRecord) }
-                var inputValue by remember { mutableStateOf(selectedBiometrics.value) }
-                var selectedDate: LocalDate by remember { mutableStateOf(DateUtils.getCurrentDate()) }
+            var selectedBiometrics by remember { mutableStateOf(biometricsToAddRecord) }
+            var inputValue by remember { mutableStateOf(selectedBiometrics.value) }
+            var selectedDate: LocalDate by remember { mutableStateOf(DateUtils.getCurrentDate()) }
 
-                ExposedDropDownMenuTextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            bottom = dimensionResource(id = R.dimen.padding_small)
-                        ),
-                    textFieldLabel = "Measured biometrics",
-                    selectedText = selectedBiometrics.biometricsName,
-                    menuItemsTextAndClickHandler = biometricsRecords.associate {
-                        it.biometricsName to {
-                            if (it != selectedBiometrics) inputValue = it.value
-                            selectedBiometrics = it
+            ExposedDropDownMenuTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        bottom = dimensionResource(id = R.dimen.padding_small)
+                    ),
+                textFieldLabel = "Measured biometrics",
+                selectedText = selectedBiometrics.biometricsName,
+                menuItemsTextAndClickHandler = biometricsRecords.associate {
+                    it.biometricsName to {
+                        if (it != selectedBiometrics) inputValue = it.value
+                        selectedBiometrics = it
+                    }
+                }
+            )
+
+            OutlinedNumberTextField(
+                modifier = Modifier.fillMaxWidth(),
+                number = inputValue,
+                onValueChange = {
+                    inputValue = it
+                },
+                label = "Value",
+                suffixText = selectedBiometrics.measurementUnit,
+                isError = inputValue <= 0f,
+                errorText = "Invalid value"
+            )
+            Spacer(Modifier.size(dimensionResource(R.dimen.padding_small)))
+
+            val calendarState = rememberUseCaseState(
+                embedded = true,
+                visible = false,
+                onCloseRequest = { })
+
+            CalendarDialog(
+                state = calendarState,
+                selection = CalendarSelection.Date { date ->
+                    selectedDate = date
+                },
+            )
+
+            val coroutineScope = rememberCoroutineScope()
+            StrenOutlinedTextField(
+                modifier = Modifier
+                    .clickable {
+                        coroutineScope.launch {
+                            calendarState.show()
                         }
                     }
+                    .fillMaxWidth(),
+                enabled = false,
+                readOnly = true,
+                text = selectedDate.defaultFormat(),
+                onTextChange = {},
+                label = "Date",
+                isError = false,
+                errorText = ""
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                StrenTextButton(
+                    modifier = Modifier.weight(1f),
+                    onClickHandler = onDismissDialog,
+                    text = "Cancel",
+                    textStyle = MaterialTheme.typography.bodyMedium
                 )
-
-                OutlinedNumberTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    number = inputValue,
-                    onValueChange = {
-                        inputValue = it
-                    },
-                    label = "Value",
-                    suffixText = selectedBiometrics.measurementUnit,
-                    isError = inputValue <= 0f,
-                    errorText = "Invalid value"
-                )
-                Spacer(Modifier.size(dimensionResource(R.dimen.padding_small)))
-
-                val calendarState = rememberUseCaseState(
-                    embedded = true,
-                    visible = false,
-                    onCloseRequest = { })
-
-                CalendarDialog(
-                    state = calendarState,
-                    selection = CalendarSelection.Date { date ->
-                        selectedDate = date
-                    },
-                )
-
-                val coroutineScope = rememberCoroutineScope()
-                StrenOutlinedTextField(
-                    modifier = Modifier
-                        .clickable {
-                            coroutineScope.launch {
-                                calendarState.show()
-                            }
-                        }
-                        .fillMaxWidth(),
-                    enabled = false,
-                    readOnly = true,
-                    text = selectedDate.defaultFormat(),
-                    onTextChange = {},
-                    label = "Date",
-                    isError = false,
-                    errorText = ""
-                )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    StrenTextButton(
-                        modifier = Modifier.weight(1f),
-                        onClickHandler = onDismissDialog,
-                        text = "Cancel",
-                        textStyle = MaterialTheme.typography.bodyMedium
-                    )
-                    Spacer(Modifier.size(dimensionResource(id = R.dimen.padding_small)))
-                    StrenFilledButton(
-                        modifier = Modifier.weight(1f),
-                        onClickHandler = {
-                            onSaveClick(
-                                selectedBiometrics.copy(
-                                    value = inputValue,
-                                    recordDate = selectedDate
-                                )
+                Spacer(Modifier.size(dimensionResource(id = R.dimen.padding_small)))
+                StrenFilledButton(
+                    modifier = Modifier.weight(1f),
+                    onClickHandler = {
+                        onSaveClick(
+                            selectedBiometrics.copy(
+                                value = inputValue,
+                                recordDate = selectedDate
                             )
-                            onDismissDialog()
-                        },
-                        text = "Save",
-                        enabled = inputValue > 0f,
-                        textStyle = MaterialTheme.typography.bodyMedium
-                    )
-                }
+                        )
+                        onDismissDialog()
+                    },
+                    text = "Save",
+                    enabled = inputValue > 0f,
+                    textStyle = MaterialTheme.typography.bodyMedium
+                )
             }
         }
+
     }
 }
 
