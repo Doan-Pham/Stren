@@ -6,14 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.haidoan.android.stren.core.domain.ActivityLevel
-import com.haidoan.android.stren.core.domain.NutritionCalculationUseCase
-import com.haidoan.android.stren.core.domain.NutritionCalculationUseCase.Sex
 import com.haidoan.android.stren.core.domain.NutritionCalculationUseCase.calculateCaloriesGoal
 import com.haidoan.android.stren.core.domain.NutritionCalculationUseCase.calculateCoreNutrientGoals
-import com.haidoan.android.stren.core.domain.WeightGoal
-import com.haidoan.android.stren.core.model.BiometricsRecord
-import com.haidoan.android.stren.core.model.Goal
+import com.haidoan.android.stren.core.model.*
 import com.haidoan.android.stren.core.repository.base.UserRepository
 import com.haidoan.android.stren.core.utils.DateUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -112,8 +107,8 @@ internal data class OnboardingUiState(
     val weight: Float = 68F,
     val height: Float = 170F,
     val sexes: List<Sex> = Sex.values().toList(),
-    val activityLevels: List<ActivityLevel> = NutritionCalculationUseCase.activityLevels,
+    val activityLevels: List<ActivityLevel> = ActivityLevel.values().toList(),
     val selectedActivityLevel: ActivityLevel = activityLevels.first(),
-    val weightGoals: List<WeightGoal> = NutritionCalculationUseCase.weightGoals,
+    val weightGoals: List<WeightGoal> = WeightGoal.values().toList(),
     val selectedWeightGoal: WeightGoal = weightGoals.first()
 )

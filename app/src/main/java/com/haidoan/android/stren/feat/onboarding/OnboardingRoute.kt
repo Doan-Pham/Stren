@@ -14,8 +14,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.core.designsystem.component.*
-import com.haidoan.android.stren.core.domain.ActivityLevel
-import com.haidoan.android.stren.core.domain.WeightGoal
+import com.haidoan.android.stren.core.model.ActivityLevel
+import com.haidoan.android.stren.core.model.WeightGoal
 import kotlinx.coroutines.launch
 
 internal const val USER_ID_ONBOARDING_NAV_ARG = "USER_ID_ONBOARDING_NAV_ARG"
@@ -222,7 +222,7 @@ private fun ActivityLevelOnboardingScreen(
                 { modifier ->
                     TitleAndSubtitleColumn(
                         modifier = modifier,
-                        title = activityLevel.name,
+                        title = activityLevel.activityLevelName,
                         subtitle = activityLevel.description
                     )
                 }
@@ -265,7 +265,7 @@ private fun GoalOnboardingScreen(
                 { modifier ->
                     TitleAndSubtitleColumn(
                         modifier = modifier,
-                        title = goal.name,
+                        title = goal.weightGoalName,
                         subtitle = goal.description
                     )
                 }

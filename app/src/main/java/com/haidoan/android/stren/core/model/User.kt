@@ -5,6 +5,40 @@ import com.google.firebase.firestore.PropertyName
 import com.haidoan.android.stren.core.utils.DateUtils
 import java.time.LocalDate
 
+enum class ActivityLevel(
+    val activityLevelName: String,
+    val description: String,
+    val bmrFactor: Float
+) {
+    SEDENTARY("Sedentary", "Little or no exercise", 1.2F),
+    LIGHTLY_ACTIVE("Lightly Active", "Light exercise/sports 1-3 days/week", 1.375F),
+    MODERATELY_ACTIVE("Moderately Active", "Moderate exercise/sports 3-5 days/week", 1.55F),
+    VERY_ACTIVE("Very Active", "Hard exercise/sports 6-7 days a week", 1.725F),
+    ATHLETE(
+        "Athlete",
+        "Very hard exercise/sports & physical job or training 2x per day",
+        1.9F
+    )
+}
+
+enum class WeightGoal(
+    val weightGoalName: String,
+    val description: String,
+    val caloriesAmountToModify: Long
+) {
+    LOSE_WEIGHT_FAST("Lose Weight", "(-0.5kg/week)", -500),
+    LOSE_WEIGHT_SLOW("Lose Weight", "(-0.25kg/week)", -250),
+    MAINTAIN_WEIGHT("Maintain Weight", "", 0),
+    GAIN_WEIGHT_SLOW("Gain Weight", "(0.25kg/week)", 250),
+    GAIN_WEIGHT_FAST(
+        "Gain Weight", "(0.5kg/week)", 500
+    )
+}
+
+enum class Sex {
+    MALE, FEMALE
+}
+
 data class User(
     @DocumentId
     val id: String,
