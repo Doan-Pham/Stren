@@ -15,13 +15,10 @@ import com.haidoan.android.stren.core.service.AuthenticationService
 import com.haidoan.android.stren.core.service.StorageService
 import com.haidoan.android.stren.feat.training.exercises.CreateExerciseArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -132,6 +129,9 @@ internal class CreateCustomExerciseViewModel @Inject constructor(
                 Timber.d("createCustomExercise() - exerciseToAdd: $exerciseToAdd")
                 exercisesRepository.createCustomExercise(userId = userId, exerciseToAdd)
 
+                // A small delay to allow the backend to sync database with
+                // full-text search service
+                delay(3000)
                 isCreateExerciseComplete = true
             }
         }

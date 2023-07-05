@@ -31,11 +31,14 @@ import com.haidoan.android.stren.core.designsystem.component.FilterStandard
 import com.haidoan.android.stren.core.designsystem.component.LoadingAnimation
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.model.Exercise
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 internal const val EXERCISES_SCREEN_ROUTE = "exercises_screen_route"
 const val EXERCISES_LOADING_ANIMATION_TEST_TAG = "Loading-Exercises"
 const val EXERCISES_EXERCISE_LIST_TEST_TAG = "List-Exercises"
+const val SHOULD_REFRESH_SAVED_STATE_KEY = "SHOULD_REFRESH_SAVED_STATE_KEY"
 
 @Composable
 internal fun ExercisesRoute(
@@ -44,6 +47,8 @@ internal fun ExercisesRoute(
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {},
     onNavigateToExerciseDetailScreen: (exerciseId: String) -> Unit,
     onNavigateToCreateExerciseScreen: (exerciseName: String) -> Unit,
+    shouldRefreshExercises: Boolean,
+    onRefreshComplete: () -> Unit,
 ) {
     var shouldShowFilterSheet by rememberSaveable { mutableStateOf(false) }
     val pagedExercises = viewModel.exercises.collectAsLazyPagingItems()
@@ -116,6 +121,7 @@ internal fun ExercisesRoute(
     ExercisesScreen(
         modifier = modifier,
         isSearching = isSearching,
+        shouldRefreshExercises = shouldRefreshExercises,
         shouldScrollToTop = viewModel.shouldScrollToTop,
         pagedExercises = pagedExercises,
         shouldShowFilterSheet = shouldShowFilterSheet,
@@ -126,7 +132,8 @@ internal fun ExercisesRoute(
         onNavigateToExerciseDetailScreen = onNavigateToExerciseDetailScreen,
         onEmptyScreenClick = {
             onNavigateToCreateExerciseScreen(viewModel.searchBarText.value)
-        }
+        },
+        onRefreshComplete = onRefreshComplete
     )
 }
 
@@ -136,6 +143,7 @@ internal fun ExercisesScreen(
     modifier: Modifier = Modifier,
     isSearching: Boolean,
     shouldScrollToTop: MutableState<Boolean>,
+    shouldRefreshExercises: Boolean,
     pagedExercises: LazyPagingItems<Exercise>,
     filterStandards: List<FilterStandard> = listOf(),
     shouldShowFilterSheet: Boolean = false,
@@ -144,6 +152,7 @@ internal fun ExercisesScreen(
     onApplyFilters: () -> Unit,
     onNavigateToExerciseDetailScreen: (exerciseId: String) -> Unit,
     onEmptyScreenClick: () -> Unit,
+    onRefreshComplete: () -> Unit,
 ) {
     if (isSearching) {
         Box(
@@ -240,8 +249,19 @@ internal fun ExercisesScreen(
 
         LaunchedEffect(key1 = shouldScrollToTop, block = {
             if (shouldScrollToTop.value) {
+
                 lazyListState.scrollToItem(0)
                 shouldScrollToTop.value = false
+            }
+        })
+
+        LaunchedEffect(key1 = shouldRefreshExercises, block = {
+            if (shouldRefreshExercises) {
+                launch(Dispatchers.Main) {
+                    Timber.d("Refreshing...")
+                    pagedExercises.refresh()
+                    onRefreshComplete()
+                }
             }
         })
     }

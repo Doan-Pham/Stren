@@ -3,6 +3,7 @@ package com.haidoan.android.stren.feat.training.exercises.view_exercises
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.cachedIn
 import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.model.ExerciseQueryParameters
 import com.haidoan.android.stren.core.model.MuscleGroup
@@ -179,7 +180,7 @@ internal class ExercisesViewModel @Inject constructor(
             _isSearching.update { false }
             shouldScrollToTop.value = true
         }
-    //.cachedIn(viewModelScope)
+        .cachedIn(viewModelScope)
 
 }
 

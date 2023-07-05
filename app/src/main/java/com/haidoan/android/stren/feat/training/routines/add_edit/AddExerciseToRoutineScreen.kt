@@ -32,6 +32,8 @@ import com.haidoan.android.stren.core.designsystem.component.*
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.designsystem.theme.Red90
 import com.haidoan.android.stren.core.model.Exercise
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 
@@ -269,6 +271,14 @@ internal fun AddExerciseToRoutineScreen(
                 if (shouldScrollToTop.value) {
                     lazyListState.scrollToItem(0)
                     shouldScrollToTop.value = false
+                }
+            })
+
+            LaunchedEffect(key1 = true, block = {
+                //Without using launch(Dispatchers.Main), refresh() won't be run
+                launch(Dispatchers.Main) {
+                    Timber.d("Refreshing...")
+                    pagedExercises.refresh()
                 }
             })
 

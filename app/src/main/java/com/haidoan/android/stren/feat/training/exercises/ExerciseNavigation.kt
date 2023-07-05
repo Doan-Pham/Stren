@@ -16,6 +16,7 @@ import com.haidoan.android.stren.feat.training.exercises.create_cutom.UNDEFINED_
 import com.haidoan.android.stren.feat.training.exercises.detail.EXERCISE_DETAIL_SCREEN_ROUTE
 import com.haidoan.android.stren.feat.training.exercises.detail.EXERCISE_ID_ARG
 import com.haidoan.android.stren.feat.training.exercises.detail.ExerciseDetailRoute
+import com.haidoan.android.stren.feat.training.exercises.view_exercises.SHOULD_REFRESH_SAVED_STATE_KEY
 import timber.log.Timber
 
 
@@ -45,6 +46,7 @@ internal class CreateExerciseArgs(
 
 @OptIn(ExperimentalAnimationApi::class)
 internal fun NavGraphBuilder.exerciseGraph(
+    navController: NavController,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onBackToPreviousScreen: () -> Unit
 ) {
@@ -72,7 +74,12 @@ internal fun NavGraphBuilder.exerciseGraph(
     ) {
         CreateCustomExerciseRoute(
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
-            onBackToPreviousScreen = onBackToPreviousScreen
+            onBackToPreviousScreen = {
+                navController.previousBackStackEntry?.savedStateHandle?.set(
+                    SHOULD_REFRESH_SAVED_STATE_KEY, true
+                )
+                onBackToPreviousScreen()
+            }
         )
     }
 }

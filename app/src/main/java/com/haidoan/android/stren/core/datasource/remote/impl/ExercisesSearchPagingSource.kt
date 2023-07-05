@@ -16,10 +16,7 @@ class ExercisesSearchPagingSource @Inject constructor(
 ) :
     PagingSource<Int, Exercise>() {
     override fun getRefreshKey(state: PagingState<Int, Exercise>): Int? {
-        return state.anchorPosition?.let { anchorPosition ->
-            val anchorPage = state.closestPageToPosition(anchorPosition)
-            anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
-        }
+        return null
     }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Exercise> {

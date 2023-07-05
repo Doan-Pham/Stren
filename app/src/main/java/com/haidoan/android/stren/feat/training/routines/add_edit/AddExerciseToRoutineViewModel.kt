@@ -11,6 +11,7 @@ import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.model.ExerciseQueryParameters
 import com.haidoan.android.stren.core.model.MuscleGroup
 import com.haidoan.android.stren.core.repository.base.ExercisesRepository
+import com.haidoan.android.stren.core.service.AuthenticationService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -29,9 +30,13 @@ private const val MAX_SELECTED_EXERCISES_COUNT = 30
  * TODO: Probably extracting the shared logic to UseCase classes
  */
 @HiltViewModel
-internal class AddExerciseToRoutineViewModel @Inject constructor(exercisesRepository: ExercisesRepository) :
+internal class AddExerciseToRoutineViewModel @Inject constructor(
+    authenticationService: AuthenticationService,
+    exercisesRepository: ExercisesRepository
+) :
     ViewModel() {
 
+    private var userId: String? = null
     var searchBarText = mutableStateOf("")
     var shouldShowSnackBar by mutableStateOf(false)
     private var _isSearching = MutableStateFlow(false)
@@ -192,8 +197,11 @@ internal class AddExerciseToRoutineViewModel @Inject constructor(exercisesReposi
         .onEach { _isSearching.update { true } }
         .debounce(800L)
         .flatMapLatest { filterStandards ->
-            Timber.d("val exercises - filterStandards: $filterStandards")
-            exercisesRepository.searchExercises(filterStandards = filterStandards)
+            if (userId == null) userId = authenticationService.getCurrentUserId()
+            val finalFilterStands = filterStandards.copy(userId = userId ?: "")
+            Timber.d("val exercises - finalFilterStands: $finalFilterStands")
+
+            exercisesRepository.searchExercises(filterStandards = finalFilterStands)
         }
         .onEach {
             _isSearching.update { false }
