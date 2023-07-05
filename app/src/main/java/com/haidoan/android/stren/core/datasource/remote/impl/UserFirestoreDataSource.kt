@@ -22,7 +22,6 @@ import javax.inject.Inject
 
 private const val USER_COLLECTION_PATH = "User"
 private const val BIOMETRICS_RECORD_COLLECTION_PATH = "BiometricsRecord"
-private const val CUSTOM_EXERCISE_COLLECTION_PATH = "CustomExercise"
 
 class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
     private val db = FirebaseFirestore.getInstance()
@@ -61,10 +60,18 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         userId: String,
         displayName: String,
         age: Long,
-        sex: String
+        sex: Sex,
+        activityLevel: ActivityLevel,
+        weightGoal: WeightGoal
     ) {
         userCollectionReference.document(userId).update(
-            mapOf("displayName" to displayName, "age" to age, "sex" to sex)
+            mapOf(
+                "displayName" to displayName,
+                "age" to age,
+                "sex" to sex.sexName,
+                "activityLevel" to activityLevel.activityLevelName,
+                "weightGoal" to weightGoal.weightGoalName
+            )
         ).await()
     }
 
@@ -294,13 +301,18 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
                 )
             }
         }
+        val sex = Sex.findBySexName(this["sex"] as String)
+        val activityLevel = ActivityLevel.findByActivityLevelName(this["activityLevel"] as String)
+        val weightGoal = WeightGoal.findByWeightGoalName(this["weightGoal"] as String)
 
         return User(
             id = this.id,
             displayName = this["displayName"] as String,
             age = this["age"] as Long,
-            sex = this["sex"] as String,
+            sex = sex ?: Sex.FEMALE,
             email = this["email"] as String,
+            activityLevel = activityLevel ?: ActivityLevel.SEDENTARY,
+            weightGoal = weightGoal ?: WeightGoal.MAINTAIN_WEIGHT,
             trackedCategories = trackedCategories,
             shouldShowOnboarding = this["shouldShowOnboarding"] as Boolean,
             goals = goals

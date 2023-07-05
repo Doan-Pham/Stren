@@ -68,6 +68,7 @@ fun StrenOutlinedTextField(
             if (isError) Text(text = errorText)
         },
         colors = TextFieldDefaults.colors(
+            errorContainerColor = Transparent,
             unfocusedContainerColor = Transparent,
             focusedContainerColor = Transparent,
             disabledTextColor = MaterialTheme.colorScheme.onBackground,
@@ -165,6 +166,7 @@ inline fun <reified NumberType : Number> OutlinedNumberTextField(
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Transparent,
                     focusedContainerColor = Transparent,
+                    errorContainerColor = Transparent,
                     disabledTextColor = MaterialTheme.colorScheme.onBackground,
                     disabledContainerColor = Transparent,
                     disabledIndicatorColor = MaterialTheme.colorScheme.onBackground,
@@ -369,6 +371,7 @@ fun PasswordTextField(
             if (isError) Text(text = errorText)
         },
         colors = TextFieldDefaults.colors(
+            errorContainerColor = Transparent,
             unfocusedContainerColor = Transparent,
             focusedContainerColor = Transparent,
             disabledTextColor = MaterialTheme.colorScheme.onBackground,

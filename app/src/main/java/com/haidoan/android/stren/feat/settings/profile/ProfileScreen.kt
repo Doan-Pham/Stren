@@ -17,7 +17,6 @@ import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.app.ui.LocalSnackbarHostState
 import com.haidoan.android.stren.core.designsystem.component.*
 import com.haidoan.android.stren.core.model.User
-import com.haidoan.android.stren.core.utils.ListUtils.replaceWith
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -127,9 +126,9 @@ private fun ProfileScreen(
                             bottom = dimensionResource(id = R.dimen.padding_small)
                         ),
                     textFieldLabel = "Sex",
-                    selectedText = currentUser.sex,
+                    selectedText = currentUser.sex.sexName,
                     menuItemsTextAndClickHandler = uiState.sexes.associate {
-                        it.name to { onUiStateChange(currentUser.copy(sex = it.name)) }
+                        it.sexName to { onUiStateChange(currentUser.copy(sex = it)) }
                     }
                 )
 
@@ -143,23 +142,39 @@ private fun ProfileScreen(
                     isError = age == 0L,
                     errorText = "Field can't be empty"
                 )
-                biometrics.forEach { record ->
-                    OutlinedNumberTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        number = record.value,
-                        onValueChange = { value ->
-                            val newRecords =
-                                biometrics.replaceWith(record.copy(value = value)) {
-                                    it.biometricsId == record.biometricsId
-                                }
-                            onUiStateChange(currentUser.copy(biometricsRecords = newRecords))
-                        },
-                        label = record.biometricsName,
-                        suffixText = record.measurementUnit,
-                        isError = record.value == 0F,
-                        errorText = "Field can't be empty"
-                    )
-                }
+
+                ExposedDropDownMenuTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            bottom = dimensionResource(id = R.dimen.padding_small)
+                        ),
+                    textFieldLabel = "Activity Level",
+                    selectedText = currentUser.activityLevel.activityLevelName,
+                    menuItemsTextAndClickHandler = uiState.activityLevels.associate {
+                        it.activityLevelName to { onUiStateChange(currentUser.copy(activityLevel = it)) }
+                    }
+                )
+
+                ExposedDropDownMenuTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            bottom = dimensionResource(id = R.dimen.padding_small)
+                        ),
+                    textFieldLabel = "Weight Goal",
+                    selectedText = currentUser.weightGoal.weightGoalName,
+                    menuItemsTextAndClickHandler = uiState.weightGoals.associate {
+                        "${it.weightGoalName} (${it.description})" to {
+                            onUiStateChange(
+                                currentUser.copy(
+                                    weightGoal = it
+                                )
+                            )
+                        }
+                    }
+                )
+
 
                 val isError =
                     displayName.isBlank() || biometrics.any { it.value == 0f } || age == 0L

@@ -39,10 +39,12 @@ internal class OnboardingViewModel @Inject constructor(
 
                 tasks["modifyUserProfileTask"] = async {
                     userRepository.modifyUserProfile(
-                        userId,
-                        uiState.displayName,
-                        uiState.age,
-                        uiState.sex.name
+                        userId = userId,
+                        displayName = uiState.displayName,
+                        age = uiState.age,
+                        sex = uiState.sex,
+                        activityLevel = uiState.selectedActivityLevel,
+                        weightGoal = uiState.selectedWeightGoal,
                     )
                 }
                 tasks["addBiometricsTask"] = async {

@@ -18,7 +18,14 @@ enum class ActivityLevel(
         "Athlete",
         "Very hard exercise/sports & physical job or training 2x per day",
         1.9F
-    )
+    );
+
+    companion object {
+        private val valuesByActivityLevelName =
+            ActivityLevel.values().associateBy(ActivityLevel::activityLevelName)
+
+        fun findByActivityLevelName(name: String) = valuesByActivityLevelName[name]
+    }
 }
 
 enum class WeightGoal(
@@ -26,17 +33,29 @@ enum class WeightGoal(
     val description: String,
     val caloriesAmountToModify: Long
 ) {
-    LOSE_WEIGHT_FAST("Lose Weight", "(-0.5kg/week)", -500),
-    LOSE_WEIGHT_SLOW("Lose Weight", "(-0.25kg/week)", -250),
+    LOSE_WEIGHT_FAST("Lose Weight Fast", "(-0.5kg/week)", -500),
+    LOSE_WEIGHT_SLOW("Lose Weight Slow", "(-0.25kg/week)", -250),
     MAINTAIN_WEIGHT("Maintain Weight", "", 0),
-    GAIN_WEIGHT_SLOW("Gain Weight", "(0.25kg/week)", 250),
+    GAIN_WEIGHT_SLOW("Gain Weight Slow", "(0.25kg/week)", 250),
     GAIN_WEIGHT_FAST(
-        "Gain Weight", "(0.5kg/week)", 500
-    )
+        "Gain Weight Fast", "(0.5kg/week)", 500
+    );
+
+    companion object {
+        private val valuesByWeightGoalName =
+            WeightGoal.values().associateBy(WeightGoal::weightGoalName)
+
+        fun findByWeightGoalName(name: String) = valuesByWeightGoalName[name]
+    }
 }
 
-enum class Sex {
-    MALE, FEMALE
+enum class Sex(val sexName: String) {
+    MALE("Male"), FEMALE("Female");
+
+    companion object {
+        private val valuesBySexName = Sex.values().associateBy(Sex::sexName)
+        fun findBySexName(name: String) = valuesBySexName[name]
+    }
 }
 
 data class User(
@@ -45,14 +64,25 @@ data class User(
     val displayName: String,
     val email: String,
     val age: Long,
-    val sex: String,
+    val sex: Sex,
+    val activityLevel: ActivityLevel,
+    val weightGoal: WeightGoal,
     val shouldShowOnboarding: Boolean,
     val biometricsRecords: List<BiometricsRecord> = listOf(),
     val goals: List<Goal> = listOf(),
     val trackedCategories: List<TrackedCategory> = listOf()
 ) {
     companion object {
-        val undefined = User("Undefined", "Undefined", "Undefined", -1, "Undefined", true, listOf())
+        val undefined = User(
+            id = "Undefined",
+            displayName = "Undefined",
+            email = "Undefined",
+            age = -1,
+            sex = Sex.FEMALE,
+            activityLevel = ActivityLevel.ATHLETE,
+            weightGoal = WeightGoal.GAIN_WEIGHT_FAST,
+            shouldShowOnboarding = true,
+        )
     }
 }
 
