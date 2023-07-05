@@ -1,10 +1,7 @@
 package com.haidoan.android.stren.core.repository.impl
 
 import com.haidoan.android.stren.core.datasource.remote.base.UserRemoteDataSource
-import com.haidoan.android.stren.core.model.BiometricsRecord
-import com.haidoan.android.stren.core.model.Goal
-import com.haidoan.android.stren.core.model.TrackedCategory
-import com.haidoan.android.stren.core.model.User
+import com.haidoan.android.stren.core.model.*
 import com.haidoan.android.stren.core.repository.base.UserRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -31,10 +28,12 @@ class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteD
         userId: String,
         displayName: String,
         age: Long,
-        sex: String
+        sex: Sex,
+        activityLevel: ActivityLevel,
+        weightGoal: WeightGoal
     ) {
         try {
-            dataSource.modifyUserProfile(userId, displayName, age, sex)
+            dataSource.modifyUserProfile(userId, displayName, age, sex, activityLevel, weightGoal)
         } catch (ex: Exception) {
             Timber.e("modifyUserProfile() - userId: $userId - Exception: $ex")
         }
