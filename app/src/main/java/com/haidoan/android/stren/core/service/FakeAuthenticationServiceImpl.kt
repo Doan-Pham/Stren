@@ -45,6 +45,10 @@ class FakeAuthenticationServiceImpl : AuthenticationService {
         checkAuthStateAndExecuteCallbacks()
     }
 
+    override suspend fun getCurrentUserId(): String {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun authenticate(email: String, password: String) {
         if (email == "asd@gmail.com" && password == "asdqwe") {
             isUserSignedIn = true

@@ -15,6 +15,7 @@ import com.haidoan.android.stren.core.model.MuscleGroup
 import com.haidoan.android.stren.core.repository.impl.ExerciseExtraFilter
 import com.haidoan.android.stren.core.repository.impl.QueryWrapper
 import kotlinx.coroutines.tasks.await
+import timber.log.Timber
 import javax.inject.Inject
 
 const val EXERCISE_COLLECTION_PATH = "Exercise"
@@ -124,9 +125,10 @@ class ExercisesFirestoreDataSource @Inject constructor() : ExercisesRemoteDataSo
         ).get().await().mapNotNull { document -> document.toExercise() }
 
     override suspend fun createCustomExercise(userId: String, exercise: Exercise) {
+        Timber.d("createCustomExercise() - userId: $userId, exercise: $exercise")
         exerciseCollection.add(
-            exercise.copy(userId = userId, isCustomExercise = true).toFirestoreObject()
-        )
+            exercise.toFirestoreObject()
+        ).await()
     }
 }
 

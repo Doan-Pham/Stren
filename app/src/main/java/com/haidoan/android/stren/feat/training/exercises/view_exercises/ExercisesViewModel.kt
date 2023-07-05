@@ -3,11 +3,11 @@ package com.haidoan.android.stren.feat.training.exercises.view_exercises
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.cachedIn
 import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.model.ExerciseQueryParameters
 import com.haidoan.android.stren.core.model.MuscleGroup
 import com.haidoan.android.stren.core.repository.base.ExercisesRepository
+import com.haidoan.android.stren.core.service.AuthenticationService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -16,9 +16,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 internal class ExercisesViewModel @Inject constructor(
+    authenticationService: AuthenticationService,
     exercisesRepository: ExercisesRepository
 ) :
     ViewModel() {
+    private var userId: String? = null
+
     var searchBarText = mutableStateOf("")
     private var _isSearching = MutableStateFlow(false)
     val isSearching: StateFlow<Boolean> = _isSearching
@@ -165,15 +168,18 @@ internal class ExercisesViewModel @Inject constructor(
         .debounce(800L)
         .flatMapLatest { filterStandards ->
             Timber.d("val exercises - filterStandards: $filterStandards")
+            if (userId == null) userId = authenticationService.getCurrentUserId()
+            val finalFilterStands = filterStandards.copy(userId = userId ?: "")
+
             withContext(viewModelScope.coroutineContext + Dispatchers.IO) {
-                exercisesRepository.searchExercises(filterStandards = filterStandards)
+                exercisesRepository.searchExercises(filterStandards = finalFilterStands)
             }
         }
         .onEach {
             _isSearching.update { false }
             shouldScrollToTop.value = true
         }
-        .cachedIn(viewModelScope)
+    //.cachedIn(viewModelScope)
 
 }
 
