@@ -25,7 +25,6 @@ import com.haidoan.android.stren.core.designsystem.theme.Gray95
 import com.haidoan.android.stren.core.utils.NumberUtils.castTo
 import com.haidoan.android.stren.core.utils.ValidationUtils
 import timber.log.Timber
-import java.math.RoundingMode
 import java.text.DecimalFormat
 
 @Composable
@@ -223,10 +222,7 @@ inline fun <reified NumberType : Number> NumberTextFieldWrapper(
                 append("#.")
                 append("#".repeat(digitCountBehindDecimalPoint))
             }
-            Timber.d("decimalFormatPattern: $decimalFormatPattern")
             val df = DecimalFormat(decimalFormatPattern)
-            df.roundingMode = RoundingMode.UNNECESSARY
-
             val numberAfterCasting = df.format(value).toDouble()
 
             val textFieldValue =
