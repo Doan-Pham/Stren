@@ -24,8 +24,7 @@
 ![screenshot](assets/Stren_Showcase.png)
 
 ## Key Features
-### Available
-* Signup with Facebook, Gmail
+* Signup with email, Gmail
 * View information of more than 800 exercises
 * View workout history
 * Log workout
@@ -33,8 +32,6 @@
 * Full-text search for exercises and foods
 * Track nutrition and calories
 * View training and nutrition progress
-* Track biometrics
-### Work in Progress
 * Record body measurements and view progress
 
 ## How To Run
