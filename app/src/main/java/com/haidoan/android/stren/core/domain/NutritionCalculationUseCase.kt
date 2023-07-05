@@ -1,32 +1,9 @@
 package com.haidoan.android.stren.core.domain
 
 import com.haidoan.android.stren.core.model.CoreNutrient
+import com.haidoan.android.stren.core.model.Sex
 
 object NutritionCalculationUseCase {
-    val weightGoals = listOf(
-        WeightGoal("Lose Weight", "(-0.5kg/week)", -500),
-        WeightGoal("Lose Weight", "(-0.25kg/week)", -250),
-        WeightGoal("Maintain Weight", "", 0),
-        WeightGoal("Gain Weight", "(0.25kg/week)", 250),
-        WeightGoal("Gain Weight", "(0.5kg/week)", 500),
-    )
-
-    val activityLevels = listOf(
-        ActivityLevel("Sedentary", "Little or no exercise", 1.2F),
-        ActivityLevel("Lightly Active", "Light exercise/sports 1-3 days/week", 1.375F),
-        ActivityLevel("Moderately Active", "Moderate exercise/sports 3-5 days/week", 1.55F),
-        ActivityLevel("Very Active", "Hard exercise/sports 6-7 days a week", 1.725F),
-        ActivityLevel(
-            "Athlete",
-            "Very hard exercise/sports & physical job or training 2x per day",
-            1.9F
-        )
-    )
-
-    enum class Sex {
-        MALE, FEMALE
-    }
-
     private val defaultCoreNutrientsRatio = CoreNutrient.values()
         .associateWith { it.defaultRatioInEatingPlan }
 
@@ -61,16 +38,3 @@ object NutritionCalculationUseCase {
         }
     }
 }
-
-data class WeightGoal(
-    val name: String,
-    val description: String,
-    val caloriesAmountToModify: Long
-)
-
-
-data class ActivityLevel(
-    val name: String,
-    val description: String,
-    val bmrFactor: Float
-)
