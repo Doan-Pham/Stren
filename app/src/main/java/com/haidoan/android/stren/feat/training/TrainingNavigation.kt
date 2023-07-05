@@ -11,6 +11,7 @@ import com.haidoan.android.stren.feat.training.exercises.exerciseGraph
 import com.haidoan.android.stren.feat.training.exercises.navigateToCreateExercise
 import com.haidoan.android.stren.feat.training.exercises.navigateToExerciseDetail
 import com.haidoan.android.stren.feat.training.exercises.view_exercises.ExercisesRoute
+import com.haidoan.android.stren.feat.training.exercises.view_exercises.SHOULD_REFRESH_SAVED_STATE_KEY
 import com.haidoan.android.stren.feat.training.history.*
 import com.haidoan.android.stren.feat.training.history.log_workout.*
 import com.haidoan.android.stren.feat.training.routines.RoutinesRoute
@@ -27,7 +28,11 @@ fun NavGraphBuilder.trainingGraph(
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {}
 ) {
     navigation(startDestination = TRAINING_GRAPH_STARTING_ROUTE, route = TRAINING_GRAPH_ROUTE) {
-        composable(route = TRAINING_GRAPH_STARTING_ROUTE) {
+        composable(route = TRAINING_GRAPH_STARTING_ROUTE) { navBackStackEntry ->
+            val shouldRefresh =
+                navBackStackEntry
+                    .savedStateHandle
+                    .get<Boolean>(SHOULD_REFRESH_SAVED_STATE_KEY) ?: false
             TabLayout(
                 tabNamesAndScreenComposables = listOf(
                     Pair("History") {
@@ -93,6 +98,11 @@ fun NavGraphBuilder.trainingGraph(
                                 appBarConfigurationChangeHandler(it)
                                 Timber.d("App bar configured")
                             },
+                            shouldRefreshExercises = shouldRefresh,
+                            onRefreshComplete = {
+                                navBackStackEntry
+                                    .savedStateHandle[SHOULD_REFRESH_SAVED_STATE_KEY] = false
+                            },
                             onNavigateToExerciseDetailScreen = {
                                 navController.navigateToExerciseDetail(it)
                             },
@@ -105,6 +115,7 @@ fun NavGraphBuilder.trainingGraph(
             )
         }
         exerciseGraph(
+            navController = navController,
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
             onBackToPreviousScreen = { navController.popBackStack() })
 
