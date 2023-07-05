@@ -125,8 +125,11 @@ internal class CreateCustomExerciseViewModel @Inject constructor(
                     trainedMuscleGroups =
                     muscleGroups.value
                         .filter { it.id in uiState.value.trainedMusclesIds }
-                        .map { it.name }
+                        .map { it.name },
+                    userId = userId,
+                    isCustomExercise = true
                 )
+                Timber.d("createCustomExercise() - exerciseToAdd: $exerciseToAdd")
                 exercisesRepository.createCustomExercise(userId = userId, exerciseToAdd)
 
                 isCreateExerciseComplete = true

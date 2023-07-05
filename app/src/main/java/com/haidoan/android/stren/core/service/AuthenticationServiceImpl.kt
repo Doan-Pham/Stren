@@ -30,6 +30,10 @@ class AuthenticationServiceImpl @Inject constructor() : AuthenticationService {
         }
     }
 
+    override suspend fun getCurrentUserId(): String =
+        Firebase.auth.currentUser?.uid ?: ""
+
+
     override fun getUserAuthStateStream(): Flow<UserAuthState?> = callbackFlow {
         val authStateListener = FirebaseAuth.AuthStateListener {
             try {

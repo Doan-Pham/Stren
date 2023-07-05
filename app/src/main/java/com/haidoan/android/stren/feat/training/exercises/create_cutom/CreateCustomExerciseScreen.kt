@@ -248,6 +248,7 @@ private fun CreateCustomExerciseScreen(
             if (uiState.exerciseCategory != ExerciseCategory.undefined) {
                 uiState.exerciseCategory.name
             } else if (exerciseCategories.isNotEmpty()) {
+                onUiStateChange(uiState.copy(exerciseCategory = exerciseCategories[0]))
                 exerciseCategories[0].name
             } else {
                 ""

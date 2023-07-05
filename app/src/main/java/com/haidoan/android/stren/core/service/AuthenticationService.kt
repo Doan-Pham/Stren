@@ -10,6 +10,7 @@ interface AuthenticationService {
         onUserNotAuthenticated: () -> Unit
     )
 
+    suspend fun getCurrentUserId(): String
     suspend fun authenticate(email: String, password: String)
     suspend fun signUp(email: String, password: String)
     suspend fun authenticateWithFacebook(token: AccessToken)

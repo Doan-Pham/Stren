@@ -31,5 +31,6 @@ data class Exercise(
 data class ExerciseQueryParameters(
     val exerciseName: String,
     val exerciseCategories: List<ExerciseCategory>,
-    val muscleGroupsTrained: List<MuscleGroup>
+    val muscleGroupsTrained: List<MuscleGroup>,
+    val userId: String = ""
 )

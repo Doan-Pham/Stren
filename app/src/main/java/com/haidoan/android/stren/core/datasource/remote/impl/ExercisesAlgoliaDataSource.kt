@@ -26,6 +26,8 @@ class ExercisesAlgoliaDataSource @Inject constructor(
         val exerciseName = exerciseQueryParameters.exerciseName
         val trainedMuscleGroups = exerciseQueryParameters.muscleGroupsTrained
         val belongedCategories = exerciseQueryParameters.exerciseCategories
+        val userId = exerciseQueryParameters.userId
+
         Timber.d("searchExercise() - trainedMuscleGroups: $trainedMuscleGroups")
         Timber.d("searchExercise() - belongedCategories: $belongedCategories")
         val query = query(exerciseName) {
@@ -48,5 +50,6 @@ class ExercisesAlgoliaDataSource @Inject constructor(
         Timber.d("searchExercise() - result: $result")
         Timber.d("searchExercise() - result deserialized: ${result.hits.deserialize(Exercise.serializer())}")
         return result.hits.deserialize(Exercise.serializer())
+            .filterNot { it.isCustomExercise && it.userId != userId }
     }
 }
