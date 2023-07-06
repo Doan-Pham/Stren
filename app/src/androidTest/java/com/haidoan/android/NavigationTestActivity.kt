@@ -50,7 +50,7 @@ class NavigationTestActivity : ComponentActivity() {
                     Timber.d("isUserSignedIn: $isUserSignedIn")
                     fakeAuthenticationServiceImpl.isUserSignedIn = isUserSignedIn
 
-                    StrenApp(viewModel = viewModel)
+                    StrenApp(viewModel = viewModel, onAuthStateResolved = {})
                 }
             }
         }

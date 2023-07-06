@@ -9,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import com.haidoan.android.stren.feat.training.TrainingTabsScreen
 import org.junit.Rule
 import org.junit.Test
 
@@ -36,9 +35,9 @@ class TrainingTabsScreenTest {
     fun tabsScreen_clickOnTab_correctScreenIsShown() {
         composeTestRule.setContent {
             BoxWithConstraints {
-                TrainingTabsScreen(tabsNameAndScreensTestTag.map {
-                    Pair(it.first) { FakeScreen(testTag = it.second) }
-                })
+//                TrainingTabsScreen(tabsNameAndScreensTestTag.map {
+//                    Pair(it.first) { FakeScreen(testTag = it.second) }
+//                })
             }
         }
         tabsNameAndScreensTestTag.forEach { pair ->

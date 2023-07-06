@@ -7,7 +7,7 @@ import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.model.ExerciseQueryParameters
 import com.haidoan.android.stren.core.model.MuscleGroup
 import com.haidoan.android.stren.core.repository.impl.QueryWrapper
-import com.haidoan.android.stren.core.testing.data.EXERCISE_CATEGORIES_TEST_DATA
+import com.haidoan.android.stren.util.EXERCISE_CATEGORIES_TEST_DATA
 
 class FakeExercisesRemoteDataSource : ExercisesRemoteDataSource {
     private var _exerciseCategories = EXERCISE_CATEGORIES_TEST_DATA
