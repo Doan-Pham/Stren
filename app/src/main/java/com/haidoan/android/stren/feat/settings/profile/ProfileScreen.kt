@@ -165,7 +165,7 @@ private fun ProfileScreen(
                     textFieldLabel = "Weight Goal",
                     selectedText = currentUser.weightGoal.weightGoalName,
                     menuItemsTextAndClickHandler = uiState.weightGoals.associate {
-                        "${it.weightGoalName} (${it.description})" to {
+                        "${it.weightGoalName} ${it.description}" to {
                             onUiStateChange(
                                 currentUser.copy(
                                     weightGoal = it

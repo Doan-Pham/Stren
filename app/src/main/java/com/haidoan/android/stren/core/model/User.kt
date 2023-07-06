@@ -121,6 +121,7 @@ data class BiometricsRecord(
  * Return a list of the latest records for each biometricsId (which means for records with
  * the same biometricsId, only the latest ones are included and the earlier ones are removed
  */
+@JvmName("filterLatestBiometrics")
 fun List<BiometricsRecord>.filterLatest(): List<BiometricsRecord> {
     val latestRecordByBiometricsId = mutableMapOf<String, Pair<String, LocalDate>>()
     this.forEach { biometricsRecord ->
@@ -145,7 +146,8 @@ private fun createCalorieGoal(amountInKcal: Float) =
         name = "Calories",
         type = GoalType.FOOD_NUTRIENT,
         value = amountInKcal,
-        foodNutrientId = FOOD_NUTRIENT_ID_CALORIES
+        foodNutrientId = FOOD_NUTRIENT_ID_CALORIES,
+        effectiveFrom = DateUtils.getCurrentDate()
     )
 
 fun CoreNutrient.toGoal(nutrientAmountInGram: Float) = Goal.FoodNutrientGoal(
@@ -153,7 +155,8 @@ fun CoreNutrient.toGoal(nutrientAmountInGram: Float) = Goal.FoodNutrientGoal(
     name = this.nutrientName,
     type = GoalType.FOOD_NUTRIENT,
     value = nutrientAmountInGram,
-    foodNutrientId = this.id
+    foodNutrientId = this.id,
+    effectiveFrom = DateUtils.getCurrentDate()
 )
 
 enum class GoalType {
@@ -165,13 +168,14 @@ sealed class Goal {
     abstract val name: String
     abstract val type: GoalType
     abstract val value: Float
+    abstract val effectiveFrom: LocalDate
 
     data class FoodNutrientGoal(
         override val id: String,
         override val name: String,
         override val type: GoalType = GoalType.FOOD_NUTRIENT,
         override val value: Float,
-        val foodNutrientId: String
+        val foodNutrientId: String, override val effectiveFrom: LocalDate
     ) : Goal() {
         companion object {
             fun createCoreNutrientAndCalorieGoals(
@@ -186,6 +190,23 @@ sealed class Goal {
     }
 }
 
+/**
+ * Return a list of the latest values for each goalId
+ */
+@JvmName("filterLatestGoals")
+fun <GoalSubType : Goal> List<GoalSubType>.filterLatest(): List<GoalSubType> {
+    val latestValueByGoalId = mutableMapOf<String, GoalSubType>()
+    this.forEach { goal ->
+        val goalId = goal.id
+        val effectiveDate = goal.effectiveFrom
+        if (!latestValueByGoalId.containsKey(goalId) ||
+            effectiveDate.isAfter(latestValueByGoalId[goalId]?.effectiveFrom)
+        ) {
+            latestValueByGoalId[goalId] = goal
+        }
+    }
+    return latestValueByGoalId.values.toList()
+}
 
 sealed class TrackedCategory {
     @get:PropertyName("isDefaultCategory")

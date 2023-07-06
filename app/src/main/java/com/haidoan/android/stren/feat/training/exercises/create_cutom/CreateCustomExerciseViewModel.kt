@@ -131,7 +131,7 @@ internal class CreateCustomExerciseViewModel @Inject constructor(
 
                 // A small delay to allow the backend to sync database with
                 // full-text search service
-                delay(3000)
+                delay(3500)
                 isCreateExerciseComplete = true
             }
         }

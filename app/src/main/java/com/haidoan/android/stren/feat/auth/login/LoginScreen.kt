@@ -178,14 +178,14 @@ internal fun LoginScreen(
                 .fillMaxWidth()
                 .padding(dimensionResource(id = R.dimen.padding_medium)),
         ) {
-            FacebookSignInButton(
-                onAuthSuccess = { result ->
-                    viewModel.onSignInWithFacebookClick(result.accessToken)
-                    Timber.d("facebook:onSuccess:$result")
-                }, modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-            )
+//            FacebookSignInButton(
+//                onAuthSuccess = { result ->
+//                    viewModel.onSignInWithFacebookClick(result.accessToken)
+//                    Timber.d("facebook:onSuccess:$result")
+//                }, modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(vertical = 4.dp)
+//            )
 
             GoogleSignInButton(
                 onTokenIdReceived = { tokenId ->

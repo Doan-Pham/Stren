@@ -20,7 +20,7 @@ class UserRepositoryImpl @Inject constructor(private val dataSource: UserRemoteD
         try {
             dataSource.getUser(userId)
         } catch (ex: Exception) {
-            Timber.e("getUser() - Exception: $ex")
+            Timber.e("getUser() - Exception: $ex ${ex.printStackTrace()}")
             User.undefined
         }
 
