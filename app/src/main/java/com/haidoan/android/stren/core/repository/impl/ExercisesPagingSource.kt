@@ -30,7 +30,7 @@ internal class ExercisesPagingSource(
             var data: List<Exercise> = currentPage.toExerciseList()
             val documentIndexes = data.mapIndexed { index, exercise -> exercise to index }.toMap()
 
-            Timber.d("load() - query: ${query} ")
+            Timber.d("load() - query: $query ")
             Timber.d("load() - extraFilter - categories: $categoriesToFilterBy ")
             Timber.d("load() - extraFilter - muscleGroupsToFilterBy: $muscleGroupsToFilterBy ")
             Timber.d("load() - data (before): $data ")

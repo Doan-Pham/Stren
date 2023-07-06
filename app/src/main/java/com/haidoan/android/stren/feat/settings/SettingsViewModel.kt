@@ -22,7 +22,7 @@ internal class SettingsViewModel @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState = _currentUserId.flatMapLatest { userId ->
-        Timber.d("flatMapLatest() - user: ${userId}")
+        Timber.d("flatMapLatest() - user: $userId")
         if (userId == UNDEFINED_USER_ID) {
             flowOf(SettingsUiState.Loading)
         } else {

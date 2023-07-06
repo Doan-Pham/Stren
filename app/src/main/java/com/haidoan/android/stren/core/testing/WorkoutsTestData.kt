@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.util
+package com.haidoan.android.stren.core.testing
 
 import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics

@@ -2,8 +2,8 @@ package com.haidoan.android.stren.feat.training.history
 
 import com.haidoan.android.stren.core.repository.fake.FakeWorkoutsRepository
 import com.haidoan.android.stren.core.service.FakeAuthenticationServiceImpl
+import com.haidoan.android.stren.core.testing.WORKOUTS_TEST_DATA
 import com.haidoan.android.stren.util.MainDispatcherRule
-import com.haidoan.android.stren.util.WORKOUTS_TEST_DATA
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch

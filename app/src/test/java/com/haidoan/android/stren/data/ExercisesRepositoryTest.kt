@@ -2,7 +2,7 @@ package com.haidoan.android.stren.data
 
 import com.haidoan.android.stren.core.datasource.remote.fake.FakeExercisesRemoteDataSource
 import com.haidoan.android.stren.core.repository.base.ExercisesRepository
-import com.haidoan.android.stren.util.EXERCISE_CATEGORIES_TEST_DATA
+import com.haidoan.android.stren.core.testing.EXERCISE_CATEGORIES_TEST_DATA
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest

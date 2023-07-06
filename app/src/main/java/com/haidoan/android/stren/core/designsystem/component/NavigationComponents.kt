@@ -105,6 +105,7 @@ fun BottomNavigationBar(
         containerColor = Color.Transparent
     ) {
         destinations.forEach { destination ->
+            val isSelected = destination.route == currentTopLevelDestination?.route
             NavigationBarItem(
                 icon = {
                     Icon(
@@ -115,6 +116,7 @@ fun BottomNavigationBar(
                 label = {
                     Text(
                         text = stringResource(id = destination.titleTextId),
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else Gray60,
                         fontWeight = FontWeight.Bold,
                         fontFamily = poppins,
                         fontSize = 12.sp,
@@ -129,7 +131,7 @@ fun BottomNavigationBar(
                     indicatorColor = Color.White,
                 ),
                 alwaysShowLabel = true,
-                selected = destination.route == currentTopLevelDestination?.route,
+                selected = isSelected,
                 onClick = { onNavigateToDestination(destination) }
             )
         }

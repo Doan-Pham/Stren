@@ -5,5 +5,5 @@ import android.util.Patterns
 
 internal object ValidationUtils {
     internal fun isEmailValid(email: String) =
-        !TextUtils.isEmpty(email) && Patterns.EMAIL_ADDRESS.matcher(email).matches();
+        !TextUtils.isEmpty(email) && Patterns.EMAIL_ADDRESS.matcher(email).matches()
 }

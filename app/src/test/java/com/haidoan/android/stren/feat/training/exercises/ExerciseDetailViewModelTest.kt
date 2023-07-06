@@ -2,9 +2,9 @@ package com.haidoan.android.stren.feat.training.exercises
 
 import androidx.lifecycle.SavedStateHandle
 import com.haidoan.android.stren.core.repository.fake.FakeExercisesRepository
+import com.haidoan.android.stren.core.testing.EXERCISES_TEST_DATA
 import com.haidoan.android.stren.feat.training.exercises.detail.EXERCISE_ID_ARG
 import com.haidoan.android.stren.feat.training.exercises.detail.ExerciseDetailViewModel
-import com.haidoan.android.stren.util.EXERCISES_TEST_DATA
 import com.haidoan.android.stren.util.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
