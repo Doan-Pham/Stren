@@ -128,7 +128,10 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         // Reference: https://stackoverflow.com/questions/51161558/kotlin-convert-list-to-vararg
         userCollectionReference
             .document(userId)
-            .update("goals", FieldValue.arrayUnion(*goals.map { it }.toTypedArray()))
+            .update(
+                "goals",
+                FieldValue.arrayUnion(*goals.map { it.toFirestoreObject() }.toTypedArray())
+            )
             .await()
     }
 
@@ -231,6 +234,21 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         return result
     }
 
+    private fun Goal.toFirestoreObject(): Map<String, Any> {
+        val result = mutableMapOf<String, Any>()
+        result["id"] = this.id
+        result["value"] = this.value
+        result["name"] = this.name
+        result["type"] = this.type
+        result["effectiveFrom"] = this.effectiveFrom.toTimeStampDayStart()
+        when (this) {
+            is Goal.FoodNutrientGoal -> {
+                result["foodNutrientId"] = this.foodNutrientId
+            }
+        }
+        return result
+    }
+
     private fun DocumentSnapshot.toUser(): User {
         Timber.d("document: $this")
 
@@ -288,7 +306,13 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
         val goals = mutableListOf<Goal>()
         for (goal in goalsRawData) {
             val id = goal["id"] as String
-            val value = (goal["value"] as Double).toFloat()
+            val value = goal["value"].run {
+                when (this) {
+                    is Long -> this.toFloat()
+                    is Double -> this.toFloat()
+                    else -> 0f
+                }
+            }
             val name = goal["name"] as String
             when (goal["type"]) {
                 GoalType.FOOD_NUTRIENT.name -> goals.add(
@@ -296,7 +320,8 @@ class UserFirestoreDataSource @Inject constructor() : UserRemoteDataSource {
                         id = id,
                         name = name,
                         value = value,
-                        foodNutrientId = goal["foodNutrientId"] as String
+                        foodNutrientId = goal["foodNutrientId"] as String,
+                        effectiveFrom = (goal["effectiveFrom"] as Timestamp).toLocalDate()
                     )
                 )
             }

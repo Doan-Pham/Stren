@@ -98,6 +98,13 @@ internal class ProfileViewModel @Inject constructor(
                     )
                 }
 
+                tasks.forEach {
+                    try {
+                        it.value.await()
+                    } catch (e: Exception) {
+                        Timber.e("saveProfile() - ${it.key} fails with exception: $e")
+                    }
+                }
             }
         }
     }

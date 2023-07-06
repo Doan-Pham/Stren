@@ -3,7 +3,7 @@ package com.haidoan.android.stren.feat.nutrition.diary
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.domain.GetUserNutrientGoalsUseCase
-import com.haidoan.android.stren.core.domain.GetUserNutrientGoalsUseCase.Companion.getGoalByFoodNutrients
+import com.haidoan.android.stren.core.domain.GetUserNutrientGoalsUseCase.Companion.getLatestGoalByFoodNutrients
 import com.haidoan.android.stren.core.model.*
 import com.haidoan.android.stren.core.repository.base.EatingDayRepository
 import com.haidoan.android.stren.core.service.AuthenticationService
@@ -69,11 +69,12 @@ internal class NutritionDiaryViewModel @Inject constructor(
                         eatingDay = currentEatingDay,
                         selectedDate = selectedDate,
                         datesTracked = datesTracked,
-                        goalsByMacronutrient = getGoalByFoodNutrients(
+                        goalsByMacronutrient = getLatestGoalByFoodNutrients(
                             eatingDay.totalMacros,
                             nutrientGoals
                         ),
-                        goalCalories = nutrientGoals.first { it.foodNutrientId == FOOD_NUTRIENT_ID_CALORIES }.value
+                        goalCalories = nutrientGoals.filterLatest()
+                            .first { it.foodNutrientId == FOOD_NUTRIENT_ID_CALORIES }.value
                     )
                 }
             } else {
