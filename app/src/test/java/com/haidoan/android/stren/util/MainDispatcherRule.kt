@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.core.testing.util
+package com.haidoan.android.stren.util
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

@@ -1,4 +1,4 @@
-package com.haidoan.android.stren.core.testing.data
+package com.haidoan.android.stren.util
 
 import com.haidoan.android.stren.core.model.Exercise
 import com.haidoan.android.stren.core.model.ExerciseCategory

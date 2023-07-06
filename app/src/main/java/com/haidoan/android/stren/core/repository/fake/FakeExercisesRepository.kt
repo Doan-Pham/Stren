@@ -9,7 +9,6 @@ import com.haidoan.android.stren.core.model.ExerciseCategory
 import com.haidoan.android.stren.core.model.ExerciseQueryParameters
 import com.haidoan.android.stren.core.model.MuscleGroup
 import com.haidoan.android.stren.core.repository.base.ExercisesRepository
-import com.haidoan.android.stren.core.testing.data.EXERCISES_TEST_DATA
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -57,7 +56,7 @@ class FakeExercisesRepository(testScope: CoroutineScope) : ExercisesRepository {
         TODO("Not yet implemented")
     }
 
-    private val _exerciseFlow = flowOf(EXERCISES_TEST_DATA)
+    private val _exerciseFlow = flowOf(com.haidoan.android.stren.util.EXERCISES_TEST_DATA)
 
 
     override fun getExerciseById(exerciseId: String): Flow<Exercise> =
