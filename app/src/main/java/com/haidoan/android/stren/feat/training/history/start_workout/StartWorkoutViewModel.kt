@@ -37,7 +37,7 @@ internal class StartWorkoutViewModel @Inject constructor(
     val secondaryUiState: StateFlow<StartWorkoutSecondaryUiState> = _secondaryUiState
 
     /**
-     * Since [StartWorkoutViewModel] simply holds uiState for [StartWorkoutScreen] and doesn't hold any business logic (Which is hoisted up in [WorkoutInProgressViewModel] for use across different screens), this method simply does some checks before delegating the actual routine selection to [onSelectRoutine] param
+     * Since [StartWorkoutViewModel] simply holds uiState for [StartWorkoutScreen] and doesn't hold any business logic (Which is hoisted up in WorkoutInProgressViewModel for use across different screens), this method simply does some checks before delegating the actual routine selection to [onSelectRoutine] param
      */
     fun selectRoutineDropdownOption(selectedOptionRoutineId: String, onSelectRoutine: () -> Unit) {
         if (_trainedExercisesStream.value.isEmpty()) {
@@ -60,7 +60,7 @@ internal class StartWorkoutViewModel @Inject constructor(
     }
 
     /**
-     * Since [StartWorkoutViewModel] simply holds uiState for [StartWorkoutScreen] and doesn't hold any business logic (Which is hoisted up in [WorkoutInProgressViewModel] for use across different screens), this method simply does some checks before delegating the actual business logic to [onCancelWorkout] param
+     * Since [StartWorkoutViewModel] simply holds uiState for [StartWorkoutScreen] and doesn't hold any business logic (Which is hoisted up in WorkoutInProgressViewModel for use across different screens), this method simply does some checks before delegating the actual business logic to [onCancelWorkout] param
      */
 
     fun cancelWorkout(onCancelWorkout: () -> Unit) {
@@ -80,7 +80,7 @@ internal class StartWorkoutViewModel @Inject constructor(
     }
 
     /**
-     * Since [StartWorkoutViewModel] simply holds uiState for [StartWorkoutScreen] and doesn't hold any business logic (Which is hoisted up in [WorkoutInProgressViewModel] for use across different screens), this method simply does some checks before delegating the actual logic selection to [onToggleTrainingSetCompleteState] param
+     * Since [StartWorkoutViewModel] simply holds uiState for [StartWorkoutScreen] and doesn't hold any business logic (Which is hoisted up in WorkoutInProgressViewModel for use across different screens), this method simply does some checks before delegating the actual logic selection to [onToggleTrainingSetCompleteState] param
      */
     fun toggleTrainingSetCompleteState(
         trainingSet: TrainingMeasurementMetrics,

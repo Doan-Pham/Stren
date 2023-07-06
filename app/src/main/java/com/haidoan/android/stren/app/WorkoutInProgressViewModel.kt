@@ -156,7 +156,7 @@ class WorkoutInProgressViewModel @Inject constructor(
         currentSelectedRoutineId = newlySelectedRoutineId
 
         Timber.d(
-            "selectRoutine() - newlySelectedRoutineId: $newlySelectedRoutineId ;_currentSelectedRoutineId: ${currentSelectedRoutineId}"
+            "selectRoutine() - newlySelectedRoutineId: $newlySelectedRoutineId ;_currentSelectedRoutineId: $currentSelectedRoutineId"
         )
         _trainedExercises.value =
             routines.value.firstOrNull { it.id == currentSelectedRoutineId }?.trainedExercises

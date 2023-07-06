@@ -24,7 +24,7 @@ import javax.inject.Inject
 private const val MAX_SELECTED_EXERCISES_COUNT = 30
 
 /**
- * This class is basically [ExercisesViewModel] with some modifications
+ * This class is basically ExercisesViewModel with some modifications
  * to go with [AddExerciseToRoutineScreen]
  *
  * TODO: Probably extracting the shared logic to UseCase classes
