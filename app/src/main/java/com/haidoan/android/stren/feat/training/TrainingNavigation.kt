@@ -14,6 +14,8 @@ import com.haidoan.android.stren.feat.training.exercises.view_exercises.Exercise
 import com.haidoan.android.stren.feat.training.exercises.view_exercises.SHOULD_REFRESH_SAVED_STATE_KEY
 import com.haidoan.android.stren.feat.training.history.*
 import com.haidoan.android.stren.feat.training.history.log_workout.*
+import com.haidoan.android.stren.feat.training.programs.navigation.navigateToAddTrainingProgram
+import com.haidoan.android.stren.feat.training.programs.navigation.trainingProgramGraph
 import com.haidoan.android.stren.feat.training.programs.view_programs.TrainingProgramsRoute
 import com.haidoan.android.stren.feat.training.routines.RoutinesRoute
 import com.haidoan.android.stren.feat.training.routines.navigateToRoutineGraph
@@ -70,7 +72,13 @@ fun NavGraphBuilder.trainingGraph(
                     Pair("Programs") {
                         TrainingProgramsRoute(appBarConfigurationChangeHandler = {
                             appBarConfigurationChangeHandler(it)
-                        })
+                        },
+                            onNavigateToAddProgramScreen = {
+                                navController.navigateToAddTrainingProgram(
+                                    userId = it,
+                                )
+                            }
+                        )
                     },
                     Pair("Routines") {
                         RoutinesRoute(
@@ -126,6 +134,11 @@ fun NavGraphBuilder.trainingGraph(
             onBackToPreviousScreen = { navController.popBackStack() })
 
         routineGraph(
+            navController = navController,
+            appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
+        )
+
+        trainingProgramGraph(
             navController = navController,
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
         )

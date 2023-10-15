@@ -12,21 +12,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
 
 @Composable
 internal fun TrainingProgramsRoute(
-    modifier: Modifier = Modifier, appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: TrainingProgramsViewModel = hiltViewModel(),
+    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
+    onNavigateToAddProgramScreen: (userId: String) -> Unit,
 ) {
     val trainingHistoryAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons = listOf(
             IconButtonInfo(drawableResourceId = R.drawable.ic_add,
                 description = "Menu Item Add",
                 clickHandler = {
-//                    TODO: Implement add program
-//                    onNavigateToAddRoutineScreen(viewModel.cachedUserId)
+                    onNavigateToAddProgramScreen(viewModel.userId)
                 }),
             IconButtonInfo(
                 drawableResourceId = R.drawable.ic_search,

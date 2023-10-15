@@ -52,7 +52,7 @@ fun TabLayout(
                     selected = currentTabIndex == index,
                     onClick = {
                         coroutineScope.launch {
-                            pagerState.animateScrollToPage(index)
+                            pagerState.scrollToPage(index)
                         }
                     },
                     selectedContentColor = MaterialTheme.colorScheme.primary,
