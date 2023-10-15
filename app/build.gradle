@@ -9,6 +9,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        release {
+            storeFile file('C:\\Users\\phamm\\Downloads\\Doan\\android_keystore_googleplay\\upload-keystore.jks')
+            storePassword '&*(uioJKLbnm'
+            keyAlias 'upload'
+            keyPassword '&*(uioJKLbnm'
+        }
+    }
     namespace 'com.haidoan.android.stren'
     compileSdk 33
 
@@ -47,6 +55,7 @@ android {
             shrinkResources true
             debuggable false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
 
         debug {
@@ -75,16 +84,16 @@ android {
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.10.1'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
     implementation "androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version"
-    implementation 'androidx.activity:activity-compose:1.7.2'
+    implementation 'androidx.activity:activity-compose:1.8.0'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
     implementation 'androidx.core:core-splashscreen:1.0.1'
 
     //PAGING
-    implementation "androidx.paging:paging-runtime:$paging_version"
+    implementation "androidx.paging:paging-runtime-ktx:$paging_version"
     implementation "androidx.paging:paging-testing:$paging_version"
     implementation "androidx.paging:paging-compose:$paging_compose_version"
 
@@ -100,8 +109,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.google.firebase:firebase-storage-ktx'
     implementation 'com.google.firebase:firebase-firestore-ktx'
-    implementation 'com.facebook.android:facebook-login:16.0.1'
-    implementation 'com.google.android.gms:play-services-auth:20.6.0'
+    implementation 'com.facebook.android:facebook-login:16.2.0'
+    implementation 'com.google.android.gms:play-services-auth:20.7.0'
     implementation 'com.github.stevdza-san:OneTapCompose:1.0.0'
 
     // HILT
@@ -134,7 +143,7 @@ dependencies {
     implementation(platform("com.squareup.okhttp3:okhttp-bom:4.11.0"))
     implementation "com.squareup.okhttp3:okhttp"
     implementation "com.squareup.okhttp3:logging-interceptor"
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1"
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0'
     implementation "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0"
 
     // GRAPHS, CHARTS
@@ -149,7 +158,7 @@ dependencies {
 
     // (FULL-TEXT SEARCH) ALGOLIA
     implementation "com.algolia:algoliasearch-client-kotlin:$algolia_kotlin_client_version"
-    implementation "io.ktor:ktor-client-okhttp:2.2.4"
+    implementation 'io.ktor:ktor-client-okhttp:2.3.5'
 
     // TEST
     testImplementation 'junit:junit:4.13.2'

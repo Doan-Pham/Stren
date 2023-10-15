@@ -1,24 +1,24 @@
 buildscript {
     ext {
         accompanist_version = '0.30.1'
-        calendar_ui_version = '2.3.0'
-        compose_version = '1.4.3'
-        common_validator_version = '1.5.1'
-        coil_version = '2.3.0'
-        lifecycle_version = "2.6.1"
-        hilt_version = '2.45'
-        hilt_testing_version = '2.44.2'
-        navigation_version = '2.6.0'
-        material_design_version = '1.1.1'
-        paging_version = '3.2.0-rc01'
-        paging_compose_version = '3.2.0-rc01'
+        calendar_ui_version = '2.4.0'
+        compose_version = '1.5.3'
+        common_validator_version = '1.7'
+        coil_version = '2.4.0'
+        lifecycle_version = '2.6.2'
+        hilt_version = '2.48.1'
+        hilt_testing_version = '2.48.1'
+        navigation_version = '2.7.4'
+        material_design_version = '1.1.2'
+        paging_version = '3.3.0-alpha02'
+        paging_compose_version = '3.3.0-alpha02'
         timber_version = '5.0.1'
-        retrofit_version = '2.9.0'
+        retrofit_version = '2.10.1'
         tehras_charts_version = '0.2.4-alpha'
         visco_charts_version = '1.6.6'
-        about_libraries_version = '10.7.0'
+        about_libraries_version = '10.9.1'
         algolia_kotlin_client_version = '2.1.3'
-        firebase_bom_version = '32.1.0'
+        firebase_bom_version = '32.3.1'
         sheets_compose_dialogs_version = '1.2.0'
     }
 
@@ -28,13 +28,13 @@ buildscript {
         maven { url 'https://jitpack.io' }
     }
     dependencies {
-        classpath 'com.google.gms:google-services:4.3.15'
+        classpath 'com.google.gms:google-services:4.4.0'
         classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
     }
 }
 plugins {
-    id 'com.android.application' version '7.4.2' apply false
-    id 'com.android.library' version '7.4.2' apply false
+    id 'com.android.application' version '8.1.0' apply false
+    id 'com.android.library' version '8.1.0' apply false
     id 'org.jetbrains.kotlin.android' version '1.8.21' apply false
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.8.21'
     id 'com.google.dagger.hilt.android' version "2.44" apply false

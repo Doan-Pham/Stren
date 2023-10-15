@@ -19,3 +19,8 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-printusage analytics/usage.txt
+-keep class com.haidoan.android.stren.** {*; }
+-keep class com.haidoan.android.stren.core.model.** {*; }
+-keep class com.haidoan.android.stren.core.**.**.model.** {*; }
+-keep class com.haidoan.android.stren.core.**.model.** {*; }
