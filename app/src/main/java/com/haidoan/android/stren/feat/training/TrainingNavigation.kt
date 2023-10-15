@@ -68,7 +68,9 @@ fun NavGraphBuilder.trainingGraph(
                         )
                     },
                     Pair("Programs") {
-                        TrainingProgramsRoute()
+                        TrainingProgramsRoute(appBarConfigurationChangeHandler = {
+                            appBarConfigurationChangeHandler(it)
+                        })
                     },
                     Pair("Routines") {
                         RoutinesRoute(
