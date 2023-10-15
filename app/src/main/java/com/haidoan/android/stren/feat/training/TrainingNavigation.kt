@@ -14,6 +14,7 @@ import com.haidoan.android.stren.feat.training.exercises.view_exercises.Exercise
 import com.haidoan.android.stren.feat.training.exercises.view_exercises.SHOULD_REFRESH_SAVED_STATE_KEY
 import com.haidoan.android.stren.feat.training.history.*
 import com.haidoan.android.stren.feat.training.history.log_workout.*
+import com.haidoan.android.stren.feat.training.programs.view_programs.TrainingProgramsRoute
 import com.haidoan.android.stren.feat.training.routines.RoutinesRoute
 import com.haidoan.android.stren.feat.training.routines.navigateToRoutineGraph
 import com.haidoan.android.stren.feat.training.routines.routineGraph
@@ -25,7 +26,7 @@ const val TRAINING_GRAPH_STARTING_ROUTE = "training_graph_starting_route"
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.trainingGraph(
     navController: NavController,
-    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {}
+    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {},
 ) {
     navigation(startDestination = TRAINING_GRAPH_STARTING_ROUTE, route = TRAINING_GRAPH_ROUTE) {
         composable(route = TRAINING_GRAPH_STARTING_ROUTE) { navBackStackEntry ->
@@ -65,6 +66,9 @@ fun NavGraphBuilder.trainingGraph(
                                 )
                             }
                         )
+                    },
+                    Pair("Programs") {
+                        TrainingProgramsRoute()
                     },
                     Pair("Routines") {
                         RoutinesRoute(

@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.haidoan.android.stren.core.designsystem.theme.Gray90
 import kotlinx.coroutines.launch
 
@@ -21,7 +22,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun TabLayout(
     tabNamesAndScreenComposables: List<Pair<String, @Composable () -> Unit>>,
-    userScrollEnabled: Boolean = true
+    userScrollEnabled: Boolean = true,
 ) {
     val pagerState = rememberPagerState(initialPage = 0)
     val currentTabIndex = pagerState.currentPage
@@ -29,13 +30,17 @@ fun TabLayout(
 
     val coroutineScope = rememberCoroutineScope()
     Column(modifier = Modifier.fillMaxWidth()) {
-        TabRow(selectedTabIndex = currentTabIndex, containerColor = Color.White, indicator = {
-            TabRowDefaults.Indicator(
-                modifier = Modifier
-                    .tabIndicatorOffset(it[currentTabIndex]),
-                color = MaterialTheme.colorScheme.primary
-            )
-        }) {
+        ScrollableTabRow(
+            edgePadding = 0.dp,
+            selectedTabIndex = currentTabIndex,
+            containerColor = Color.White,
+            indicator = {
+                TabRowDefaults.Indicator(
+                    modifier = Modifier
+                        .tabIndicatorOffset(it[currentTabIndex]),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }) {
             tabNamesAndScreenComposables.forEachIndexed { index, screenInfo ->
                 Tab(
                     text = {
