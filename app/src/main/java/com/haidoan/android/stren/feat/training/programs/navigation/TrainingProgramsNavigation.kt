@@ -33,7 +33,6 @@ internal fun NavGraphBuilder.trainingProgramGraph(
     navController: NavController,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
 ) {
-
     composable(
         route = PROGRAM_ROUTE +
                 "/{userId}",
@@ -41,6 +40,8 @@ internal fun NavGraphBuilder.trainingProgramGraph(
             navArgument("userId") { type = NavType.StringType },
         )
     ) {
-        AddEditTrainingProgramsRoute(appBarConfigurationChangeHandler = appBarConfigurationChangeHandler)
+        AddEditTrainingProgramsRoute(
+            appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
+        )
     }
 }
