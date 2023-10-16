@@ -9,12 +9,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,12 +38,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
+import com.haidoan.android.stren.core.designsystem.component.OutlinedNumberTextField
 import com.haidoan.android.stren.core.designsystem.component.StrenOutlinedTextField
 import com.haidoan.android.stren.core.designsystem.theme.Green70
 import com.haidoan.android.stren.core.designsystem.theme.Red60
 
 private val daysInWeek = listOf("M", "T", "W", "T", "F", "S", "S")
-
 
 @Composable
 internal fun AddEditTrainingProgramsRoute(
@@ -101,6 +103,7 @@ internal fun AddEditTrainingProgramsRoute(
     )
 }
 
+@OptIn(ExperimentalStdlibApi::class)
 @Composable
 private fun AddEditTrainingProgramsScreen(
     modifier: Modifier = Modifier,
@@ -123,20 +126,37 @@ private fun AddEditTrainingProgramsScreen(
                 isError = programName.isBlank() || programName.isEmpty(),
                 errorText = "Program name can't be empty"
             )
+            var numOfWeek by remember {
+                mutableStateOf(1)
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                OutlinedNumberTextField(
+                    modifier = Modifier.wrapContentWidth(),
+                    number = numOfWeek,
+                    label = "Program Length",
+                    onValueChange = {
+                        numOfWeek = it.coerceIn(0..12)
+                    },
+                    suffixText = "Weeks",
+                    isError = numOfWeek == 0,
+                    errorText = "Length can't be empty"
+                )
+                Spacer(modifier = Modifier.weight(1f))
+            }
 
             LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                item {
-                    TrainingWeekGroup()
+                for (i in 0..<numOfWeek step 4) {
+                    item {
+                        TrainingWeekGroup(
+                            startWeekIndex = i,
+                            numOfWeek = (numOfWeek - i).coerceAtMost(4)
+                        )
+                    }
                 }
-                item {
-                    TrainingWeekGroup()
-                }
-                item {
-                    TrainingWeekGroup()
-                }
-                item {
-                    TrainingWeekGroup()
-                }
+
             }
         }
     }
@@ -144,21 +164,30 @@ private fun AddEditTrainingProgramsScreen(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TrainingWeekGroup() {
+private fun TrainingWeekGroup(startWeekIndex: Int, numOfWeek: Int) {
     Column(
         modifier = Modifier
             .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp))
             .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Week 1 - 4", style = MaterialTheme.typography.titleMedium)
+        val headerText = if (numOfWeek > 1) {
+            "Week ${startWeekIndex + 1} - ${startWeekIndex + numOfWeek}"
+        } else {
+            "Week ${startWeekIndex + 1}"
+        }
+
+        Text(
+            text = headerText,
+            style = MaterialTheme.typography.titleMedium
+        )
 
         Spacer(modifier = Modifier.size(16.dp))
 
         FlowRow(
             maxItemsInEachRow = 7
         ) {
-            repeat(4 * 7) {
+            repeat(numOfWeek * 7) {
                 Day(offset = it, isSelected = false, haveWorkouts = true, onClickHandler = {})
             }
         }
