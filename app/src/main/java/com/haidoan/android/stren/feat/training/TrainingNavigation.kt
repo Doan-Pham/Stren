@@ -150,3 +150,6 @@ fun NavGraphBuilder.trainingGraph(
         )
     }
 }
+
+val NavController.trainingGraphBackStackEntry
+    get() = this.getBackStackEntry(TRAINING_GRAPH_ROUTE)

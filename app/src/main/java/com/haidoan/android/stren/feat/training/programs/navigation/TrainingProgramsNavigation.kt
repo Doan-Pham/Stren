@@ -1,12 +1,16 @@
 package com.haidoan.android.stren.feat.training.programs.navigation
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.runtime.remember
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.*
 import com.google.accompanist.navigation.animation.composable
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.feat.training.programs.add_edit.AddEditTrainingProgramsRoute
 import com.haidoan.android.stren.feat.training.routines.add_edit.*
+import com.haidoan.android.stren.feat.training.routines.navigateToAddRoutineToProgram
+import com.haidoan.android.stren.feat.training.trainingGraphBackStackEntry
 
 private const val PROGRAM_ROUTE = "add_edit_training_program_route"
 
@@ -40,8 +44,16 @@ internal fun NavGraphBuilder.trainingProgramGraph(
             navArgument("userId") { type = NavType.StringType },
         )
     ) {
+        val trainingGraphEntry = remember(it) {
+            navController.trainingGraphBackStackEntry
+        }
+
         AddEditTrainingProgramsRoute(
-            appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
+            appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
+            trainingViewModel = hiltViewModel(trainingGraphEntry),
+            onNavigateToAddRoutineScreen = {
+                navController.navigateToAddRoutineToProgram(it)
+            }
         )
     }
 }
