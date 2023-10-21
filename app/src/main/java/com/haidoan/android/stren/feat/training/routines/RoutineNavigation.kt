@@ -11,26 +11,31 @@ import com.haidoan.android.stren.feat.training.exercises.navigateToCreateExercis
 import com.haidoan.android.stren.feat.training.routines.add_edit.*
 import timber.log.Timber
 
-internal fun NavController.navigateToRoutineGraph(
-    isAddingRoutine: Boolean,
-    userId: String,
-    routineId: String = "UNDEFINED_ROUTINE_ID"
-) {
-    this.navigate("$ADD_EDIT_ROUTINE_SCREEN_ROUTE/$userId/$routineId/$isAddingRoutine")
+internal enum class NavigationPurpose {
+    ADD_ROUTINE, EDIT_ROUTINE
 }
+
+internal fun NavController.navigateToRoutineGraph(
+    navigationPurpose: NavigationPurpose,
+    userId: String,
+    routineId: String = "UNDEFINED_ROUTINE_ID",
+) {
+    this.navigate("$ADD_EDIT_ROUTINE_SCREEN_ROUTE/$userId/$routineId/$navigationPurpose")
+}
+
 
 // This encapsulate the SavedStateHandle access to allow AddEditRoutineViewModel
 // to easily grabs nav args. Or else, it has to know all the nav args' names
 internal class AddEditRoutineArgs(
     val userId: String,
     val routineId: String,
-    val isAddingRoutine: Boolean
+    val navigationPurpose: NavigationPurpose,
 ) {
     constructor(savedStateHandle: SavedStateHandle) :
             this(
                 checkNotNull(savedStateHandle[USER_ID_ROUTINE_NAV_ARG]),
                 checkNotNull(savedStateHandle[ROUTINE_ID_NAV_ARG]),
-                checkNotNull(savedStateHandle[IS_ADDING_ROUTINE_NAV_ARG]),
+                checkNotNull(savedStateHandle[NAVIGATION_PURPOSE_NAV_ARG]),
             )
 }
 
@@ -43,15 +48,17 @@ Reference: https://stackoverflow.com/questions/70404038/jetpack-compose-navigati
 @OptIn(ExperimentalAnimationApi::class)
 internal fun NavGraphBuilder.routineGraph(
     navController: NavController,
-    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit
+    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
 ) {
 
     composable(
-        route = "$ADD_EDIT_ROUTINE_SCREEN_ROUTE/{$USER_ID_ROUTINE_NAV_ARG}/{$ROUTINE_ID_NAV_ARG}/{$IS_ADDING_ROUTINE_NAV_ARG}",
+        route = "$ADD_EDIT_ROUTINE_SCREEN_ROUTE/{$USER_ID_ROUTINE_NAV_ARG}/{$ROUTINE_ID_NAV_ARG}/{$NAVIGATION_PURPOSE_NAV_ARG}",
         arguments = listOf(
             navArgument(USER_ID_ROUTINE_NAV_ARG) { type = NavType.StringType },
             navArgument(ROUTINE_ID_NAV_ARG) { type = NavType.StringType },
-            navArgument(IS_ADDING_ROUTINE_NAV_ARG) { type = NavType.BoolType },
+            navArgument(NAVIGATION_PURPOSE_NAV_ARG) {
+                type = NavType.EnumType(NavigationPurpose::class.java)
+            },
         )
 
     ) { navBackStackEntry ->

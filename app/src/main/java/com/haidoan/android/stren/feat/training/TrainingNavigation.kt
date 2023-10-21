@@ -17,6 +17,7 @@ import com.haidoan.android.stren.feat.training.history.log_workout.*
 import com.haidoan.android.stren.feat.training.programs.navigation.navigateToAddTrainingProgram
 import com.haidoan.android.stren.feat.training.programs.navigation.trainingProgramGraph
 import com.haidoan.android.stren.feat.training.programs.view_programs.TrainingProgramsRoute
+import com.haidoan.android.stren.feat.training.routines.NavigationPurpose
 import com.haidoan.android.stren.feat.training.routines.RoutinesRoute
 import com.haidoan.android.stren.feat.training.routines.navigateToRoutineGraph
 import com.haidoan.android.stren.feat.training.routines.routineGraph
@@ -88,12 +89,12 @@ fun NavGraphBuilder.trainingGraph(
                             onNavigateToAddRoutineScreen = { userId ->
                                 navController.navigateToRoutineGraph(
                                     userId = userId,
-                                    isAddingRoutine = true
+                                    navigationPurpose = NavigationPurpose.ADD_ROUTINE
                                 )
                             },
                             onNavigateToEditRoutineScreen = { userId, routineId ->
                                 navController.navigateToRoutineGraph(
-                                    isAddingRoutine = false,
+                                    navigationPurpose = NavigationPurpose.EDIT_ROUTINE,
                                     userId = userId,
                                     routineId = routineId
                                 )

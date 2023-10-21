@@ -31,6 +31,7 @@ import com.haidoan.android.stren.core.designsystem.theme.StrenTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import kotlin.system.exitProcess
 
 private const val NOTIFICATION_ID = 1234
 val LocalFacebookCallbackManager =
@@ -51,6 +52,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
+
+        globallyCatchException()
+
         super.onCreate(savedInstanceState)
         splashScreen.setKeepOnScreenCondition { isLoading }
         createNotificationChannel()
@@ -143,6 +147,14 @@ class MainActivity : ComponentActivity() {
                 return
             }
             notify(NOTIFICATION_ID, builder.build())
+        }
+    }
+
+    private fun globallyCatchException() {
+        Thread.setDefaultUncaughtExceptionHandler { paramThread, paramThrowable ->
+            Timber.e("Exception: $paramThrowable happens on thread: $paramThread")
+            paramThrowable.printStackTrace()
+            exitProcess(2)
         }
     }
 

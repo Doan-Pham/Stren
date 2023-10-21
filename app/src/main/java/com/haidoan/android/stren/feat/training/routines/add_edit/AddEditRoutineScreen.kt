@@ -32,7 +32,7 @@ import timber.log.Timber
 
 internal const val ADD_EDIT_ROUTINE_SCREEN_ROUTE = "add_edit_routine_screen_route"
 internal const val ROUTINE_ID_NAV_ARG = "routine_id_arg"
-internal const val IS_ADDING_ROUTINE_NAV_ARG = "is_adding_arg"
+internal const val NAVIGATION_PURPOSE_NAV_ARG = "purpose_arg"
 internal const val USER_ID_ROUTINE_NAV_ARG = "user_id_routine_arg"
 
 @Composable
