@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -54,6 +55,7 @@ import com.haidoan.android.stren.core.designsystem.theme.Gray90
 import com.haidoan.android.stren.core.designsystem.theme.Green70
 import com.haidoan.android.stren.core.designsystem.theme.Red60
 import com.haidoan.android.stren.core.model.Routine
+import com.haidoan.android.stren.feat.training.TrainingViewModel
 
 private const val DEFAULT_NUM_OF_DAYS_PER_WEEK = 7
 private const val DEFAULT_NUM_OF_WEEKS_PER_GROUP = 4
@@ -65,9 +67,12 @@ private val daysInWeek = listOf("M", "T", "W", "T", "F", "S", "S")
 @Composable
 internal fun AddEditTrainingProgramsRoute(
     modifier: Modifier = Modifier,
+    trainingViewModel: TrainingViewModel,
     viewModel: AddEditTrainingProgramViewModel = hiltViewModel(),
+    onNavigateToAddRoutineScreen: (dayOffset: Int) -> Unit,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
 ) {
+    trainingViewModel.test()
 
     val addEditProgramAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         title = "Program",
@@ -124,6 +129,7 @@ internal fun AddEditTrainingProgramsRoute(
         selectedDayGlobalOffset = selectedDayGlobalOffset,
         selectDay = viewModel::selectDate,
         routinesOfSelectedDate = routinesOfSelectedDate,
+        addRoutine = { onNavigateToAddRoutineScreen(it) }
     )
 }
 
@@ -136,6 +142,7 @@ private fun AddEditTrainingProgramsScreen(
     selectedDayGlobalOffset: Int,
     selectDay: (dayOffset: Int) -> Unit,
     routinesOfSelectedDate: List<Routine>,
+    addRoutine: (dayOffset: Int) -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -226,10 +233,26 @@ private fun AddEditTrainingProgramsScreen(
 
             //region ROUTINES OF SELECTED DATE
 
-            Text(
-                text = "Week ${selectedDayWeekIndex + 1} - Day ${selectedDayWeeklyOffset + 1}",
-                style = MaterialTheme.typography.titleMedium
-            )
+            // TITLE & ADD_ROUTINE BUTTON
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = "Week ${selectedDayWeekIndex + 1} - Day ${selectedDayWeeklyOffset + 1}",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                IconButton(
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                    onClick = {
+                        addRoutine(selectedDayGlobalOffset)
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_add),
+                        contentDescription = "Back Icon",
+                    )
+                }
+            }
 
             LazyColumn(
                 modifier = modifier

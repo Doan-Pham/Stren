@@ -27,6 +27,7 @@ import com.haidoan.android.stren.core.designsystem.component.*
 import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics
 import com.haidoan.android.stren.core.utils.ValidationUtils
+import com.haidoan.android.stren.feat.training.TrainingViewModel
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -39,12 +40,14 @@ internal const val USER_ID_ROUTINE_NAV_ARG = "user_id_routine_arg"
 internal fun AddEditRoutineRoute(
     modifier: Modifier = Modifier,
     exercisesIdsToAdd: List<String>,
+    trainingViewModel: TrainingViewModel,
     viewModel: AddEditRoutineViewModel = hiltViewModel(),
     onAddExercisesCompleted: () -> Unit,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onBackToPreviousScreen: () -> Unit,
-    onNavigateToAddExercise: () -> Unit
+    onNavigateToAddExercise: () -> Unit,
 ) {
+    trainingViewModel.test()
     if (exercisesIdsToAdd.isNotEmpty()) {
         viewModel.setExercisesIdsToAdd(exercisesIdsToAdd)
         onAddExercisesCompleted()
