@@ -13,7 +13,7 @@ class StrenApplication : Application() {
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         } else {
-            Timber.plant(ReleaseTree())
+            Timber.plant(Timber.DebugTree())
         }
     }
 }

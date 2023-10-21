@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -16,7 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,6 +43,12 @@ import com.haidoan.android.stren.core.designsystem.component.OutlinedNumberTextF
 import com.haidoan.android.stren.core.designsystem.component.StrenOutlinedTextField
 import com.haidoan.android.stren.core.designsystem.theme.Green70
 import com.haidoan.android.stren.core.designsystem.theme.Red60
+import timber.log.Timber
+
+private const val DEFAULT_NUM_OF_DAYS_PER_WEEK = 7
+private const val DEFAULT_NUM_OF_WEEKS_PER_GROUP = 4
+private const val MIN_NUM_OF_WEEKS = 1
+private const val MAX_NUM_OF_WEEKS = 12
 
 private val daysInWeek = listOf("M", "T", "W", "T", "F", "S", "S")
 
@@ -100,6 +107,8 @@ internal fun AddEditTrainingProgramsRoute(
         modifier = modifier,
         programName = viewModel.programName.value,
         onProgramNameChange = viewModel::onProgramNameChange,
+        selectedDayOffset = viewModel.selectedDayOffset.value,
+        selectDay = viewModel::selectDate
     )
 }
 
@@ -109,6 +118,8 @@ private fun AddEditTrainingProgramsScreen(
     modifier: Modifier = Modifier,
     programName: String,
     onProgramNameChange: (String) -> Unit,
+    selectedDayOffset: Int,
+    selectDay: (dayOffset: Int) -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -119,6 +130,7 @@ private fun AddEditTrainingProgramsScreen(
         Column(
             modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // PROGRAM's NAME
             StrenOutlinedTextField(
                 text = programName,
                 onTextChange = onProgramNameChange,
@@ -126,33 +138,59 @@ private fun AddEditTrainingProgramsScreen(
                 isError = programName.isBlank() || programName.isEmpty(),
                 errorText = "Program name can't be empty"
             )
-            var numOfWeek by remember {
+
+            var programTotalNumOfWeeks by remember {
                 mutableStateOf(1)
             }
 
+            // NUM_OF_WEEK TEXT FIELD
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 OutlinedNumberTextField(
-                    modifier = Modifier.wrapContentWidth(),
-                    number = numOfWeek,
+                    modifier = Modifier.width(IntrinsicSize.Min),
+                    number = programTotalNumOfWeeks,
                     label = "Program Length",
                     onValueChange = {
-                        numOfWeek = it.coerceIn(0..12)
+                        programTotalNumOfWeeks = it.coerceIn(
+                            (MIN_NUM_OF_WEEKS - 1)..MAX_NUM_OF_WEEKS
+                        )
                     },
                     suffixText = "Weeks",
-                    isError = numOfWeek == 0,
+                    isError = programTotalNumOfWeeks < MIN_NUM_OF_WEEKS,
                     errorText = "Length can't be empty"
                 )
                 Spacer(modifier = Modifier.weight(1f))
             }
 
+            // TRAINING WEEKS
             LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                for (i in 0..<numOfWeek step 4) {
+                val numOfDaysPerWeek = DEFAULT_NUM_OF_DAYS_PER_WEEK
+                val numOfWeeksPerGroup = DEFAULT_NUM_OF_WEEKS_PER_GROUP
+
+                for (i in 0..<programTotalNumOfWeeks step numOfWeeksPerGroup) {
                     item {
+                        val numOfWeeks =
+                            (programTotalNumOfWeeks - i).coerceAtMost(numOfWeeksPerGroup)
+
+                        val weekIndexOfSelectedDay = selectedDayOffset / numOfDaysPerWeek
+                        val selectedDayOffsetLocalized =
+                            if (weekIndexOfSelectedDay in i..<i + numOfWeeks) {
+                                (weekIndexOfSelectedDay - i) * numOfDaysPerWeek +
+                                        (selectedDayOffset % numOfDaysPerWeek)
+                            } else {
+                                null
+                            }
+
+                        Timber.d("weekIndexOfSelectedDay: $weekIndexOfSelectedDay, selectedDayOffsetLocalized: $selectedDayOffsetLocalized, selectedDayOffset: $selectedDayOffset, ")
                         TrainingWeekGroup(
                             startWeekIndex = i,
-                            numOfWeek = (numOfWeek - i).coerceAtMost(4)
+                            numOfWeek = numOfWeeks,
+                            onSelectDay = {
+                                val selectedDayOffsetGlobal = i * numOfDaysPerWeek + it
+                                selectDay(selectedDayOffsetGlobal)
+                            },
+                            selectedDayOffsetLocalized = selectedDayOffsetLocalized
                         )
                     }
                 }
@@ -164,7 +202,12 @@ private fun AddEditTrainingProgramsScreen(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TrainingWeekGroup(startWeekIndex: Int, numOfWeek: Int) {
+private fun TrainingWeekGroup(
+    startWeekIndex: Int,
+    numOfWeek: Int,
+    selectedDayOffsetLocalized: Int? = null,
+    onSelectDay: (selectedDayOffsetLocalized: Int) -> Unit,
+) {
     Column(
         modifier = Modifier
             .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp))
@@ -188,7 +231,12 @@ private fun TrainingWeekGroup(startWeekIndex: Int, numOfWeek: Int) {
             maxItemsInEachRow = 7
         ) {
             repeat(numOfWeek * 7) {
-                Day(offset = it, isSelected = false, haveWorkouts = true, onClickHandler = {})
+                Day(
+                    offset = it,
+                    isSelected = selectedDayOffsetLocalized == it,
+                    haveWorkouts = true,
+                    onClickHandler = onSelectDay
+                )
             }
         }
     }
