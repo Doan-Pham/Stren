@@ -14,13 +14,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,17 +38,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
+import com.haidoan.android.stren.core.designsystem.component.DropDownMenuScaffold
 import com.haidoan.android.stren.core.designsystem.component.OutlinedNumberTextField
 import com.haidoan.android.stren.core.designsystem.component.StrenOutlinedTextField
+import com.haidoan.android.stren.core.designsystem.theme.Gray60
+import com.haidoan.android.stren.core.designsystem.theme.Gray90
 import com.haidoan.android.stren.core.designsystem.theme.Green70
 import com.haidoan.android.stren.core.designsystem.theme.Red60
-import timber.log.Timber
+import com.haidoan.android.stren.core.model.Routine
 
 private const val DEFAULT_NUM_OF_DAYS_PER_WEEK = 7
 private const val DEFAULT_NUM_OF_WEEKS_PER_GROUP = 4
@@ -103,12 +113,17 @@ internal fun AddEditTrainingProgramsRoute(
         appBarConfigurationChangeHandler(addEditProgramAppBarConfiguration)
         isAppBarConfigured = true
     }
+
+    val selectedDayGlobalOffset by viewModel.selectedDayOffset.collectAsStateWithLifecycle()
+    val routinesOfSelectedDate by viewModel.routinesOfSelectedDate.collectAsStateWithLifecycle()
+
     AddEditTrainingProgramsScreen(
         modifier = modifier,
         programName = viewModel.programName.value,
         onProgramNameChange = viewModel::onProgramNameChange,
-        selectedDayOffset = viewModel.selectedDayOffset.value,
-        selectDay = viewModel::selectDate
+        selectedDayGlobalOffset = selectedDayGlobalOffset,
+        selectDay = viewModel::selectDate,
+        routinesOfSelectedDate = routinesOfSelectedDate,
     )
 }
 
@@ -118,8 +133,9 @@ private fun AddEditTrainingProgramsScreen(
     modifier: Modifier = Modifier,
     programName: String,
     onProgramNameChange: (String) -> Unit,
-    selectedDayOffset: Int,
+    selectedDayGlobalOffset: Int,
     selectDay: (dayOffset: Int) -> Unit,
+    routinesOfSelectedDate: List<Routine>,
 ) {
     Column(
         modifier = modifier
@@ -142,6 +158,10 @@ private fun AddEditTrainingProgramsScreen(
             var programTotalNumOfWeeks by remember {
                 mutableStateOf(1)
             }
+            val numOfDaysPerWeek = DEFAULT_NUM_OF_DAYS_PER_WEEK
+            val numOfWeeksPerGroup = DEFAULT_NUM_OF_WEEKS_PER_GROUP
+            val selectedDayWeekIndex = selectedDayGlobalOffset / numOfDaysPerWeek
+            val selectedDayWeeklyOffset = selectedDayGlobalOffset % numOfDaysPerWeek
 
             // NUM_OF_WEEK TEXT FIELD
             Row(
@@ -163,49 +183,85 @@ private fun AddEditTrainingProgramsScreen(
                 Spacer(modifier = Modifier.weight(1f))
             }
 
-            // TRAINING WEEKS
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                val numOfDaysPerWeek = DEFAULT_NUM_OF_DAYS_PER_WEEK
-                val numOfWeeksPerGroup = DEFAULT_NUM_OF_WEEKS_PER_GROUP
+            //region TRAINING WEEKS
 
-                for (i in 0..<programTotalNumOfWeeks step numOfWeeksPerGroup) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                for (startWeekIndex in 0..<programTotalNumOfWeeks step numOfWeeksPerGroup) {
                     item {
                         val numOfWeeks =
-                            (programTotalNumOfWeeks - i).coerceAtMost(numOfWeeksPerGroup)
+                            (programTotalNumOfWeeks - startWeekIndex)
+                                .coerceAtMost(numOfWeeksPerGroup)
 
-                        val weekIndexOfSelectedDay = selectedDayOffset / numOfDaysPerWeek
-                        val selectedDayOffsetLocalized =
-                            if (weekIndexOfSelectedDay in i..<i + numOfWeeks) {
-                                (weekIndexOfSelectedDay - i) * numOfDaysPerWeek +
-                                        (selectedDayOffset % numOfDaysPerWeek)
+                        val endWeekIndex = startWeekIndex + numOfWeeks - 1
+
+                        val selectedDayWeekGroupOffset =
+                            if (selectedDayWeekIndex in startWeekIndex..endWeekIndex) {
+                                (selectedDayWeekIndex - startWeekIndex) * numOfDaysPerWeek +
+                                        selectedDayWeeklyOffset
                             } else {
                                 null
                             }
 
-                        Timber.d("weekIndexOfSelectedDay: $weekIndexOfSelectedDay, selectedDayOffsetLocalized: $selectedDayOffsetLocalized, selectedDayOffset: $selectedDayOffset, ")
                         TrainingWeekGroup(
-                            startWeekIndex = i,
+                            startWeekIndex = startWeekIndex,
                             numOfWeek = numOfWeeks,
                             onSelectDay = {
-                                val selectedDayOffsetGlobal = i * numOfDaysPerWeek + it
+                                val selectedDayOffsetGlobal = startWeekIndex * numOfDaysPerWeek + it
                                 selectDay(selectedDayOffsetGlobal)
                             },
-                            selectedDayOffsetLocalized = selectedDayOffsetLocalized
+                            selectedDayWeekGroupOffset = selectedDayWeekGroupOffset
                         )
                     }
                 }
 
             }
+
+            //endregion
+
+            Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
+
+            Divider()
+
+            Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
+
+            //region ROUTINES OF SELECTED DATE
+
+            Text(
+                text = "Week ${selectedDayWeekIndex + 1} - Day ${selectedDayWeeklyOffset + 1}",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            LazyColumn(
+                modifier = modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+            ) {
+                items(routinesOfSelectedDate) { routine ->
+                    RoutineItem(
+                        routine = routine,
+                        onEditRoutineClickHandler = {
+                            // TODO editRoutine(routine.id)
+
+                        },
+                        onDeleteRoutineClick = {
+                            // TODO: deleteRoutine(routine.id)
+                            //  }
+                        })
+                }
+            }
+
+            //endregion
         }
     }
 }
 
+//region CALENDAR
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TrainingWeekGroup(
     startWeekIndex: Int,
     numOfWeek: Int,
-    selectedDayOffsetLocalized: Int? = null,
+    selectedDayWeekGroupOffset: Int? = null,
     onSelectDay: (selectedDayOffsetLocalized: Int) -> Unit,
 ) {
     Column(
@@ -233,7 +289,7 @@ private fun TrainingWeekGroup(
             repeat(numOfWeek * 7) {
                 Day(
                     offset = it,
-                    isSelected = selectedDayOffsetLocalized == it,
+                    isSelected = selectedDayWeekGroupOffset == it,
                     haveWorkouts = true,
                     onClickHandler = onSelectDay
                 )
@@ -280,3 +336,68 @@ private fun Day(
         }
     }
 }
+
+//endregion
+
+//region ROUTINE LIST
+
+@Composable
+private fun RoutineItem(
+    routine: Routine,
+    // TODO: Routine click
+    // onItemClickHandler: (routineId: String) -> Unit,
+    onEditRoutineClickHandler: () -> Unit,
+    onDeleteRoutineClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(width = (1.5).dp, color = Gray90, shape = RoundedCornerShape(15.dp))
+            .clip(RoundedCornerShape(15.dp))
+//            .clickable { onItemClickHandler(routine.id) }
+            .padding(dimensionResource(id = R.dimen.padding_medium)),
+        verticalArrangement = Arrangement.Top,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = dimensionResource(id = R.dimen.padding_small)),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = routine.name,
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Spacer(Modifier.weight(1f))
+            DropDownMenuScaffold(
+                menuItemsTextAndClickHandler = mapOf(
+                    "Edit" to { onEditRoutineClickHandler() },
+                    "Delete" to { onDeleteRoutineClick() })
+            )
+            { onExpandMenu ->
+                Icon(
+                    modifier = Modifier
+                        .clickable {
+                            onExpandMenu()
+                        }
+                        .size(dimensionResource(id = R.dimen.icon_size_medium)),
+                    painter = painterResource(id = R.drawable.ic_more_horizontal),
+                    contentDescription = "Icon more"
+                )
+            }
+
+        }
+
+        routine.trainedExercises.subList(0, minOf(routine.trainedExercises.size, 3))
+            .forEach {
+                Text(
+                    text = it.exercise.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Gray60
+                )
+            }
+    }
+}
+
+
+//endregion
