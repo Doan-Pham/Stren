@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.model.Routine
+import com.haidoan.android.stren.core.utils.DateUtils.getCurrentDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.time.LocalDate
 import javax.inject.Inject
 
 private const val DEFAULT_SELECTED_DAY_OFFSET = 0
@@ -30,6 +32,9 @@ internal class AddEditTrainingProgramViewModel @Inject constructor() : ViewModel
 
     private val _programTotalNumOfWeeks = MutableStateFlow(MIN_NUM_OF_WEEKS)
     val programTotalNumOfWeeks = _programTotalNumOfWeeks.asStateFlow()
+
+    private val _programStartDate = MutableStateFlow(getCurrentDate())
+    val programStartDate = _programStartDate.asStateFlow()
 
     private var _programName = mutableStateOf("New program")
     val programName: State<String> = _programName
@@ -73,6 +78,10 @@ internal class AddEditTrainingProgramViewModel @Inject constructor() : ViewModel
         _programTotalNumOfWeeks.value = value
     }
 
+    fun onProgramStartDateChange(value: LocalDate) {
+        _programStartDate.value = value
+    }
+
     fun selectDate(dayOffset: Int) {
         _selectedDayOffset.update { dayOffset }
     }
@@ -94,4 +103,5 @@ internal class AddEditTrainingProgramViewModel @Inject constructor() : ViewModel
         disposables.forEach { it() }
         disposables.clear()
     }
+
 }

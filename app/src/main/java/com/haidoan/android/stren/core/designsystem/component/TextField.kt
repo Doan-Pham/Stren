@@ -44,10 +44,10 @@ fun StrenOutlinedTextField(
             )
         }
     },
-    isError: Boolean,
+    isError: Boolean? = null,
     singleLine: Boolean = true,
-    errorText: String,
-    keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+    errorText: String = "",
+    keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
 ) {
     OutlinedTextField(
         modifier = modifier
@@ -63,9 +63,9 @@ fun StrenOutlinedTextField(
         },
         leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
-        isError = isError,
+        isError = isError == true,
         supportingText = {
-            if (isError) Text(text = errorText)
+            if (isError == true) Text(text = errorText)
         },
         colors = TextFieldDefaults.colors(
             errorContainerColor = Transparent,

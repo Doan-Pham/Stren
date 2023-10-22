@@ -48,6 +48,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
+import com.haidoan.android.stren.core.designsystem.component.DatePickerWithDialog
 import com.haidoan.android.stren.core.designsystem.component.DropDownMenuScaffold
 import com.haidoan.android.stren.core.designsystem.component.OutlinedNumberTextField
 import com.haidoan.android.stren.core.designsystem.component.SimpleConfirmationDialog
@@ -57,7 +58,9 @@ import com.haidoan.android.stren.core.designsystem.theme.Gray90
 import com.haidoan.android.stren.core.designsystem.theme.Green70
 import com.haidoan.android.stren.core.designsystem.theme.Red60
 import com.haidoan.android.stren.core.model.Routine
+import com.haidoan.android.stren.core.utils.DateUtils.defaultFormat
 import com.haidoan.android.stren.feat.training.TrainingViewModel
+import java.time.LocalDate
 
 
 private val daysInWeek = listOf("M", "T", "W", "T", "F", "S", "S")
@@ -76,6 +79,7 @@ internal fun AddEditTrainingProgramsRoute(
     val selectedDayGlobalOffset by viewModel.selectedDayOffset.collectAsStateWithLifecycle()
     val routinesOfSelectedDate by viewModel.routinesOfSelectedDate.collectAsStateWithLifecycle()
     val programTotalNumOfWeeks by viewModel.programTotalNumOfWeeks.collectAsStateWithLifecycle()
+    val programStartDate by viewModel.programStartDate.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = routinesForTrainingProgram, block = {
         viewModel.updateRoutines(routinesForTrainingProgram)
@@ -106,6 +110,8 @@ internal fun AddEditTrainingProgramsRoute(
 
     AddEditTrainingProgramsScreen(
         modifier = modifier,
+        programStartDate = programStartDate,
+        onProgramStartDateChange = viewModel::onProgramStartDateChange,
         programTotalNumOfWeeks = programTotalNumOfWeeks,
         onProgramTotalNumOfWeeksChange = viewModel::onProgramTotalNumOfWeeksChange,
         programName = viewModel.programName.value,
@@ -171,6 +177,8 @@ internal fun AddEditTrainingProgramsRoute(
 @Composable
 private fun AddEditTrainingProgramsScreen(
     modifier: Modifier = Modifier,
+    programStartDate: LocalDate,
+    onProgramStartDateChange: (LocalDate) -> Unit,
     programTotalNumOfWeeks: Int,
     onProgramTotalNumOfWeeksChange: (Int) -> Unit,
     programName: String,
@@ -193,7 +201,7 @@ private fun AddEditTrainingProgramsScreen(
                 .verticalScroll(rememberScrollState())
                 .weight(1f), horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // PROGRAM's NAME
+            //region PROGRAM's NAME
             StrenOutlinedTextField(
                 text = programName,
                 onTextChange = onProgramNameChange,
@@ -207,7 +215,9 @@ private fun AddEditTrainingProgramsScreen(
             val selectedDayWeekIndex = selectedDayGlobalOffset / numOfDaysPerWeek
             val selectedDayWeeklyOffset = selectedDayGlobalOffset % numOfDaysPerWeek
 
-            // NUM_OF_WEEK TEXT FIELD
+            //endregion
+
+            //region NUM_OF_WEEK TEXT FIELD
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -228,6 +238,19 @@ private fun AddEditTrainingProgramsScreen(
                 )
                 Spacer(modifier = Modifier.weight(1f))
             }
+
+            //endregion
+
+            //region START_DATE
+            DatePickerWithDialog(value = programStartDate, dateFormatter = {
+                it.defaultFormat()
+            }, onChange = {
+                it?.let { onProgramStartDateChange(it) }
+            },
+                yearRange = programStartDate.year - 1..programStartDate.year + 3
+            )
+
+            //endregion
 
             //region TRAINING WEEKS
 
@@ -292,9 +315,7 @@ private fun AddEditTrainingProgramsScreen(
                     )
                 }
             }
-            //endregion
 
-            //region ROUTINES LIST
 
             routinesOfSelectedDate.forEach { routine ->
                 RoutineItem(
