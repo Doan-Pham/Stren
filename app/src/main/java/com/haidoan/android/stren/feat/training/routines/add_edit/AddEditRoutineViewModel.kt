@@ -37,6 +37,12 @@ internal class AddEditRoutineViewModel @Inject constructor(
     private val _addRoutineToProgramEvent = MutableStateFlow<Pair<Int, Routine>?>(null)
     val addRoutineToProgramEvent = _addRoutineToProgramEvent.asStateFlow()
 
+    private val _needToGetProgramRoutine = MutableStateFlow<String?>(null)
+    val needToGetProgramRoutine = _needToGetProgramRoutine.asStateFlow()
+
+    private val _editRoutineOfProgramEvent = MutableStateFlow<Routine?>(null)
+    val editRoutineOfProgramEvent = _editRoutineOfProgramEvent.asStateFlow()
+
     private val _navigateBackEvent = MutableStateFlow<Unit?>(null)
     val navigateBackEvent = _navigateBackEvent.asStateFlow()
 
@@ -52,7 +58,19 @@ internal class AddEditRoutineViewModel @Inject constructor(
                 Timber.d("routine: $routine")
                 Timber.d(" _trainedExercises.value: ${_trainedExercises.value}")
             }
+        } else if (navArgs.navigationPurpose == NavigationPurpose.EDIT_ROUTINE_OF_PROGRAM) {
+            viewModelScope.launch {
+                _needToGetProgramRoutine.emit(navArgs.routineId)
+            }
         }
+    }
+
+    fun setProgramRoutineToEdit(routine: Routine) {
+        routineNameTextFieldValue = routine.name
+        _trainedExercises.value = routine.trainedExercises
+
+        Timber.d("routine: ${routine.name}")
+        Timber.d(" _trainedExercises.value.size: ${_trainedExercises.value.size}")
     }
 
     fun setExercisesIdsToAdd(ids: List<String>) {
@@ -74,7 +92,6 @@ internal class AddEditRoutineViewModel @Inject constructor(
             Timber.d("_trainedExercises.value.size: ${_trainedExercises.value.size}")
         }
     }
-
 
     fun updateExerciseTrainingSet(
         exerciseToUpdate: TrainedExercise,
@@ -227,12 +244,26 @@ internal class AddEditRoutineViewModel @Inject constructor(
                         )
                     }
                 }
+
+                NavigationPurpose.EDIT_ROUTINE_OF_PROGRAM -> {
+                    _editRoutineOfProgramEvent.update {
+                        Routine(
+                            id = navArgs.routineId,
+                            name = routineNameTextFieldValue,
+                            trainedExercises = _trainedExercises.value
+                        )
+                    }
+                }
             }
         }
     }
 
     fun onAddRoutineToProgram() {
         _addRoutineToProgramEvent.update { null }
+    }
+
+    fun onEditRoutineOfProgram() {
+        _editRoutineOfProgramEvent.update { null }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

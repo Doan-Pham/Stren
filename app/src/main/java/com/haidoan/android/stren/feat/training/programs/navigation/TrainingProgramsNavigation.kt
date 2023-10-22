@@ -7,9 +7,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.*
 import com.google.accompanist.navigation.animation.composable
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
+import com.haidoan.android.stren.feat.training.TrainingViewModel
 import com.haidoan.android.stren.feat.training.programs.add_edit.AddEditTrainingProgramsRoute
 import com.haidoan.android.stren.feat.training.routines.add_edit.*
 import com.haidoan.android.stren.feat.training.routines.navigateToAddRoutineToProgram
+import com.haidoan.android.stren.feat.training.routines.navigateToEditRoutineOfProgram
 import com.haidoan.android.stren.feat.training.trainingGraphBackStackEntry
 
 private const val PROGRAM_ROUTE = "add_edit_training_program_route"
@@ -43,16 +45,21 @@ internal fun NavGraphBuilder.trainingProgramGraph(
         arguments = listOf(
             navArgument("userId") { type = NavType.StringType },
         )
-    ) {
-        val trainingGraphEntry = remember(it) {
+    ) { backStackEntry ->
+        val trainingGraphEntry = remember(backStackEntry) {
             navController.trainingGraphBackStackEntry
         }
 
+        val trainingViewModel = hiltViewModel<TrainingViewModel>(trainingGraphEntry)
+
         AddEditTrainingProgramsRoute(
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler,
-            trainingViewModel = hiltViewModel(trainingGraphEntry),
-            onNavigateToAddRoutineScreen = {
-                navController.navigateToAddRoutineToProgram(it)
+            trainingViewModel = trainingViewModel,
+            onNavigateToAddRoutineScreen = { dayOffset ->
+                navController.navigateToAddRoutineToProgram(dayOffset)
+            },
+            onNavigateToEditRoutineScreen = { routineId ->
+                navController.navigateToEditRoutineOfProgram(routineId)
             }
         )
     }

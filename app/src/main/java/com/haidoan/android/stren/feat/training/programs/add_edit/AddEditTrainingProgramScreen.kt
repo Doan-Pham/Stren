@@ -30,7 +30,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,6 +67,7 @@ internal fun AddEditTrainingProgramsRoute(
     trainingViewModel: TrainingViewModel,
     viewModel: AddEditTrainingProgramViewModel = hiltViewModel(),
     onNavigateToAddRoutineScreen: (dayOffset: Int) -> Unit,
+    onNavigateToEditRoutineScreen: (routineId: String) -> Unit,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
 ) {
     val routinesForTrainingProgram by trainingViewModel.routinesForTrainingProgram.collectAsStateWithLifecycle()
@@ -84,12 +84,13 @@ internal fun AddEditTrainingProgramsRoute(
         viewModel.updateRoutinesIdsByDayOffset(routinesIdsByDayOffset)
     })
 
-    DisposableEffect(Unit) {
-        onDispose {
-            trainingViewModel.clearRoutinesIdsByDayOffset()
+
+    LaunchedEffect(key1 = Unit, block = {
+        viewModel.addDisposable {
             trainingViewModel.clearRoutinesOfTrainingProgram()
+            trainingViewModel.clearRoutinesIdsByDayOffset()
         }
-    }
+    })
 
     AddEditTrainingProgramsScreen(
         modifier = modifier,
@@ -100,7 +101,8 @@ internal fun AddEditTrainingProgramsRoute(
         selectedDayGlobalOffset = selectedDayGlobalOffset,
         selectDay = viewModel::selectDate,
         routinesOfSelectedDate = routinesOfSelectedDate,
-        addRoutine = { onNavigateToAddRoutineScreen(it) }
+        addRoutine = { onNavigateToAddRoutineScreen(it) },
+        editRoutine = { onNavigateToEditRoutineScreen(it) }
     )
 
     val addEditProgramAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
@@ -161,6 +163,7 @@ private fun AddEditTrainingProgramsScreen(
     selectDay: (dayOffset: Int) -> Unit,
     routinesOfSelectedDate: List<Routine>,
     addRoutine: (dayOffset: Int) -> Unit,
+    editRoutine: (routineId: String) -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -280,8 +283,7 @@ private fun AddEditTrainingProgramsScreen(
                     RoutineItem(
                         routine = routine,
                         onEditRoutineClickHandler = {
-                            // TODO editRoutine(routine.id)
-
+                            editRoutine(routine.id)
                         },
                         onDeleteRoutineClick = {
                             // TODO: deleteRoutine(routine.id)

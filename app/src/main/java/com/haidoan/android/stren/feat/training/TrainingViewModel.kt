@@ -27,7 +27,7 @@ class TrainingViewModel @Inject constructor() : ViewModel() {
 
     fun addRoutineToProgram(dayOffset: Int, routine: Routine) {
         viewModelScope.launch {
-            val routineId = if (routine.id in _routines.keys) {
+            val routineId = if (routine.id in _routines.values.map { it.id }) {
                 UUID.randomUUID().toString()
             } else {
                 routine.id
@@ -46,9 +46,26 @@ class TrainingViewModel @Inject constructor() : ViewModel() {
             }
         }
 
+        Timber.d(
+            """
+            _routines: $_routines
+            _routinesForTrainingProgramFlow: ${_routinesForTrainingProgramFlow.value}
+            _routinesIdsByDayOffset: $_routinesIdsByDayOffset
+            _routinesIdsByDayOffsetFlow: ${_routinesIdsByDayOffsetFlow.value}; 
+        """.trimIndent()
+        )
+    }
+
+    fun editRoutineOfProgram(routine: Routine) {
+        viewModelScope.launch {
+            _routines[routine.id] = routine
+            _routinesForTrainingProgramFlow.update { _routines.values.toList() }
+        }
+
         Timber.d("_routinesIdsByDayOffsetFlow: ${_routinesIdsByDayOffsetFlow.value}; _routinesForTrainingProgramFlow: ${_routinesForTrainingProgramFlow.value}")
     }
 
+    fun getRoutineById(id: String) = _routines[id]
 
     fun clearRoutinesOfTrainingProgram() {
         _routinesIdsByDayOffset.clear()

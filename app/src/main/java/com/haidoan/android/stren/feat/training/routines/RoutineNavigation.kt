@@ -15,7 +15,7 @@ import com.haidoan.android.stren.feat.training.trainingGraphBackStackEntry
 import timber.log.Timber
 
 internal enum class NavigationPurpose {
-    ADD_ROUTINE, EDIT_ROUTINE, ADD_ROUTINE_TO_PROGRAM
+    ADD_ROUTINE, EDIT_ROUTINE, ADD_ROUTINE_TO_PROGRAM, EDIT_ROUTINE_OF_PROGRAM
 }
 
 internal fun NavController.navigateToAddRoutineToProgram(
@@ -28,6 +28,17 @@ internal fun NavController.navigateToAddRoutineToProgram(
     )
 }
 
+internal fun NavController.navigateToEditRoutineOfProgram(
+    routineId: String,
+) {
+    this.navigate(
+        ADD_EDIT_ROUTINE_SCREEN_ROUTE +
+                "/${NavigationPurpose.EDIT_ROUTINE_OF_PROGRAM}" +
+                "?${ROUTINE_ID_NAV_ARG}=$routineId",
+    ) {
+        restoreState = true
+    }
+}
 
 internal fun NavController.navigateToRoutineGraph(
     navigationPurpose: NavigationPurpose,

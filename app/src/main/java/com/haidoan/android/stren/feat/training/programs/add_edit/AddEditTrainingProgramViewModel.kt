@@ -25,6 +25,9 @@ internal const val MAX_NUM_OF_WEEKS = 12
 
 @HiltViewModel
 internal class AddEditTrainingProgramViewModel @Inject constructor() : ViewModel() {
+
+    private val disposables = mutableListOf<() -> Unit>()
+
     private val _programTotalNumOfWeeks = MutableStateFlow(MIN_NUM_OF_WEEKS)
     val programTotalNumOfWeeks = _programTotalNumOfWeeks.asStateFlow()
 
@@ -80,5 +83,15 @@ internal class AddEditTrainingProgramViewModel @Inject constructor() : ViewModel
 
     fun updateRoutines(routines: List<Routine>) {
         _routines.update { routines }
+    }
+
+    fun addDisposable(disposable: () -> Unit) {
+        disposables.add(disposable)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        disposables.forEach { it() }
+        disposables.clear()
     }
 }

@@ -66,10 +66,10 @@ internal fun AddEditRoutineRoute(
     }
 
     val addRoutineToProgramEvent by viewModel.addRoutineToProgramEvent.collectAsStateWithLifecycle()
-
     addRoutineToProgramEvent?.let {
         val currentAddRoutineToProgram by rememberUpdatedState {
             trainingViewModel.addRoutineToProgram(it.first, it.second)
+            viewModel.onAddRoutineToProgram()
         }
         LaunchedEffect(addRoutineToProgramEvent) {
             currentAddRoutineToProgram()
@@ -77,13 +77,49 @@ internal fun AddEditRoutineRoute(
         }
     }
 
-    val navigateBackEvent by viewModel.navigateBackEvent.collectAsStateWithLifecycle()
+    val editRoutineOfProgramEvent by viewModel.editRoutineOfProgramEvent.collectAsStateWithLifecycle()
+    editRoutineOfProgramEvent?.let {
+        val currentEditRoutineOfProgramEvent by rememberUpdatedState {
+            trainingViewModel.editRoutineOfProgram(it)
+            viewModel.onEditRoutineOfProgram()
+        }
+        LaunchedEffect(editRoutineOfProgramEvent) {
+            currentEditRoutineOfProgramEvent()
+            onBackToPreviousScreen()
+        }
+    }
 
+    val needToGetProgramRoutine by viewModel.needToGetProgramRoutine.collectAsStateWithLifecycle()
+    needToGetProgramRoutine?.let { routineId ->
+        val currentGetRoutineOfProgram by rememberUpdatedState {
+            trainingViewModel.getRoutineById(routineId)?.let {
+                viewModel.setProgramRoutineToEdit(it)
+            }
+        }
+        LaunchedEffect(needToGetProgramRoutine) {
+            currentGetRoutineOfProgram()
+        }
+    }
+
+    val navigateBackEvent by viewModel.navigateBackEvent.collectAsStateWithLifecycle()
     navigateBackEvent?.let {
         onBackToPreviousScreen()
     }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    AddEditRoutineScreen(
+        modifier = modifier,
+        uiState = uiState,
+        routineName = viewModel.routineNameTextFieldValue,
+        onRoutineNameChange = { viewModel.routineNameTextFieldValue = it },
+        onNavigateToAddExercise = onNavigateToAddExercise,
+        onUpdateExercise = viewModel::updateExerciseTrainingSet,
+        onAddSetToExercise = viewModel::addEmptyTrainingSet,
+        onDeleteExercise = viewModel::deleteExercise,
+        onDeleteTrainingSet = viewModel::deleteTrainingSet
+    )
+
     val onBackClickHandler = {
         if (uiState is AddEditRoutineUiState.IsEditing && (uiState as AddEditRoutineUiState.IsEditing).trainedExercises.isNotEmpty()) {
             shouldShowBackConfirmDialog = true
@@ -139,17 +175,6 @@ internal fun AddEditRoutineRoute(
         isAppBarConfigured = true
     }
 
-    AddEditRoutineScreen(
-        modifier = modifier,
-        uiState = uiState,
-        routineName = viewModel.routineNameTextFieldValue,
-        onRoutineNameChange = { viewModel.routineNameTextFieldValue = it },
-        onNavigateToAddExercise = onNavigateToAddExercise,
-        onUpdateExercise = viewModel::updateExerciseTrainingSet,
-        onAddSetToExercise = viewModel::addEmptyTrainingSet,
-        onDeleteExercise = viewModel::deleteExercise,
-        onDeleteTrainingSet = viewModel::deleteTrainingSet
-    )
 }
 
 @SuppressLint("NewApi")
