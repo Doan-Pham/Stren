@@ -29,12 +29,14 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +51,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
+import com.haidoan.android.stren.app.ui.LocalSnackbarHostState
 import com.haidoan.android.stren.core.designsystem.component.DatePickerWithDialog
 import com.haidoan.android.stren.core.designsystem.component.DropDownMenuScaffold
 import com.haidoan.android.stren.core.designsystem.component.OutlinedNumberTextField
@@ -61,6 +64,7 @@ import com.haidoan.android.stren.core.designsystem.theme.Red60
 import com.haidoan.android.stren.core.model.Routine
 import com.haidoan.android.stren.core.utils.DateUtils.defaultFormat
 import com.haidoan.android.stren.feat.training.TrainingViewModel
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 
@@ -71,6 +75,7 @@ internal fun AddEditTrainingProgramsRoute(
     modifier: Modifier = Modifier,
     trainingViewModel: TrainingViewModel,
     viewModel: AddEditTrainingProgramViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit,
     onNavigateToAddRoutineScreen: (dayOffset: Int) -> Unit,
     onNavigateToEditRoutineScreen: (routineId: String) -> Unit,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
@@ -130,42 +135,54 @@ internal fun AddEditTrainingProgramsRoute(
         }
     )
 
+    val snackbarHostState = LocalSnackbarHostState.current
+    val coroutineScope = rememberCoroutineScope()
+
     val addEditProgramAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
-        title = "Program",
+        title = "New Program",
         navigationIcon = IconButtonInfo.BACK_ICON,
         actionIcons = listOf(
             IconButtonInfo(
                 drawableResourceId = R.drawable.ic_save,
                 description = "Menu Item Save",
                 clickHandler = {
-                    // TODO: AppBar
-//                    if (uiState is AddEditProgramUiState.EmptyProgram) {
-//                        coroutineScope.launch {
-//                            snackbarHostState.showSnackbar(
-//                                message = "Empty program",
-//                                duration = SnackbarDuration.Short,
-//                                withDismissAction = true
-//                            )
-//                        }
-//                    } else if (uiState is AddEditProgramUiState.IsEditing) {
-//                        val programName = viewModel.routineNameTextFieldValue
-//                        Timber.d("Save clicked - programName: $routineName")
-//
-//                        if (programName.isBlank() || programName.isEmpty()) {
-//                            coroutineScope.launch {
-//                                snackbarHostState.showSnackbar(
-//                                    message = "Please input program name",
-//                                    duration = SnackbarDuration.Short,
-//                                    withDismissAction = true
-//                                )
-//                            }
-//                        } else {
-//                            viewModel.addEditProgram()
-//                            onBackToPreviousScreen()
-//                        }
-//                    }
-                }
-            ),
+                    when {
+                        viewModel.programName.value.isBlank() -> {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "Please input program name",
+                                    duration = SnackbarDuration.Short,
+                                    withDismissAction = true
+                                )
+                            }
+                        }
+
+                        routinesIdsByDayOffset.filter { it.value.isNotEmpty() }.isEmpty() -> {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "Empty program",
+                                    duration = SnackbarDuration.Short,
+                                    withDismissAction = true
+                                )
+                            }
+                        }
+
+                        programTotalNumOfWeeks < MIN_NUM_OF_WEEKS -> {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "Program's duration can't be 0",
+                                    duration = SnackbarDuration.Short,
+                                    withDismissAction = true
+                                )
+                            }
+                        }
+
+                        else -> {
+                            viewModel.addEditTrainingProgram()
+                            onNavigateBack()
+                        }
+                    }
+                })
         )
     )
 
@@ -237,6 +254,8 @@ private fun AddEditTrainingProgramsScreen(
                 errorText = "Program name can't be empty"
             )
 
+            Divider(Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_small)))
+
             //endregion
 
             //region PROGRAM'S DURATION & PROGRAM's START DATE
@@ -270,6 +289,12 @@ private fun AddEditTrainingProgramsScreen(
                     onChange = {
                         it?.let { onProgramStartDateChange(it) }
                     },
+//                    dateValidator =
+//                    { timeInMillis ->
+////                        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+////                        calendar.timeInMillis = timeInMillis
+////                        calendar[Calendar.DAY_OF_WEEK] == Calendar.MONDAY
+//                    },
                     yearRange = programStartDate.year - 1..programStartDate.year + 3
                 )
             }
@@ -338,7 +363,7 @@ private fun AddEditTrainingProgramsScreen(
             )
 
             //region ROUTINES OF SELECTED DATE
-            if (programTotalNumOfWeeks > MIN_NUM_OF_WEEKS) {
+            if (programTotalNumOfWeeks >= MIN_NUM_OF_WEEKS) {
                 // TITLE & ADD_ROUTINE BUTTON
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Text(

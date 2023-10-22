@@ -5,6 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.model.Routine
+import com.haidoan.android.stren.core.model.TrainingProgram
+import com.haidoan.android.stren.core.repository.impl.TrainingProgramsRepositoryImpl
+import com.haidoan.android.stren.core.service.AuthenticationService
 import com.haidoan.android.stren.core.utils.DateUtils.getCurrentDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +30,11 @@ internal const val MIN_NUM_OF_WEEKS = 1
 internal const val MAX_NUM_OF_WEEKS = 12
 
 @HiltViewModel
-internal class AddEditTrainingProgramViewModel @Inject constructor() : ViewModel() {
+internal class AddEditTrainingProgramViewModel @Inject constructor(
+    private val authenticationService: AuthenticationService,
+    private val trainingProgramsRepositoryImpl: TrainingProgramsRepositoryImpl,
+) :
+    ViewModel() {
 
     private val disposables = mutableListOf<() -> Unit>()
 
@@ -101,6 +108,31 @@ internal class AddEditTrainingProgramViewModel @Inject constructor() : ViewModel
 
     fun addDisposable(disposable: () -> Unit) {
         disposables.add(disposable)
+    }
+
+    fun addEditTrainingProgram() {
+        viewModelScope.launch {
+            val totalNumOfDays = _programTotalNumOfWeeks.value * DEFAULT_NUM_OF_DAYS_PER_WEEK
+            val routinesByDayOffset =
+                _routinesIdsByDayOffset.value
+                    .filter { it.value.isNotEmpty() }
+                    .mapValues { routinesIdsByDayOffset ->
+                        routinesIdsByDayOffset.value.map { routineId ->
+                            _routines.value.first { it.id == routineId }
+                        }
+                    }
+
+            trainingProgramsRepositoryImpl.addTrainingProgram(
+                userId = authenticationService.getCurrentUserId(),
+                trainingProgram = TrainingProgram(
+                    name = _programName.value,
+                    totalNumOfDay = totalNumOfDays,
+                    startDate = _programStartDate.value,
+                    endDate = _programStartDate.value.plusDays(totalNumOfDays.toLong()),
+                    routinesByDayOffset = routinesByDayOffset
+                )
+            )
+        }
     }
 
     override fun onCleared() {

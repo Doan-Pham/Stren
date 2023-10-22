@@ -60,7 +60,8 @@ internal fun NavGraphBuilder.trainingProgramGraph(
             },
             onNavigateToEditRoutineScreen = { routineId ->
                 navController.navigateToEditRoutineOfProgram(routineId)
-            }
+            },
+            onNavigateBack = navController::navigateUp
         )
     }
 }

@@ -99,6 +99,7 @@ fun DatePickerWithDialog(
         ) {
             DatePicker(
                 state = datePickerState,
+                showModeToggle = false,
                 dateValidator = dateValidator,
             )
         }

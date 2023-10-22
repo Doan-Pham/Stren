@@ -1,12 +1,11 @@
 package com.haidoan.android.stren.core.datasource.remote.impl
 
-import com.google.firebase.firestore.DocumentId
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.snapshots
 import com.haidoan.android.stren.core.datasource.remote.base.RoutinesRemoteDataSource
-import com.haidoan.android.stren.core.datasource.remote.model.FirestoreTrainedExercise
+import com.haidoan.android.stren.core.datasource.remote.model.FirestoreRoutine
+import com.haidoan.android.stren.core.datasource.remote.model.toRoutine
+import com.haidoan.android.stren.core.datasource.remote.model.toRoutines
 import com.haidoan.android.stren.core.model.Routine
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
@@ -51,58 +50,6 @@ class RoutinesFirestoreDataSource @Inject constructor() : RoutinesRemoteDataSour
     override suspend fun deleteRoutine(userId: String, routineId: String) {
         firestore.collection("$USER_COLLECTION_PATH/$userId/$ROUTINE_COLLECTION_PATH")
             .document(routineId).delete().await()
-    }
-
-    private fun DocumentSnapshot.toRoutine(): Routine {
-        Timber.d("document: $this")
-        val routinesData = this.toObject(FirestoreRoutine::class.java)
-        Timber.d("toRoutine() - routinesData: $routinesData")
-        return routinesData?.asRoutine() ?: Routine(name = "Undefined", trainedExercises = listOf())
-    }
-
-    private fun QuerySnapshot.toRoutines(): List<Routine> =
-        this.documents.mapNotNull { document ->
-            Timber.d("document: $document")
-            val routinesData = document.toObject(FirestoreRoutine::class.java)
-            Timber.d("toFirestoreRoutine() - : $routinesData")
-            routinesData?.asRoutine()
-        }
-
-    /**
-     * Firestore representation of [Routine] class
-     */
-    private data class FirestoreRoutine(
-        @DocumentId
-        val id: String = "Undefined",
-        val name: String = "Undefined",
-        val note: String = "Undefined",
-        val trainedExercises: List<FirestoreTrainedExercise> = listOf(),
-    ) {
-        fun asRoutine(): Routine {
-            val trainedExercises = this.trainedExercises.map { firestoreTrainedExercise ->
-                firestoreTrainedExercise.asTrainedExercise()
-            }
-            Timber.d("trainedExercises: $trainedExercises")
-            return Routine(
-                id = this.id,
-                name = this.name,
-                trainedExercises = trainedExercises
-            )
-        }
-
-        companion object {
-            fun from(routine: Routine): FirestoreRoutine {
-                return FirestoreRoutine(
-                    id = routine.id,
-                    name = routine.name,
-                    trainedExercises = routine.trainedExercises.map {
-                        FirestoreTrainedExercise.from(
-                            it
-                        )
-                    }
-                )
-            }
-        }
     }
 }
 
