@@ -1,7 +1,12 @@
 package com.haidoan.android.stren.core.utils
 
 import com.google.firebase.Timestamp
-import java.time.*
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
 import java.util.stream.Collectors
@@ -32,6 +37,9 @@ object DateUtils {
             .mapToObj { getMondayFrom(date).plusDays(it.toLong()) }
             .collect(Collectors.toList())
     }
+
+    fun LocalDate.isWithin(start: LocalDate, end: LocalDate) =
+        !(this.isBefore(start) || this.isAfter(end))
 
     fun LocalDate.toTimeStampDayStart() = Timestamp(
         this.atStartOfDay(ZONE_ID).toEpochSecond(), 0
