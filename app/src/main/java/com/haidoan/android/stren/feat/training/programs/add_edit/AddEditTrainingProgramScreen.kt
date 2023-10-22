@@ -50,6 +50,7 @@ import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.component.DropDownMenuScaffold
 import com.haidoan.android.stren.core.designsystem.component.OutlinedNumberTextField
+import com.haidoan.android.stren.core.designsystem.component.SimpleConfirmationDialog
 import com.haidoan.android.stren.core.designsystem.component.StrenOutlinedTextField
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.designsystem.theme.Gray90
@@ -84,13 +85,24 @@ internal fun AddEditTrainingProgramsRoute(
         viewModel.updateRoutinesIdsByDayOffset(routinesIdsByDayOffset)
     })
 
-
     LaunchedEffect(key1 = Unit, block = {
         viewModel.addDisposable {
             trainingViewModel.clearRoutinesOfTrainingProgram()
             trainingViewModel.clearRoutinesIdsByDayOffset()
         }
     })
+
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var routineIdToDelete by remember { mutableStateOf("") }
+    if (showDeleteDialog) {
+        SimpleConfirmationDialog(
+            onDismissDialog = { showDeleteDialog = false },
+            title = "Delete Confirmation",
+            body = "Are you sure want to delete this workout?"
+        ) {
+            trainingViewModel.removeRoutineFromDay(selectedDayGlobalOffset, routineIdToDelete)
+        }
+    }
 
     AddEditTrainingProgramsScreen(
         modifier = modifier,
@@ -102,7 +114,11 @@ internal fun AddEditTrainingProgramsRoute(
         selectDay = viewModel::selectDate,
         routinesOfSelectedDate = routinesOfSelectedDate,
         addRoutine = { onNavigateToAddRoutineScreen(it) },
-        editRoutine = { onNavigateToEditRoutineScreen(it) }
+        editRoutine = { onNavigateToEditRoutineScreen(it) },
+        deleteRoutine = {
+            routineIdToDelete = it
+            showDeleteDialog = true
+        }
     )
 
     val addEditProgramAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
@@ -164,6 +180,7 @@ private fun AddEditTrainingProgramsScreen(
     routinesOfSelectedDate: List<Routine>,
     addRoutine: (dayOffset: Int) -> Unit,
     editRoutine: (routineId: String) -> Unit,
+    deleteRoutine: (routineId: String) -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -286,8 +303,8 @@ private fun AddEditTrainingProgramsScreen(
                             editRoutine(routine.id)
                         },
                         onDeleteRoutineClick = {
-                            // TODO: deleteRoutine(routine.id)
-                            //  }
+                            deleteRoutine(routine.id)
+
                         })
                 }
             }

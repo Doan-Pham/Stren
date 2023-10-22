@@ -14,7 +14,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TrainingViewModel @Inject constructor() : ViewModel() {
-
     private val _routinesIdsByDayOffset = mutableMapOf<Int, MutableSet<String>>()
     private val _routinesIdsByDayOffsetFlow: MutableStateFlow<Map<Int, Set<String>>> = MutableStateFlow(emptyMap())
     val routinesIdsByDayOffset = _routinesIdsByDayOffsetFlow.asStateFlow()
@@ -63,6 +62,13 @@ class TrainingViewModel @Inject constructor() : ViewModel() {
         }
 
         Timber.d("_routinesIdsByDayOffsetFlow: ${_routinesIdsByDayOffsetFlow.value}; _routinesForTrainingProgramFlow: ${_routinesForTrainingProgramFlow.value}")
+    }
+
+    fun removeRoutineFromDay(dayOffset: Int, routineId: String) {
+        _routinesIdsByDayOffset[dayOffset]?.remove(routineId)
+        _routinesIdsByDayOffsetFlow.update {
+            _routinesIdsByDayOffset.mapValues { it.value.toSet() }.toMap()
+        }
     }
 
     fun getRoutineById(id: String) = _routines[id]
