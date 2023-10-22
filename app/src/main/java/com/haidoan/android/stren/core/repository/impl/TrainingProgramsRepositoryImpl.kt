@@ -4,7 +4,9 @@ import com.haidoan.android.stren.core.datasource.remote.impl.TrainingProgramsFir
 import com.haidoan.android.stren.core.model.TrainingProgram
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 import timber.log.Timber
+import java.time.LocalDate
 import javax.inject.Inject
 
 class TrainingProgramsRepositoryImpl @Inject constructor(
@@ -23,11 +25,30 @@ class TrainingProgramsRepositoryImpl @Inject constructor(
         }
     }
 
+    fun getTrainingProgramsStreamByUserIdAndDate(
+        userId: String,
+        date: LocalDate,
+    ): Flow<List<TrainingProgram>> {
+        Timber.d("getTrainingProgramsStreamByUserIdAndDate() is called; userId: $userId,date: $date ")
+
+        return trainingProgramRemoteDataSource
+            .getTrainingProgramsStreamByUserIdAfterDate(userId, date)
+            .map { programs ->
+                Timber.d("programs: $programs")
+                programs.filter {
+                    !date.isAfter(it.endDate)
+                }
+            }
+            .catch {
+                Timber.e("getTrainingProgramsStreamByUserIdAndDate() - Exception: $it ${it.printStackTrace()}")
+            }
+    }
+
     fun getTrainingProgramsStreamByUserId(userId: String): Flow<List<TrainingProgram>> {
         Timber.d("getTrainingProgramsStreamByUserId() is called; userId: $userId ")
 
         return trainingProgramRemoteDataSource
-            .getTrainingProgramsStreamByUserIdAndDate(userId)
+            .getTrainingProgramsStreamByUserIdAfterDate(userId)
             .catch {
                 Timber.e("getTrainingProgramsStreamByUserId() - Exception: $it ${it.printStackTrace()}")
             }
