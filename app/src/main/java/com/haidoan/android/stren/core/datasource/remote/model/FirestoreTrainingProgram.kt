@@ -35,6 +35,7 @@ internal data class FirestoreTrainingProgram(
     @DocumentId
     val id: String = "Undefined",
     val name: String = "Undefined",
+    val numOfDaysPerWeek: Int = 0,
     val totalNumOfDay: Int = 0,
     val startDate: Timestamp = Timestamp.now(),
     val endDate: Timestamp = Timestamp.now(),
@@ -50,6 +51,7 @@ internal data class FirestoreTrainingProgram(
             name = this.name,
             startDate = this.startDate.toLocalDate(),
             endDate = this.endDate.toLocalDate(),
+            numOfDaysPerWeek = numOfDaysPerWeek,
             totalNumOfDay = totalNumOfDay,
             routinesByDayOffset = routinesByDayOffset.mapKeys { it.key.toInt() }
         )
@@ -67,6 +69,7 @@ internal data class FirestoreTrainingProgram(
                     .mapValues { routinesByDayOffset ->
                         routinesByDayOffset.value.map { FirestoreRoutine.from(it) }
                     },
+                numOfDaysPerWeek = trainingProgramData.numOfDaysPerWeek,
                 totalNumOfDay = trainingProgramData.totalNumOfDay,
                 userId = userId,
                 startDate = trainingProgramData.startDate.toTimeStampDayStart(),

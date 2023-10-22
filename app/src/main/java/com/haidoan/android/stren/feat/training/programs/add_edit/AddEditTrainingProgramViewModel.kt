@@ -129,6 +129,7 @@ internal class AddEditTrainingProgramViewModel @Inject constructor(
                     totalNumOfDay = totalNumOfDays,
                     startDate = _programStartDate.value,
                     endDate = _programStartDate.value.plusDays(totalNumOfDays.toLong()),
+                    numOfDaysPerWeek = DEFAULT_NUM_OF_DAYS_PER_WEEK,
                     routinesByDayOffset = routinesByDayOffset
                 )
             )

@@ -8,6 +8,7 @@ data class TrainingProgram(
     val id: String = "Undefined Training Program ID",
     val name: String,
     val totalNumOfDay: Int,
+    val numOfDaysPerWeek: Int,
     val startDate: LocalDate,
     val endDate: LocalDate,
     val routinesByDayOffset: Map<Int, List<Routine>>,
@@ -15,6 +16,7 @@ data class TrainingProgram(
     companion object {
         fun dummy() = TrainingProgram(
             name = "Undefined",
+            numOfDaysPerWeek = -1,
             totalNumOfDay = -1,
             startDate = LocalDate.now(),
             endDate = LocalDate.now(),

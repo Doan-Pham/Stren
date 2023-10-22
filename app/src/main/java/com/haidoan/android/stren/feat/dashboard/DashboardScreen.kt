@@ -12,6 +12,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -21,9 +22,12 @@ import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.component.*
+import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.designsystem.theme.Gray90
+import com.haidoan.android.stren.core.model.Routine
 import com.haidoan.android.stren.core.utils.DateUtils
 import com.haidoan.android.stren.core.utils.DateUtils.defaultFormat
+import com.haidoan.android.stren.feat.dashboard.model.TodayTrainingProgram
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -38,6 +42,7 @@ internal fun DashboardRoute(
 ) {
     val exercisesToTrack by viewModel.exercisesToTrack.collectAsStateWithLifecycle()
     val biometricsToTrack by viewModel.biometricsToTrack.collectAsStateWithLifecycle()
+    val todayTrainingPrograms by viewModel.todayTrainingPrograms.collectAsStateWithLifecycle()
 
     viewModel.dataOutputsCentralStateFlow.collectAsStateWithLifecycle()
     val dataOutputsAsState = viewModel.dataOutputsStreams.map { it.collectAsStateWithLifecycle() }
@@ -132,6 +137,7 @@ internal fun DashboardRoute(
 
     DashboardScreen(
         modifier = modifier,
+        todayTrainingPrograms = todayTrainingPrograms,
         chartEntryModelProducers = viewModel.chartEntryModelProducers,
         dataOutputsAsState = dataOutputsAsState,
         onDateOptionClick = viewModel::updateDateRange,
@@ -148,12 +154,13 @@ internal fun DashboardRoute(
 @Composable
 private fun DashboardScreen(
     modifier: Modifier = Modifier,
+    todayTrainingPrograms: List<TodayTrainingProgram>,
     chartEntryModelProducers: Map<String, ChartEntryModelProducer>,
     dataOutputsAsState: List<State<DashboardViewModel.DataOutput>>,
     onDateOptionClick: (dataSourceId: String, startDate: LocalDate, endDate: LocalDate) -> Unit,
     bottomSheetWrappers: List<BottomSheetWrapper>,
     onDismissBottomSheet: (BottomSheetWrapper) -> Unit,
-    onRemoveItemClick: (dataSourceId: String) -> Unit
+    onRemoveItemClick: (dataSourceId: String) -> Unit,
 ) {
     var shouldShowConfirmDialog by remember { mutableStateOf(false) }
     var dataSourceIdToDelete by remember { mutableStateOf("") }
@@ -190,6 +197,14 @@ private fun DashboardScreen(
     TabLayout(
         userScrollEnabled = false,
         tabNamesAndScreenComposables = listOf(
+            Pair("Today") {
+                TrainingProgramsList(
+                    modifier = modifier.padding(
+                        PaddingValues(dimensionResource(id = R.dimen.padding_medium))
+                    ),
+                    todayTrainingPrograms = todayTrainingPrograms
+                )
+            },
             Pair("Nutrition") {
                 ProgressItemList(
                     modifier = modifier,
@@ -244,10 +259,130 @@ private fun DashboardScreen(
 }
 
 @Composable
+private fun TrainingProgramsList(
+    modifier: Modifier = Modifier,
+    todayTrainingPrograms: List<TodayTrainingProgram>,
+) {
+    LazyColumn(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+    ) {
+        items(todayTrainingPrograms) { trainingProgram ->
+            TrainingProgramItem(
+                trainingProgram = trainingProgram,
+                onLogWorkoutWithRoutine = {
+                    //TODO
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun TrainingProgramItem(
+    trainingProgram: TodayTrainingProgram,
+    onLogWorkoutWithRoutine: (routineId: String) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(width = (2).dp, color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(15.dp))
+            .clip(RoundedCornerShape(15.dp))
+//            .clickable { onItemClickHandler(trainingProgram.id) }
+            .padding(dimensionResource(id = R.dimen.padding_medium)),
+        verticalArrangement = Arrangement.Top,
+    ) {
+
+        //region PROGRAM's NAME
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = dimensionResource(id = R.dimen.padding_extra_small)),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "${trainingProgram.programName} - Week ${trainingProgram.weekIndex + 1} Day ${trainingProgram.weeklyDayOffset + 1}",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Spacer(Modifier.weight(1f))
+        }
+
+        //endregion
+
+        Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_medium)))
+
+        //region ROUTINES
+
+        trainingProgram.routines.take(2).forEach { routine ->
+            RoutineItem(routine = routine, onItemClickHandler = onLogWorkoutWithRoutine)
+            Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_small)))
+        }
+
+        //endregion
+    }
+}
+
+@Composable
+private fun RoutineItem(
+    routine: Routine,
+    onItemClickHandler: (routineId: String) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(width = (1.5).dp, color = Gray90, shape = RoundedCornerShape(15.dp))
+            .clip(RoundedCornerShape(15.dp))
+//            .clickable { onItemClickHandler(routine.id) }
+            .padding(dimensionResource(id = R.dimen.padding_medium)),
+        verticalArrangement = Arrangement.Top,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = dimensionResource(id = R.dimen.padding_small)),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = routine.name,
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Spacer(Modifier.weight(1f))
+            Button(
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                contentPadding = PaddingValues(
+                    vertical = dimensionResource(id = R.dimen.padding_small),
+                    horizontal = 0.dp
+                ),
+                onClick = {
+                    onItemClickHandler(routine.id)
+                }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_training),
+                    contentDescription = "Icon arrow right",
+                    tint = Color.White
+                )
+            }
+
+        }
+
+        routine.trainedExercises.subList(0, minOf(routine.trainedExercises.size, 3))
+            .forEach {
+                Text(
+                    text = "${it.exercise.name} x ${it.trainingSets.size}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Gray60
+                )
+            }
+    }
+}
+
+@Composable
 private fun ProgressItemList(
     modifier: Modifier = Modifier,
     dataOutputsAsState: List<State<DashboardViewModel.DataOutput>>,
-    item: @Composable (dataOutput: DashboardViewModel.DataOutput) -> Unit
+    item: @Composable (dataOutput: DashboardViewModel.DataOutput) -> Unit,
 ) {
     val progressItemListState = rememberLazyListState()
     var previousDataOutputsSize: Int? by rememberSaveable { mutableStateOf(null) }
@@ -269,9 +404,11 @@ private fun ProgressItemList(
                         LoadingAnimation()
                     }
                 }
+
                 is DashboardViewModel.DataOutput.Calories,
                 is DashboardViewModel.DataOutput.Exercise,
-                is DashboardViewModel.DataOutput.Biometrics -> {
+                is DashboardViewModel.DataOutput.Biometrics,
+                -> {
                     item(dataOutput)
                 }
             }
@@ -299,7 +436,7 @@ private fun ProgressItem(
     chartEntryModelProducer: ChartEntryModelProducer,
     dataOutput: DashboardViewModel.DataOutput,
     onDateOptionClick: (startDate: LocalDate, endDate: LocalDate) -> Unit,
-    onRemoveOptionClick: () -> Unit
+    onRemoveOptionClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -380,7 +517,7 @@ private fun ProgressItem(
 private data class BottomSheetWrapper(
     val type: DashBoardBottomSheetType,
     val shouldShow: MutableState<Boolean>,
-    val bottomSheetComposable: @Composable (onDismiss: () -> Unit) -> Unit
+    val bottomSheetComposable: @Composable (onDismiss: () -> Unit) -> Unit,
 )
 
 /**

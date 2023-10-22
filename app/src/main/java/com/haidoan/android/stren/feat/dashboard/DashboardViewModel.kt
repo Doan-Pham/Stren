@@ -143,6 +143,8 @@ internal class DashboardViewModel @Inject constructor(
                 TodayTrainingProgram(
                     programId = it.id,
                     programName = it.name,
+                    weekIndex = dayOffset / it.numOfDaysPerWeek,
+                    weeklyDayOffset = dayOffset % it.numOfDaysPerWeek,
                     routines = it.routinesByDayOffset[dayOffset] ?: emptyList()
                 )
             }
