@@ -34,6 +34,13 @@ internal class AddEditRoutineViewModel @Inject constructor(
     private val _trainedExercises: MutableStateFlow<List<TrainedExercise>> =
         MutableStateFlow(listOf())
 
+    private val _addRoutineToProgramEvent = MutableStateFlow<Pair<Int, Routine>?>(null)
+    val addRoutineToProgramEvent = _addRoutineToProgramEvent.asStateFlow()
+
+    private val _navigateBackEvent = MutableStateFlow<Unit?>(null)
+    val navigateBackEvent = _navigateBackEvent.asStateFlow()
+
+
     init {
         if (navArgs.navigationPurpose == NavigationPurpose.EDIT_ROUTINE) {
             viewModelScope.launch {
@@ -194,6 +201,7 @@ internal class AddEditRoutineViewModel @Inject constructor(
                             trainedExercises = _trainedExercises.value
                         )
                     )
+                    _navigateBackEvent.update { Unit }
                 }
 
                 NavigationPurpose.EDIT_ROUTINE -> {
@@ -205,13 +213,26 @@ internal class AddEditRoutineViewModel @Inject constructor(
                             trainedExercises = _trainedExercises.value
                         )
                     )
+                    _navigateBackEvent.update { Unit }
                 }
 
                 NavigationPurpose.ADD_ROUTINE_TO_PROGRAM -> {
                     Timber.d("Add routine to program")
+                    _addRoutineToProgramEvent.update {
+                        Pair(
+                            navArgs.dayOffset, Routine(
+                                name = routineNameTextFieldValue,
+                                trainedExercises = _trainedExercises.value
+                            )
+                        )
+                    }
                 }
             }
         }
+    }
+
+    fun onAddRoutineToProgram() {
+        _addRoutineToProgramEvent.update { null }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

@@ -47,7 +47,6 @@ internal fun AddEditRoutineRoute(
     onBackToPreviousScreen: () -> Unit,
     onNavigateToAddExercise: () -> Unit,
 ) {
-    trainingViewModel.test()
     if (exercisesIdsToAdd.isNotEmpty()) {
         viewModel.setExercisesIdsToAdd(exercisesIdsToAdd)
         onAddExercisesCompleted()
@@ -64,6 +63,24 @@ internal fun AddEditRoutineRoute(
         ) {
             onBackToPreviousScreen()
         }
+    }
+
+    val addRoutineToProgramEvent by viewModel.addRoutineToProgramEvent.collectAsStateWithLifecycle()
+
+    addRoutineToProgramEvent?.let {
+        val currentAddRoutineToProgram by rememberUpdatedState {
+            trainingViewModel.addRoutineToProgram(it.first, it.second)
+        }
+        LaunchedEffect(addRoutineToProgramEvent) {
+            currentAddRoutineToProgram()
+            onBackToPreviousScreen()
+        }
+    }
+
+    val navigateBackEvent by viewModel.navigateBackEvent.collectAsStateWithLifecycle()
+
+    navigateBackEvent?.let {
+        onBackToPreviousScreen()
     }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -110,7 +127,6 @@ internal fun AddEditRoutineRoute(
                             }
                         } else {
                             viewModel.addEditRoutine()
-                            onBackToPreviousScreen()
                         }
                     }
                 }
@@ -147,11 +163,11 @@ internal fun AddEditRoutineScreen(
     onUpdateExercise: (
         exerciseToUpdate: TrainedExercise,
         oldMetric: TrainingMeasurementMetrics,
-        newMetric: TrainingMeasurementMetrics
+        newMetric: TrainingMeasurementMetrics,
     ) -> Unit,
     onAddSetToExercise: (TrainedExercise) -> Unit,
     onDeleteExercise: (TrainedExercise) -> Unit,
-    onDeleteTrainingSet: (TrainedExercise, TrainingMeasurementMetrics) -> Unit
+    onDeleteTrainingSet: (TrainedExercise, TrainingMeasurementMetrics) -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -176,10 +192,12 @@ internal fun AddEditRoutineScreen(
                         LoadingAnimation()
                     }
                 }
+
                 is AddEditRoutineUiState.EmptyRoutine -> {
                     Timber.d("Empty")
                     EmptyScreen()
                 }
+
                 is AddEditRoutineUiState.IsEditing -> {
                     Timber.d("IsAdding")
                     Timber.d("trainedExercises: ${uiState.trainedExercises}")
@@ -239,11 +257,11 @@ private fun TrainedExerciseRegion(
     onUpdateExercise: (
         exerciseToUpdate: TrainedExercise,
         oldMetric: TrainingMeasurementMetrics,
-        newMetric: TrainingMeasurementMetrics
+        newMetric: TrainingMeasurementMetrics,
     ) -> Unit,
     onAddSetButtonClick: (TrainedExercise) -> Unit,
     onDeleteExerciseClick: (TrainedExercise) -> Unit,
-    onDeleteTrainingSetClick: (TrainedExercise, TrainingMeasurementMetrics) -> Unit
+    onDeleteTrainingSetClick: (TrainedExercise, TrainingMeasurementMetrics) -> Unit,
 ) {
     val headerTitles = mutableListOf<String>()
     when (trainedExercise.trainingSets.first()) {
@@ -252,6 +270,7 @@ private fun TrainedExerciseRegion(
                 "Kilometers", "Hours"
             )
         )
+
         is TrainingMeasurementMetrics.DurationOnly -> headerTitles.addAll(listOf("Seconds"))
 
         is TrainingMeasurementMetrics.WeightAndRep -> headerTitles.addAll(listOf("Kg", "Reps"))
@@ -361,8 +380,8 @@ private fun createTrainingSetTextFields(
     onUpdateExercise: (
         exerciseToUpdate: TrainedExercise,
         oldMetric: TrainingMeasurementMetrics,
-        newMetric: TrainingMeasurementMetrics
-    ) -> Unit
+        newMetric: TrainingMeasurementMetrics,
+    ) -> Unit,
 ): List<@Composable (Modifier, TrainingMeasurementMetrics) -> Unit> {
     when (trainingSet) {
         is TrainingMeasurementMetrics.DistanceAndDuration -> {
@@ -390,6 +409,7 @@ private fun createTrainingSetTextFields(
                     })
             })
         }
+
         is TrainingMeasurementMetrics.DurationOnly -> {
             return listOf { modifierParam, oldMetrics ->
                 TextFieldByNumberType(modifier = modifierParam,
@@ -404,6 +424,7 @@ private fun createTrainingSetTextFields(
                     })
             }
         }
+
         is TrainingMeasurementMetrics.WeightAndRep -> {
             return listOf({ modifierParam, oldMetrics ->
                 TextFieldByNumberType(modifier = modifierParam,
@@ -438,7 +459,7 @@ private fun createTrainingSetTextFields(
  */
 @Composable
 private fun TextFieldByNumberType(
-    modifier: Modifier, numberType: NumberType, number: Number, onValueChange: (Number) -> Unit
+    modifier: Modifier, numberType: NumberType, number: Number, onValueChange: (Number) -> Unit,
 ) {
     when (numberType) {
         NumberType.LONG -> {
@@ -453,6 +474,7 @@ private fun TextFieldByNumberType(
                 onValueChange(newNumberValue)
             })
         }
+
         NumberType.DOUBLE -> {
             /**
              * TextField should only show decimal point in 2 cases:
@@ -553,7 +575,7 @@ private fun TrainingSetRow(
     onFirstColumnWidthChange: (Int) -> Unit,
     trainingSet: TrainingMeasurementMetrics = TrainingMeasurementMetrics.DurationOnly(-1),
     remainingCells: List<@Composable (Modifier, TrainingMeasurementMetrics) -> Unit>,
-    onDeleteTrainingSetClick: () -> Unit
+    onDeleteTrainingSetClick: () -> Unit,
 ) {
 
     val widthInDp = with(LocalDensity.current) {

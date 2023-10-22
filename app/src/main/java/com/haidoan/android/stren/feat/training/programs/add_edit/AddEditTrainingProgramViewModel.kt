@@ -10,9 +10,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,12 +24,19 @@ internal class AddEditTrainingProgramViewModel @Inject constructor() : ViewModel
     private var _selectedDayOffset = MutableStateFlow(0)
     val selectedDayOffset: StateFlow<Int> = _selectedDayOffset.asStateFlow()
 
-    private val routinesIdsByDayOffset = mutableMapOf<Int, Set<String>>(
-        0 to setOf("persequeris"), 3 to setOf("persequeris"), 45 to setOf("persequeris")
-    )
+    private var _routinesIdsByDayOffset = MutableStateFlow<Map<Int, Set<String>>>(emptyMap())
+    private val _routines = MutableStateFlow<List<Routine>>(emptyList())
 
-    val routinesOfSelectedDate = _selectedDayOffset.map { dayOffset ->
-        routines.filter { routinesIdsByDayOffset[dayOffset]?.contains(it.id) ?: false }
+    val routinesOfSelectedDate = combine(
+        _selectedDayOffset,
+        _routinesIdsByDayOffset,
+        _routines,
+    ) { dayOffset, routinesIdsByDayOffset, routines ->
+        Timber.d("dayOffset: $dayOffset, routinesIdsByDayOffset: $routinesIdsByDayOffset, routines: $routines")
+
+        val routinesId = routinesIdsByDayOffset[dayOffset]
+        routines.filter { routinesId?.contains(it.id) ?: false }
+
     }
         .stateIn(
             viewModelScope,
@@ -36,19 +44,19 @@ internal class AddEditTrainingProgramViewModel @Inject constructor() : ViewModel
             emptyList()
         )
 
-    private val routines = mutableListOf<Routine>(
-        Routine(
-            id = "persequeris",
-            name = "Pete Waller",
-            trainedExercises = listOf()
-        )
-    )
-
     fun onProgramNameChange(value: String) {
         _programName.value = value
     }
 
     fun selectDate(dayOffset: Int) {
         _selectedDayOffset.update { dayOffset }
+    }
+
+    fun updateRoutinesIdsByDayOffset(routinesIdsByDayOffset: Map<Int, Set<String>>) {
+        _routinesIdsByDayOffset.update { routinesIdsByDayOffset }
+    }
+
+    fun updateRoutines(routines: List<Routine>) {
+        _routines.update { routines }
     }
 }

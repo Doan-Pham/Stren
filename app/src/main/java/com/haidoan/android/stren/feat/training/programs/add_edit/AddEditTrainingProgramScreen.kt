@@ -30,6 +30,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -72,7 +74,35 @@ internal fun AddEditTrainingProgramsRoute(
     onNavigateToAddRoutineScreen: (dayOffset: Int) -> Unit,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
 ) {
-    trainingViewModel.test()
+    val routinesForTrainingProgram by trainingViewModel.routinesForTrainingProgram.collectAsStateWithLifecycle()
+    val routinesIdsByDayOffset by trainingViewModel.routinesIdsByDayOffset.collectAsStateWithLifecycle()
+    val selectedDayGlobalOffset by viewModel.selectedDayOffset.collectAsStateWithLifecycle()
+    val routinesOfSelectedDate by viewModel.routinesOfSelectedDate.collectAsStateWithLifecycle()
+
+    LaunchedEffect(key1 = routinesForTrainingProgram, block = {
+        viewModel.updateRoutines(routinesForTrainingProgram)
+    })
+
+    LaunchedEffect(key1 = routinesIdsByDayOffset, block = {
+        viewModel.updateRoutinesIdsByDayOffset(routinesIdsByDayOffset)
+    })
+
+    DisposableEffect(Unit) {
+        onDispose {
+            trainingViewModel.clearRoutinesIdsByDayOffset()
+            trainingViewModel.clearRoutinesOfTrainingProgram()
+        }
+    }
+
+    AddEditTrainingProgramsScreen(
+        modifier = modifier,
+        programName = viewModel.programName.value,
+        onProgramNameChange = viewModel::onProgramNameChange,
+        selectedDayGlobalOffset = selectedDayGlobalOffset,
+        selectDay = viewModel::selectDate,
+        routinesOfSelectedDate = routinesOfSelectedDate,
+        addRoutine = { onNavigateToAddRoutineScreen(it) }
+    )
 
     val addEditProgramAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         title = "Program",
@@ -118,19 +148,6 @@ internal fun AddEditTrainingProgramsRoute(
         appBarConfigurationChangeHandler(addEditProgramAppBarConfiguration)
         isAppBarConfigured = true
     }
-
-    val selectedDayGlobalOffset by viewModel.selectedDayOffset.collectAsStateWithLifecycle()
-    val routinesOfSelectedDate by viewModel.routinesOfSelectedDate.collectAsStateWithLifecycle()
-
-    AddEditTrainingProgramsScreen(
-        modifier = modifier,
-        programName = viewModel.programName.value,
-        onProgramNameChange = viewModel::onProgramNameChange,
-        selectedDayGlobalOffset = selectedDayGlobalOffset,
-        selectDay = viewModel::selectDate,
-        routinesOfSelectedDate = routinesOfSelectedDate,
-        addRoutine = { onNavigateToAddRoutineScreen(it) }
-    )
 }
 
 @OptIn(ExperimentalStdlibApi::class)
