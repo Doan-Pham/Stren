@@ -19,11 +19,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -189,7 +189,9 @@ private fun AddEditTrainingProgramsScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(
-            modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .weight(1f), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // PROGRAM's NAME
             StrenOutlinedTextField(
@@ -290,23 +292,20 @@ private fun AddEditTrainingProgramsScreen(
                     )
                 }
             }
+            //endregion
 
-            LazyColumn(
-                modifier = modifier
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
-            ) {
-                items(routinesOfSelectedDate) { routine ->
-                    RoutineItem(
-                        routine = routine,
-                        onEditRoutineClickHandler = {
-                            editRoutine(routine.id)
-                        },
-                        onDeleteRoutineClick = {
-                            deleteRoutine(routine.id)
+            //region ROUTINES LIST
 
-                        })
-                }
+            routinesOfSelectedDate.forEach { routine ->
+                RoutineItem(
+                    routine = routine,
+                    onEditRoutineClickHandler = {
+                        editRoutine(routine.id)
+                    },
+                    onDeleteRoutineClick = {
+                        deleteRoutine(routine.id)
+                    })
+                Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
             }
 
             //endregion
