@@ -59,10 +59,6 @@ import com.haidoan.android.stren.core.designsystem.theme.Red60
 import com.haidoan.android.stren.core.model.Routine
 import com.haidoan.android.stren.feat.training.TrainingViewModel
 
-private const val DEFAULT_NUM_OF_DAYS_PER_WEEK = 7
-private const val DEFAULT_NUM_OF_WEEKS_PER_GROUP = 4
-private const val MIN_NUM_OF_WEEKS = 1
-private const val MAX_NUM_OF_WEEKS = 12
 
 private val daysInWeek = listOf("M", "T", "W", "T", "F", "S", "S")
 
@@ -78,6 +74,7 @@ internal fun AddEditTrainingProgramsRoute(
     val routinesIdsByDayOffset by trainingViewModel.routinesIdsByDayOffset.collectAsStateWithLifecycle()
     val selectedDayGlobalOffset by viewModel.selectedDayOffset.collectAsStateWithLifecycle()
     val routinesOfSelectedDate by viewModel.routinesOfSelectedDate.collectAsStateWithLifecycle()
+    val programTotalNumOfWeeks by viewModel.programTotalNumOfWeeks.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = routinesForTrainingProgram, block = {
         viewModel.updateRoutines(routinesForTrainingProgram)
@@ -96,6 +93,8 @@ internal fun AddEditTrainingProgramsRoute(
 
     AddEditTrainingProgramsScreen(
         modifier = modifier,
+        programTotalNumOfWeeks = programTotalNumOfWeeks,
+        onProgramTotalNumOfWeeksChange = viewModel::onProgramTotalNumOfWeeksChange,
         programName = viewModel.programName.value,
         onProgramNameChange = viewModel::onProgramNameChange,
         selectedDayGlobalOffset = selectedDayGlobalOffset,
@@ -154,6 +153,8 @@ internal fun AddEditTrainingProgramsRoute(
 @Composable
 private fun AddEditTrainingProgramsScreen(
     modifier: Modifier = Modifier,
+    programTotalNumOfWeeks: Int,
+    onProgramTotalNumOfWeeksChange: (Int) -> Unit,
     programName: String,
     onProgramNameChange: (String) -> Unit,
     selectedDayGlobalOffset: Int,
@@ -179,9 +180,6 @@ private fun AddEditTrainingProgramsScreen(
                 errorText = "Program name can't be empty"
             )
 
-            var programTotalNumOfWeeks by remember {
-                mutableStateOf(1)
-            }
             val numOfDaysPerWeek = DEFAULT_NUM_OF_DAYS_PER_WEEK
             val numOfWeeksPerGroup = DEFAULT_NUM_OF_WEEKS_PER_GROUP
             val selectedDayWeekIndex = selectedDayGlobalOffset / numOfDaysPerWeek
@@ -196,8 +194,10 @@ private fun AddEditTrainingProgramsScreen(
                     number = programTotalNumOfWeeks,
                     label = "Program Length",
                     onValueChange = {
-                        programTotalNumOfWeeks = it.coerceIn(
-                            (MIN_NUM_OF_WEEKS - 1)..MAX_NUM_OF_WEEKS
+                        onProgramTotalNumOfWeeksChange(
+                            it.coerceIn(
+                                (MIN_NUM_OF_WEEKS - 1)..MAX_NUM_OF_WEEKS
+                            )
                         )
                     },
                     suffixText = "Weeks",

@@ -13,15 +13,25 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
+private const val DEFAULT_SELECTED_DAY_OFFSET = 0
+internal const val DEFAULT_NUM_OF_DAYS_PER_WEEK = 7
+internal const val DEFAULT_NUM_OF_WEEKS_PER_GROUP = 4
+internal const val MIN_NUM_OF_WEEKS = 1
+internal const val MAX_NUM_OF_WEEKS = 12
+
 @HiltViewModel
 internal class AddEditTrainingProgramViewModel @Inject constructor() : ViewModel() {
+    private val _programTotalNumOfWeeks = MutableStateFlow(MIN_NUM_OF_WEEKS)
+    val programTotalNumOfWeeks = _programTotalNumOfWeeks.asStateFlow()
+
     private var _programName = mutableStateOf("New program")
     val programName: State<String> = _programName
 
-    private var _selectedDayOffset = MutableStateFlow(0)
+    private var _selectedDayOffset = MutableStateFlow(DEFAULT_SELECTED_DAY_OFFSET)
     val selectedDayOffset: StateFlow<Int> = _selectedDayOffset.asStateFlow()
 
     private var _routinesIdsByDayOffset = MutableStateFlow<Map<Int, Set<String>>>(emptyMap())
@@ -44,8 +54,20 @@ internal class AddEditTrainingProgramViewModel @Inject constructor() : ViewModel
             emptyList()
         )
 
+    init {
+        viewModelScope.launch {
+            _programTotalNumOfWeeks.collect {
+                _selectedDayOffset.value = DEFAULT_SELECTED_DAY_OFFSET
+            }
+        }
+    }
+
     fun onProgramNameChange(value: String) {
         _programName.value = value
+    }
+
+    fun onProgramTotalNumOfWeeksChange(value: Int) {
+        _programTotalNumOfWeeks.value = value
     }
 
     fun selectDate(dayOffset: Int) {
