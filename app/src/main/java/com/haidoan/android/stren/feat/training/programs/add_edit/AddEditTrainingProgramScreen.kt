@@ -54,8 +54,10 @@ import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.app.ui.LocalSnackbarHostState
 import com.haidoan.android.stren.core.designsystem.component.DatePickerWithDialog
 import com.haidoan.android.stren.core.designsystem.component.DropDownMenuScaffold
+import com.haidoan.android.stren.core.designsystem.component.ExposedDropDownMenuTextField
 import com.haidoan.android.stren.core.designsystem.component.OutlinedNumberTextField
 import com.haidoan.android.stren.core.designsystem.component.SimpleConfirmationDialog
+import com.haidoan.android.stren.core.designsystem.component.SingleSelectionDialog
 import com.haidoan.android.stren.core.designsystem.component.StrenOutlinedTextField
 import com.haidoan.android.stren.core.designsystem.theme.Gray60
 import com.haidoan.android.stren.core.designsystem.theme.Gray90
@@ -64,6 +66,7 @@ import com.haidoan.android.stren.core.designsystem.theme.Red60
 import com.haidoan.android.stren.core.model.Routine
 import com.haidoan.android.stren.core.utils.DateUtils.defaultFormat
 import com.haidoan.android.stren.feat.training.TrainingViewModel
+import com.haidoan.android.stren.feat.training.history.log_workout.NO_SELECTION_ROUTINE_NAME
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -80,17 +83,13 @@ internal fun AddEditTrainingProgramsRoute(
     onNavigateToEditRoutineScreen: (routineId: String) -> Unit,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
 ) {
-    val routinesForTrainingProgram by trainingViewModel.routinesForTrainingProgram.collectAsStateWithLifecycle()
+    val routines by viewModel.routines.collectAsStateWithLifecycle()
     val routinesIdsByDayOffset by trainingViewModel.routinesIdsByDayOffset.collectAsStateWithLifecycle()
     val selectedDayGlobalOffset by viewModel.selectedDayOffset.collectAsStateWithLifecycle()
     val routinesOfSelectedDate by viewModel.routinesOfSelectedDate.collectAsStateWithLifecycle()
     val programTotalNumOfWeeks by viewModel.programTotalNumOfWeeks.collectAsStateWithLifecycle()
     val programStartDate by viewModel.programStartDate.collectAsStateWithLifecycle()
     val dayOffsetsWithWorkouts by viewModel.dayOffsetsWithWorkouts.collectAsStateWithLifecycle(initialValue = emptySet())
-
-    LaunchedEffect(key1 = routinesForTrainingProgram, block = {
-        //viewModel.updateRoutines(routinesForTrainingProgram)
-    })
 
     LaunchedEffect(key1 = routinesIdsByDayOffset, block = {
         viewModel.updateRoutinesIdsByDayOffset(routinesIdsByDayOffset)
@@ -115,6 +114,63 @@ internal fun AddEditTrainingProgramsRoute(
         }
     }
 
+    var showAddRoutineChoices by remember {
+        mutableStateOf(false)
+    }
+
+    val selectedRoutineId = remember(routines) {
+        if (routines.isNotEmpty()) {
+            mutableStateOf(routines.first().id)
+        } else {
+            mutableStateOf("")
+        }
+    }
+
+    var enabled by remember {
+        mutableStateOf(true)
+    }
+
+    if (showAddRoutineChoices) {
+        SingleSelectionDialog(
+            title = "Workout option",
+            onIndexChange = {
+                enabled = it == 0
+            },
+            onDismissDialog = {
+                showAddRoutineChoices = false
+            },
+            options = listOf(
+                {
+                    Column {
+                        Text(modifier = modifier, text = "Add new routine")
+                        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_small)))
+
+                        ExposedDropDownMenuTextField(
+                            modifier = modifier.fillMaxWidth(),
+                            textFieldLabel = "Choose routine",
+                            enabled = enabled,
+                            selectedText = routines.firstOrNull { it.id == selectedRoutineId.value }?.name
+                                ?: NO_SELECTION_ROUTINE_NAME,
+                            menuItemsTextAndClickHandler = routines.associate {
+                                it.name to { selectedRoutineId.value = it.id }
+                            }
+                        )
+                    }
+                }, {
+                    Text(modifier = modifier, text = "Add new routine")
+                }
+            ),
+            onConfirmClick = { index ->
+                if (index == 0) {
+                    trainingViewModel.addRoutineToProgram(selectedDayGlobalOffset, selectedRoutineId.value)
+                } else {
+                    onNavigateToAddRoutineScreen(selectedDayGlobalOffset)
+                }
+            }
+        )
+
+    }
+
     AddEditTrainingProgramsScreen(
         modifier = modifier,
         programStartDate = programStartDate,
@@ -127,7 +183,7 @@ internal fun AddEditTrainingProgramsRoute(
         selectDay = viewModel::selectDate,
         routinesOfSelectedDate = routinesOfSelectedDate,
         dayOffsetsWithWorkouts = dayOffsetsWithWorkouts,
-        addRoutine = { onNavigateToAddRoutineScreen(it) },
+        addRoutine = { showAddRoutineChoices = true },
         editRoutine = { onNavigateToEditRoutineScreen(it) },
         deleteRoutine = {
             routineIdToDelete = it

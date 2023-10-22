@@ -54,6 +54,7 @@ internal class AddEditTrainingProgramViewModel @Inject constructor(
 
     private var _routinesIdsByDayOffset = MutableStateFlow<Map<Int, Set<String>>>(emptyMap())
     private val _routines = MutableStateFlow<List<Routine>>(emptyList())
+    val routines = _routines.asStateFlow()
 
     val dayOffsetsWithWorkouts =
         _routinesIdsByDayOffset.map { routinesIds -> routinesIds.filter { it.value.isNotEmpty() }.keys.toSet() }

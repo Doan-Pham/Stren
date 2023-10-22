@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,6 +64,10 @@ internal fun TrainingProgramsRoute(
     if (secondaryUiState.shouldShowConfirmDialog) {
         SimpleConfirmationDialog(state = secondaryUiState.confirmDialogState)
     }
+
+    LaunchedEffect(key1 = Unit, block = {
+        viewModel.triggerCollection()
+    })
 
     val trainingHistoryAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons = listOf(
@@ -215,17 +220,19 @@ private fun TrainingProgramItem(
         //endregion
 
 
-        Text(
-            text = "In Progress",
-            modifier = Modifier
-                .border(border = border, shape = RoundedCornerShape(15.dp))
-                .padding(
-                    vertical = dimensionResource(id = R.dimen.padding_extra_small),
-                    horizontal = dimensionResource(id = R.dimen.padding_small)
-                ),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
+        if (isInProgress) {
+            Text(
+                text = "In Progress",
+                modifier = Modifier
+                    .border(border = border, shape = RoundedCornerShape(15.dp))
+                    .padding(
+                        vertical = dimensionResource(id = R.dimen.padding_extra_small),
+                        horizontal = dimensionResource(id = R.dimen.padding_small)
+                    ),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
 
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_medium)))
 

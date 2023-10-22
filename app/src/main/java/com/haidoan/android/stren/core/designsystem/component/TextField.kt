@@ -291,6 +291,7 @@ inline fun <reified NumberType : Number> NumberTextFieldWrapper(
 @Composable
 fun ExposedDropDownMenuTextField(
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     textFieldLabel: String,
     selectedText: String,
     menuItemsTextAndClickHandler: Map<String, () -> Unit>,
@@ -309,6 +310,7 @@ fun ExposedDropDownMenuTextField(
                 label = { Text(text = textFieldLabel) },
                 value = selectedText,
                 onValueChange = {},
+                enabled = enabled,
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 modifier = Modifier

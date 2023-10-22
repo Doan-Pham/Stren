@@ -119,6 +119,10 @@ internal class TrainingProgramsViewModel @Inject constructor(
         _dataFetchingTriggers.value = _dataFetchingTriggers.value.copy(searchQuery = name)
     }
 
+    fun triggerCollection() {
+        _dataFetchingTriggers.getAndUpdate { it.copy(arbitraryTrigger = !it.arbitraryTrigger) }
+    }
+
     fun deleteTrainingProgram(trainingProgramId: String) {
         _secondaryUiState.update { currentState ->
             currentState.copy(
