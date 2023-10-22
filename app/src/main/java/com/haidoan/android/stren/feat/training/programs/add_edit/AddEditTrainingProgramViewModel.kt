@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -44,6 +45,10 @@ internal class AddEditTrainingProgramViewModel @Inject constructor() : ViewModel
 
     private var _routinesIdsByDayOffset = MutableStateFlow<Map<Int, Set<String>>>(emptyMap())
     private val _routines = MutableStateFlow<List<Routine>>(emptyList())
+
+    val dayOffsetsWithWorkouts =
+        _routinesIdsByDayOffset.map { routinesIds -> routinesIds.filter { it.value.isNotEmpty() }.keys.toSet() }
+
 
     val routinesOfSelectedDate = combine(
         _selectedDayOffset,

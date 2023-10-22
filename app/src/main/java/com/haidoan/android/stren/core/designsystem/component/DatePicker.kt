@@ -29,9 +29,11 @@ import java.time.ZoneOffset
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerWithDialog(
+    modifier: Modifier = Modifier,
     value: LocalDate?,
     yearRange: IntRange = DatePickerDefaults.YearRange,
     dateFormatter: (LocalDate) -> String,
+    label: String,
     enabled: Boolean = true,
     dateValidator: (Long) -> Boolean = { true },
     onChange: (LocalDate?) -> Unit,
@@ -44,20 +46,21 @@ fun DatePickerWithDialog(
         yearRange = yearRange
     )
 
-    Box {
+    Box(modifier = modifier) {
         StrenOutlinedTextField(
             text = value?.let(dateFormatter).orEmpty(),
             onTextChange = {},
             readOnly = true,
             enabled = enabled,
-            label = "Choose Start Date",
+            label = label,
             leadingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_calendar),
                     contentDescription = ""
                 )
-            })
-
+            },
+            trailingIcon = null
+        )
         Box(
             Modifier
                 .clickable(enabled = enabled) { openDialog = true }

@@ -1,15 +1,16 @@
 package com.haidoan.android.stren.feat.training.programs.add_edit
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -18,8 +19,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -80,6 +81,7 @@ internal fun AddEditTrainingProgramsRoute(
     val routinesOfSelectedDate by viewModel.routinesOfSelectedDate.collectAsStateWithLifecycle()
     val programTotalNumOfWeeks by viewModel.programTotalNumOfWeeks.collectAsStateWithLifecycle()
     val programStartDate by viewModel.programStartDate.collectAsStateWithLifecycle()
+    val dayOffsetsWithWorkouts by viewModel.dayOffsetsWithWorkouts.collectAsStateWithLifecycle(initialValue = emptySet())
 
     LaunchedEffect(key1 = routinesForTrainingProgram, block = {
         viewModel.updateRoutines(routinesForTrainingProgram)
@@ -119,6 +121,7 @@ internal fun AddEditTrainingProgramsRoute(
         selectedDayGlobalOffset = selectedDayGlobalOffset,
         selectDay = viewModel::selectDate,
         routinesOfSelectedDate = routinesOfSelectedDate,
+        dayOffsetsWithWorkouts = dayOffsetsWithWorkouts,
         addRoutine = { onNavigateToAddRoutineScreen(it) },
         editRoutine = { onNavigateToEditRoutineScreen(it) },
         deleteRoutine = {
@@ -173,19 +176,32 @@ internal fun AddEditTrainingProgramsRoute(
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
+@OptIn(ExperimentalStdlibApi::class, ExperimentalFoundationApi::class)
 @Composable
 private fun AddEditTrainingProgramsScreen(
     modifier: Modifier = Modifier,
+
+    // PROGRAM_START_DATE
     programStartDate: LocalDate,
     onProgramStartDateChange: (LocalDate) -> Unit,
+
+    // PROGRAM_DURATION
     programTotalNumOfWeeks: Int,
     onProgramTotalNumOfWeeksChange: (Int) -> Unit,
+
+    // PROGRAM_NAME
     programName: String,
     onProgramNameChange: (String) -> Unit,
+
+    // SELECTED_TRAINING_DAY
     selectedDayGlobalOffset: Int,
     selectDay: (dayOffset: Int) -> Unit,
     routinesOfSelectedDate: List<Routine>,
+
+    // TRAINING_DAYS_THAT_HAVE_WORKOUTS
+    dayOffsetsWithWorkouts: Set<Int>,
+
+    // MODIFY_ROUTINES_OF_TRAINING_DAY
     addRoutine: (dayOffset: Int) -> Unit,
     editRoutine: (routineId: String) -> Unit,
     deleteRoutine: (routineId: String) -> Unit,
@@ -201,6 +217,17 @@ private fun AddEditTrainingProgramsScreen(
                 .verticalScroll(rememberScrollState())
                 .weight(1f), horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            val numOfDaysPerWeek = DEFAULT_NUM_OF_DAYS_PER_WEEK
+            val numOfWeeksPerGroup = DEFAULT_NUM_OF_WEEKS_PER_GROUP
+            val selectedDayWeekIndex = selectedDayGlobalOffset / numOfDaysPerWeek
+            val selectedDayWeeklyOffset = selectedDayGlobalOffset % numOfDaysPerWeek
+
+            val localizedDayOffsetsWithWorkouts = dayOffsetsWithWorkouts.map {
+                val weekIndex = it / numOfDaysPerWeek
+                val weeklyOffset = it % numOfDaysPerWeek
+                Pair(weekIndex, weeklyOffset)
+            }
+
             //region PROGRAM's NAME
             StrenOutlinedTextField(
                 text = programName,
@@ -210,21 +237,17 @@ private fun AddEditTrainingProgramsScreen(
                 errorText = "Program name can't be empty"
             )
 
-            val numOfDaysPerWeek = DEFAULT_NUM_OF_DAYS_PER_WEEK
-            val numOfWeeksPerGroup = DEFAULT_NUM_OF_WEEKS_PER_GROUP
-            val selectedDayWeekIndex = selectedDayGlobalOffset / numOfDaysPerWeek
-            val selectedDayWeeklyOffset = selectedDayGlobalOffset % numOfDaysPerWeek
-
             //endregion
 
-            //region NUM_OF_WEEK TEXT FIELD
+            //region PROGRAM'S DURATION & PROGRAM's START DATE
             Row(
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 OutlinedNumberTextField(
-                    modifier = Modifier.width(IntrinsicSize.Min),
+                    modifier = Modifier.weight(1f),
                     number = programTotalNumOfWeeks,
-                    label = "Program Length",
+                    label = "Duration",
                     onValueChange = {
                         onProgramTotalNumOfWeeksChange(
                             it.coerceIn(
@@ -234,27 +257,41 @@ private fun AddEditTrainingProgramsScreen(
                     },
                     suffixText = "Weeks",
                     isError = programTotalNumOfWeeks < MIN_NUM_OF_WEEKS,
-                    errorText = "Length can't be empty"
+                    errorText = "Duration can't be 0"
                 )
-                Spacer(modifier = Modifier.weight(1f))
+
+                DatePickerWithDialog(
+                    modifier = Modifier.weight(1.5f),
+                    value = programStartDate,
+                    dateFormatter = {
+                        it.defaultFormat()
+                    },
+                    label = "Start Date",
+                    onChange = {
+                        it?.let { onProgramStartDateChange(it) }
+                    },
+                    yearRange = programStartDate.year - 1..programStartDate.year + 3
+                )
             }
 
             //endregion
 
-            //region START_DATE
-            DatePickerWithDialog(value = programStartDate, dateFormatter = {
-                it.defaultFormat()
-            }, onChange = {
-                it?.let { onProgramStartDateChange(it) }
-            },
-                yearRange = programStartDate.year - 1..programStartDate.year + 3
+            Divider(Modifier.padding(vertical = dimensionResource(id = R.dimen.padding_medium)))
+
+            //region SCHEDULE
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = "Schedule",
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.titleLarge
             )
 
-            //endregion
+            val listState = rememberLazyListState()
 
-            //region TRAINING WEEKS
-
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
+            ) {
                 for (startWeekIndex in 0..<programTotalNumOfWeeks step numOfWeeksPerGroup) {
                     item {
                         val numOfWeeks =
@@ -278,6 +315,12 @@ private fun AddEditTrainingProgramsScreen(
                                 val selectedDayOffsetGlobal = startWeekIndex * numOfDaysPerWeek + it
                                 selectDay(selectedDayOffsetGlobal)
                             },
+                            dayOffsetsWithWorkouts =
+                            localizedDayOffsetsWithWorkouts
+                                .filter { it.first in startWeekIndex..endWeekIndex }
+                                .map {
+                                    (it.first - startWeekIndex) * numOfDaysPerWeek + it.second
+                                }.toSet(),
                             selectedDayWeekGroupOffset = selectedDayWeekGroupOffset
                         )
                     }
@@ -287,48 +330,48 @@ private fun AddEditTrainingProgramsScreen(
 
             //endregion
 
-            Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
-
-            Divider()
-
-            Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
+            Divider(
+                Modifier.padding(
+                    top = dimensionResource(id = R.dimen.padding_large),
+                    bottom = dimensionResource(id = R.dimen.padding_medium)
+                )
+            )
 
             //region ROUTINES OF SELECTED DATE
-
-            // TITLE & ADD_ROUTINE BUTTON
-            Box(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    modifier = Modifier.align(Alignment.Center),
-                    text = "Week ${selectedDayWeekIndex + 1} - Day ${selectedDayWeeklyOffset + 1}",
-                    style = MaterialTheme.typography.titleMedium
-                )
-
-                IconButton(
-                    modifier = Modifier.align(Alignment.CenterEnd),
-                    onClick = {
-                        addRoutine(selectedDayGlobalOffset)
-                    }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_add),
-                        contentDescription = "Back Icon",
+            if (programTotalNumOfWeeks > MIN_NUM_OF_WEEKS) {
+                // TITLE & ADD_ROUTINE BUTTON
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        modifier = Modifier.align(Alignment.Center),
+                        text = "Week ${selectedDayWeekIndex + 1} - Day ${selectedDayWeeklyOffset + 1}",
+                        style = MaterialTheme.typography.titleMedium
                     )
+
+                    IconButton(
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                        onClick = {
+                            addRoutine(selectedDayGlobalOffset)
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_add),
+                            contentDescription = "Back Icon",
+                        )
+                    }
+                }
+
+                routinesOfSelectedDate.forEach { routine ->
+                    RoutineItem(
+                        routine = routine,
+                        onEditRoutineClickHandler = {
+                            editRoutine(routine.id)
+                        },
+                        onDeleteRoutineClick = {
+                            deleteRoutine(routine.id)
+                        })
+                    Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
                 }
             }
-
-
-            routinesOfSelectedDate.forEach { routine ->
-                RoutineItem(
-                    routine = routine,
-                    onEditRoutineClickHandler = {
-                        editRoutine(routine.id)
-                    },
-                    onDeleteRoutineClick = {
-                        deleteRoutine(routine.id)
-                    })
-                Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_medium)))
-            }
-
             //endregion
         }
     }
@@ -341,6 +384,7 @@ private fun TrainingWeekGroup(
     startWeekIndex: Int,
     numOfWeek: Int,
     selectedDayWeekGroupOffset: Int? = null,
+    dayOffsetsWithWorkouts: Set<Int>,
     onSelectDay: (selectedDayOffsetLocalized: Int) -> Unit,
 ) {
     Column(
@@ -369,7 +413,7 @@ private fun TrainingWeekGroup(
                 Day(
                     offset = it,
                     isSelected = selectedDayWeekGroupOffset == it,
-                    haveWorkouts = true,
+                    haveWorkouts = dayOffsetsWithWorkouts.contains(it),
                     onClickHandler = onSelectDay
                 )
             }
