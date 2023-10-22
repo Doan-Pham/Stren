@@ -89,7 +89,7 @@ internal fun AddEditTrainingProgramsRoute(
     val dayOffsetsWithWorkouts by viewModel.dayOffsetsWithWorkouts.collectAsStateWithLifecycle(initialValue = emptySet())
 
     LaunchedEffect(key1 = routinesForTrainingProgram, block = {
-        viewModel.updateRoutines(routinesForTrainingProgram)
+        //viewModel.updateRoutines(routinesForTrainingProgram)
     })
 
     LaunchedEffect(key1 = routinesIdsByDayOffset, block = {

@@ -3,17 +3,21 @@ package com.haidoan.android.stren.feat.training
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.model.Routine
+import com.haidoan.android.stren.core.repository.base.RoutinesRepository
+import com.haidoan.android.stren.core.service.AuthenticationService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
-class TrainingViewModel @Inject constructor() : ViewModel() {
+class TrainingViewModel @Inject constructor(
+    authenticationService: AuthenticationService,
+    private val routinesRepository: RoutinesRepository,
+) : ViewModel() {
     private val _routinesIdsByDayOffset = mutableMapOf<Int, MutableSet<String>>()
     private val _routinesIdsByDayOffsetFlow: MutableStateFlow<Map<Int, Set<String>>> = MutableStateFlow(emptyMap())
     val routinesIdsByDayOffset = _routinesIdsByDayOffsetFlow.asStateFlow()
@@ -21,19 +25,17 @@ class TrainingViewModel @Inject constructor() : ViewModel() {
     private val _routines = mutableMapOf<String, Routine>()
     private val _routinesForTrainingProgramFlow: MutableStateFlow<List<Routine>> = MutableStateFlow(emptyList())
 
+    init {
+        viewModelScope.launch {
+
+        }
+    }
+
     val routinesForTrainingProgram =
         _routinesForTrainingProgramFlow.asStateFlow()
 
-    fun addRoutineToProgram(dayOffset: Int, routine: Routine) {
+    fun addRoutineToProgram(dayOffset: Int, routineId: String) {
         viewModelScope.launch {
-            val routineId = if (routine.id in _routines.values.map { it.id }) {
-                UUID.randomUUID().toString()
-            } else {
-                routine.id
-            }
-            _routines[routineId] = routine.copy(id = routineId)
-            _routinesForTrainingProgramFlow.update { _routines.values.toList() }
-
             _routinesIdsByDayOffset[dayOffset].apply {
                 val newRoutinesIds = (this ?: mutableSetOf())
                 newRoutinesIds.add(routineId)
@@ -56,10 +58,10 @@ class TrainingViewModel @Inject constructor() : ViewModel() {
     }
 
     fun editRoutineOfProgram(routine: Routine) {
-        viewModelScope.launch {
-            _routines[routine.id] = routine
-            _routinesForTrainingProgramFlow.update { _routines.values.toList() }
-        }
+//        viewModelScope.launch {
+//            _routines[routine.id] = routine
+//            _routinesForTrainingProgramFlow.update { _routines.values.toList() }
+//        }
 
         Timber.d("_routinesIdsByDayOffsetFlow: ${_routinesIdsByDayOffsetFlow.value}; _routinesForTrainingProgramFlow: ${_routinesForTrainingProgramFlow.value}")
     }

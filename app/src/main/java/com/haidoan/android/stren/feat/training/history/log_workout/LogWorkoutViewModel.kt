@@ -12,6 +12,7 @@ import com.haidoan.android.stren.core.model.*
 import com.haidoan.android.stren.core.repository.base.ExercisesRepository
 import com.haidoan.android.stren.core.repository.base.RoutinesRepository
 import com.haidoan.android.stren.core.repository.base.WorkoutsRepository
+import com.haidoan.android.stren.core.service.AuthenticationService
 import com.haidoan.android.stren.feat.training.history.LogWorkoutArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,9 +27,10 @@ internal const val NO_SELECTION_ROUTINE_NAME = "None"
 @HiltViewModel
 internal class LogWorkoutViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    private val authenticationService: AuthenticationService,
     private val routinesRepository: RoutinesRepository,
     private val exercisesRepository: ExercisesRepository,
-    private val workoutsRepository: WorkoutsRepository
+    private val workoutsRepository: WorkoutsRepository,
 ) : ViewModel() {
 
     var workoutNameTextFieldValue by mutableStateOf("New workout")
@@ -63,9 +65,11 @@ internal class LogWorkoutViewModel @Inject constructor(
         )
 
     init {
-        Timber.d("init() - userId: ${navArgs.userId} - selectedDate: ${navArgs.selectedDate}")
+        Timber.d("init() - selectedDate: ${navArgs.selectedDate}")
+
         viewModelScope.launch {
-            val allRoutines = routinesRepository.getRoutinesByUserId(navArgs.userId).toMutableList()
+            val userId = authenticationService.getCurrentUserId()
+            val allRoutines = routinesRepository.getRoutinesByUserId(userId).toMutableList()
             allRoutines.add(
                 0, Routine(
                     id = NO_SELECTION_ROUTINE_ID,
@@ -74,13 +78,16 @@ internal class LogWorkoutViewModel @Inject constructor(
                 )
             )
             _routines.value = allRoutines
+
+            Timber.d("init() - selectedRoutineId: ${navArgs.selectedRoutineId}")
+            Timber.d("init() - routines: ${routines.value}")
+
             // In case user just navigates to LogWorkoutScreen from RoutinesScreen to quickly
             // log workout, then selectedRoutineId won't be NO_SELECTION_ROUTINE_ID
             // at init
             selectRoutine(navArgs.selectedRoutineId)
 
-            Timber.d("init() - selectedRoutineId: ${navArgs.selectedRoutineId}")
-            Timber.d("init() - routines: ${routines.value}")
+
         }
 
         if (!navArgs.isAddingWorkout) {
@@ -112,10 +119,11 @@ internal class LogWorkoutViewModel @Inject constructor(
         if (_trainedExercisesStream.value.isEmpty()) {
             if (newlySelectedRoutineId != NO_SELECTION_ROUTINE_ID) {
                 _currentSelectedRoutineId = newlySelectedRoutineId
-                _trainedExercisesStream.value =
-                    routines.value.first { it.id == _currentSelectedRoutineId }.trainedExercises
-                _secondaryUiState.update { currentState ->
-                    currentState.copy(selectedRoutineId = _currentSelectedRoutineId)
+                routines.value.firstOrNull { it.id == _currentSelectedRoutineId }?.let {
+                    _trainedExercisesStream.value = it.trainedExercises
+                    _secondaryUiState.update { currentState ->
+                        currentState.copy(selectedRoutineId = _currentSelectedRoutineId)
+                    }
                 }
             }
         } else {
@@ -152,7 +160,7 @@ internal class LogWorkoutViewModel @Inject constructor(
     fun updateExerciseTrainingSet(
         exerciseToUpdate: TrainedExercise,
         trainingSetToUpdate: TrainingMeasurementMetrics,
-        updatedTrainingSetData: TrainingMeasurementMetrics
+        updatedTrainingSetData: TrainingMeasurementMetrics,
     ) {
         Timber.d("exerciseToUpdate - unique identifier: ${exerciseToUpdate.id}; content: $exerciseToUpdate")
         Timber.d(
@@ -260,11 +268,10 @@ internal class LogWorkoutViewModel @Inject constructor(
     }
 
     fun addEditWorkout() {
-        Timber.d("addEditWorkout() - userId: ${navArgs.userId}")
         if (navArgs.isAddingWorkout) {
             viewModelScope.launch {
                 workoutsRepository.addWorkout(
-                    userId = navArgs.userId,
+                    userId = authenticationService.getCurrentUserId(),
                     workout = Workout(
                         name = workoutNameTextFieldValue,
                         date = navArgs.selectedDate,
@@ -275,7 +282,7 @@ internal class LogWorkoutViewModel @Inject constructor(
         } else {
             viewModelScope.launch {
                 workoutsRepository.updateWorkout(
-                    userId = navArgs.userId,
+                    userId = authenticationService.getCurrentUserId(),
                     workout = currentWorkoutInfo.copy(
                         name = workoutNameTextFieldValue,
                         trainedExercises = _trainedExercisesStream.value

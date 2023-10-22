@@ -226,6 +226,7 @@ internal class AddEditRoutineViewModel @Inject constructor(
                         userId = userId,
                         routine = Routine(
                             id = navArgs.routineId,
+                            extraId = navArgs.routineId,
                             name = routineNameTextFieldValue,
                             trainedExercises = _trainedExercises.value
                         )
@@ -235,9 +236,20 @@ internal class AddEditRoutineViewModel @Inject constructor(
 
                 NavigationPurpose.ADD_ROUTINE_TO_PROGRAM -> {
                     Timber.d("Add routine to program")
+                    val routineId = routinesRepository.addRoutine(
+                        userId = userId,
+                        routine = Routine(
+                            name = routineNameTextFieldValue,
+                            trainedExercises = _trainedExercises.value
+                        )
+                    )
+                    //   _navigateBackEvent.update { Unit }
+
+
                     _addRoutineToProgramEvent.update {
                         Pair(
                             navArgs.dayOffset, Routine(
+                                id = routineId,
                                 name = routineNameTextFieldValue,
                                 trainedExercises = _trainedExercises.value
                             )
@@ -246,13 +258,24 @@ internal class AddEditRoutineViewModel @Inject constructor(
                 }
 
                 NavigationPurpose.EDIT_ROUTINE_OF_PROGRAM -> {
-                    _editRoutineOfProgramEvent.update {
-                        Routine(
+                    routinesRepository.updateRoutine(
+                        userId = userId,
+                        routine = Routine(
                             id = navArgs.routineId,
+                            extraId = navArgs.routineId,
                             name = routineNameTextFieldValue,
                             trainedExercises = _trainedExercises.value
                         )
-                    }
+                    )
+                    _navigateBackEvent.update { Unit }
+
+//                    _editRoutineOfProgramEvent.update {
+//                        Routine(
+//                            id = navArgs.routineId,
+//                            name = routineNameTextFieldValue,
+//                            trainedExercises = _trainedExercises.value
+//                        )
+//                    }
                 }
             }
         }

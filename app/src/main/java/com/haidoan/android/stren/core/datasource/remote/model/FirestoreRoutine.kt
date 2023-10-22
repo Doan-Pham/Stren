@@ -28,6 +28,8 @@ internal fun QuerySnapshot.toRoutines(): List<Routine> =
 internal data class FirestoreRoutine(
     @DocumentId
     val id: String = "Undefined",
+    // The above @DocumentId would be excluded if you're embedding the routine instead of creating a document
+    val extraId: String = id,
     val name: String = "Undefined",
     val note: String = "Undefined",
     val trainedExercises: List<FirestoreTrainedExercise> = listOf(),
@@ -38,7 +40,8 @@ internal data class FirestoreRoutine(
         }
         Timber.d("trainedExercises: $trainedExercises")
         return Routine(
-            id = this.id,
+            id = if (id != "Undefined") id else extraId,
+            extraId = extraId,
             name = this.name,
             trainedExercises = trainedExercises
         )
@@ -48,6 +51,7 @@ internal data class FirestoreRoutine(
         fun from(routine: Routine): FirestoreRoutine {
             return FirestoreRoutine(
                 id = routine.id,
+                extraId = routine.id,
                 name = routine.name,
                 trainedExercises = routine.trainedExercises.map {
                     FirestoreTrainedExercise.from(

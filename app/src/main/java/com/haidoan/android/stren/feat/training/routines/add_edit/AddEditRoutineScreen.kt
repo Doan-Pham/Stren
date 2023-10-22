@@ -68,7 +68,7 @@ internal fun AddEditRoutineRoute(
     val addRoutineToProgramEvent by viewModel.addRoutineToProgramEvent.collectAsStateWithLifecycle()
     addRoutineToProgramEvent?.let {
         val currentAddRoutineToProgram by rememberUpdatedState {
-            trainingViewModel.addRoutineToProgram(it.first, it.second)
+            trainingViewModel.addRoutineToProgram(it.first, it.second.id)
             viewModel.onAddRoutineToProgram()
         }
         LaunchedEffect(addRoutineToProgramEvent) {

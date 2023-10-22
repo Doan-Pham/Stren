@@ -38,6 +38,7 @@ import java.time.LocalDate
 internal fun DashboardRoute(
     modifier: Modifier = Modifier,
     viewModel: DashboardViewModel = hiltViewModel(),
+    onNavigateToLogWorkoutScreen: (routineId: String) -> Unit,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
 ) {
     val exercisesToTrack by viewModel.exercisesToTrack.collectAsStateWithLifecycle()
@@ -147,6 +148,7 @@ internal fun DashboardRoute(
                 .find { it.type == bottomSheetToDismiss.type }
                 ?.shouldShow?.value = false
         },
+        onLogWorkoutWithRoutine = onNavigateToLogWorkoutScreen,
         onRemoveItemClick = viewModel::stopTrackingCategory
     )
 }
@@ -160,6 +162,7 @@ private fun DashboardScreen(
     onDateOptionClick: (dataSourceId: String, startDate: LocalDate, endDate: LocalDate) -> Unit,
     bottomSheetWrappers: List<BottomSheetWrapper>,
     onDismissBottomSheet: (BottomSheetWrapper) -> Unit,
+    onLogWorkoutWithRoutine: (routineId: String) -> Unit,
     onRemoveItemClick: (dataSourceId: String) -> Unit,
 ) {
     var shouldShowConfirmDialog by remember { mutableStateOf(false) }
@@ -202,7 +205,8 @@ private fun DashboardScreen(
                     modifier = modifier.padding(
                         PaddingValues(dimensionResource(id = R.dimen.padding_medium))
                     ),
-                    todayTrainingPrograms = todayTrainingPrograms
+                    todayTrainingPrograms = todayTrainingPrograms,
+                    onLogWorkoutWithRoutine = onLogWorkoutWithRoutine
                 )
             },
             Pair("Nutrition") {
@@ -262,6 +266,7 @@ private fun DashboardScreen(
 private fun TrainingProgramsList(
     modifier: Modifier = Modifier,
     todayTrainingPrograms: List<TodayTrainingProgram>,
+    onLogWorkoutWithRoutine: (routineId: String) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier,
@@ -270,9 +275,7 @@ private fun TrainingProgramsList(
         items(todayTrainingPrograms) { trainingProgram ->
             TrainingProgramItem(
                 trainingProgram = trainingProgram,
-                onLogWorkoutWithRoutine = {
-                    //TODO
-                }
+                onLogWorkoutWithRoutine = onLogWorkoutWithRoutine
             )
         }
     }
@@ -356,7 +359,7 @@ private fun RoutineItem(
                     horizontal = 0.dp
                 ),
                 onClick = {
-                    onItemClickHandler(routine.id)
+                    onItemClickHandler(routine.extraId)
                 }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_training),

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.model.Routine
 import com.haidoan.android.stren.core.model.TrainingProgram
+import com.haidoan.android.stren.core.repository.base.RoutinesRepository
 import com.haidoan.android.stren.core.repository.impl.TrainingProgramsRepositoryImpl
 import com.haidoan.android.stren.core.service.AuthenticationService
 import com.haidoan.android.stren.core.utils.DateUtils.getCurrentDate
@@ -32,6 +33,7 @@ internal const val MAX_NUM_OF_WEEKS = 12
 @HiltViewModel
 internal class AddEditTrainingProgramViewModel @Inject constructor(
     private val authenticationService: AuthenticationService,
+    private val routinesRepository: RoutinesRepository,
     private val trainingProgramsRepositoryImpl: TrainingProgramsRepositoryImpl,
 ) :
     ViewModel() {
@@ -80,6 +82,14 @@ internal class AddEditTrainingProgramViewModel @Inject constructor(
                 _selectedDayOffset.value = DEFAULT_SELECTED_DAY_OFFSET
             }
         }
+        viewModelScope.launch {
+            val userId = authenticationService.getCurrentUserId()
+
+            routinesRepository.getRoutinesStreamByUserId(userId).collect { routines ->
+                Timber.d("routines: $routines")
+                _routines.update { routines }
+            }
+        }
     }
 
     fun onProgramNameChange(value: String) {
@@ -113,13 +123,14 @@ internal class AddEditTrainingProgramViewModel @Inject constructor(
     fun addEditTrainingProgram() {
         viewModelScope.launch {
             val totalNumOfDays = _programTotalNumOfWeeks.value * DEFAULT_NUM_OF_DAYS_PER_WEEK
+            Timber.d("__routines.value: ${_routines.value}")
             val routinesByDayOffset =
                 _routinesIdsByDayOffset.value
                     .filter { it.value.isNotEmpty() }
                     .mapValues { routinesIdsByDayOffset ->
                         routinesIdsByDayOffset.value.map { routineId ->
-                            _routines.value.first { it.id == routineId }
-                        }
+                            _routines.value.firstOrNull { it.id == routineId }
+                        }.filterNotNull()
                     }
 
             trainingProgramsRepositoryImpl.addTrainingProgram(
