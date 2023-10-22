@@ -32,7 +32,7 @@ class TrainingViewModel @Inject constructor() : ViewModel() {
             } else {
                 routine.id
             }
-            _routines[routineId] = routine
+            _routines[routineId] = routine.copy(id = routineId)
             _routinesForTrainingProgramFlow.update { _routines.values.toList() }
 
             _routinesIdsByDayOffset[dayOffset].apply {
