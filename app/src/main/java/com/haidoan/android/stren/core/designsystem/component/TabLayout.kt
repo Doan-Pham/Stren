@@ -24,7 +24,7 @@ fun TabLayout(
     tabNamesAndScreenComposables: List<Pair<String, @Composable () -> Unit>>,
     userScrollEnabled: Boolean = true,
 ) {
-    val pagerState = rememberPagerState(initialPage = 0)
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabNamesAndScreenComposables.size })
     val currentTabIndex = pagerState.currentPage
     var previousTabIndex = remember { tabNamesAndScreenComposables.size }
 
@@ -65,7 +65,6 @@ fun TabLayout(
             modifier = Modifier.fillMaxSize(),
             userScrollEnabled = userScrollEnabled,
             state = pagerState,
-            pageCount = tabNamesAndScreenComposables.size
         ) { page ->
 
             // The [page] value changes much more frequently than tabIndex in order to create
