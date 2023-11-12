@@ -4,7 +4,13 @@ import com.google.android.gms.maps.model.LatLng
 
 internal sealed interface CardioTrackingUiState {
     object Loading : CardioTrackingUiState
-    data class CoordinateLoaded(val coordinates: List<LatLng>, val currentCoordinate: LatLng) :
-        CardioTrackingUiState
+    data class CoordinateLoaded(
+        val coordinates: List<LatLng>,
+        val currentCoordinate: LatLng,
+    ) : CardioTrackingUiState
 }
 
+internal data class ExtraInfoUiModel(
+    val totalDurationInSecs: Long,
+    val distanceTravelledInKm: Float
+)

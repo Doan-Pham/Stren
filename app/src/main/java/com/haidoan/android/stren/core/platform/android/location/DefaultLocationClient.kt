@@ -15,7 +15,6 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 class DefaultLocationClient(
     private val context: Context,
@@ -44,7 +43,6 @@ class DefaultLocationClient(
             val locationCallback = object : LocationCallback() {
                 override fun onLocationResult(result: LocationResult) {
                     super.onLocationResult(result)
-                    Timber.d("Sending location: $result")
                     result.locations.lastOrNull()?.let { location ->
                         launch { send(location) }
                     }

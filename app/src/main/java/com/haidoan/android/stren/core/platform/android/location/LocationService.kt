@@ -9,6 +9,7 @@ import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.LocationServices
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.core.model.training.Coordinate
+import com.haidoan.android.stren.core.platform.android.ClockTicker
 import com.haidoan.android.stren.core.platform.android.NOTIFICATION_CHANNEL_ID_LOCATION
 import com.haidoan.android.stren.core.platform.android.hasLocationPermission
 import com.haidoan.android.stren.core.repository.base.CoordinatesRepository
@@ -19,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -64,6 +66,7 @@ class LocationService : Service() {
             return
         }
 
+        ClockTicker.startTicking()
         observeAndUpdateUserCoordinate()
         observeAndUpdateNotification()
 
@@ -76,10 +79,13 @@ class LocationService : Service() {
     private fun stop() {
         stopForeground(STOP_FOREGROUND_DETACH)
         stopSelf()
+        ClockTicker.resetTick()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        runBlocking { coordinatesRepository.deleteAllCoordinates() }
+        ClockTicker.resetTick()
         serviceScope.cancel()
     }
 
@@ -105,7 +111,7 @@ class LocationService : Service() {
 
             coordinatesRepository.getTotalDistanceTravelled().collect {
                 val updatedNotification = notification.setContentText(
-                    "You have travelled ${(it ?: 0f).roundToTwoDecimalPlace()} km "
+                    "You have travelled ${((it?.div(1000)) ?: 0f).roundToTwoDecimalPlace()} km "
                 )
                 notificationManager.notify(LOCATION_NOTIFICATION_ID, updatedNotification.build())
             }

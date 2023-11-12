@@ -5,16 +5,16 @@ import android.content.Intent
 import android.location.Location
 import android.net.Uri
 import android.provider.Settings
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -26,10 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -51,8 +48,11 @@ import com.haidoan.android.stren.app.navigation.IconButtonInfo
 import com.haidoan.android.stren.core.designsystem.component.LoadingScreen
 import com.haidoan.android.stren.core.designsystem.component.SimpleConfirmationDialog
 import com.haidoan.android.stren.core.platform.android.location.LocationService
+import com.haidoan.android.stren.core.utils.NumberUtils
+import com.haidoan.android.stren.core.utils.NumberUtils.roundToTwoDecimalPlace
 import com.haidoan.android.stren.feat.training.cardio_tracking.model.CardioTrackingUiState
 import com.haidoan.android.stren.feat.training.cardio_tracking.model.toLocation
+import timber.log.Timber
 
 private const val POLYLINE_STROKE_WIDTH_PX = 12
 
@@ -64,10 +64,14 @@ internal fun CardioTrackingRoute(
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val totalDurationInSecs by viewModel.totalDurationInSecs.collectAsStateWithLifecycle()
+    val distanceTravelledInKm by viewModel.distanceTravelledInKm.collectAsStateWithLifecycle()
 
     CardioTrackingScreen(
         modifier = modifier,
         uiState = uiState,
+        totalDurationInSecs = totalDurationInSecs,
+        distanceTravelledInKm = distanceTravelledInKm,
         onPermissionNotGranted = onNavigateBack
     )
 
@@ -76,6 +80,13 @@ internal fun CardioTrackingRoute(
             AppBarConfiguration.NavigationAppBar(
                 title = "Tracking Cardio",
                 navigationIcon = IconButtonInfo.BACK_ICON.copy(clickHandler = onNavigateBack),
+                actionIcons = listOf(
+                    IconButtonInfo(
+                        drawableResourceId = R.drawable.ic_save,
+                        description = "Menu Item Save",
+                        clickHandler = {
+                        })
+                )
             )
         )
     }
@@ -87,6 +98,8 @@ internal fun CardioTrackingRoute(
 private fun CardioTrackingScreen(
     modifier: Modifier = Modifier,
     uiState: CardioTrackingUiState,
+    totalDurationInSecs: Long,
+    distanceTravelledInKm: Float,
     onPermissionNotGranted: () -> Unit
 ) {
     val locationPermissionsState = rememberMultiplePermissionsState(
@@ -98,68 +111,16 @@ private fun CardioTrackingScreen(
 
     val context = LocalContext.current
 
+    Timber.d("uiState: $uiState")
     when (uiState) {
         is CardioTrackingUiState.CoordinateLoaded -> {
-            var previousZoom by remember {
-                mutableFloatStateOf(20f)
-            }
-
-            val cameraPositionState = rememberCameraPositionState {
-                position = CameraPosition
-                    .fromLatLngZoom(uiState.currentCoordinate, 20f)
-            }
-            val locationSource = remember {
-                object : LocationSource {
-                    private var listener: LocationSource.OnLocationChangedListener? = null
-
-                    override fun activate(listener: LocationSource.OnLocationChangedListener) {
-                        this.listener = listener
-                    }
-
-                    override fun deactivate() {
-                        listener = null
-                    }
-
-                    fun onLocationChanged(location: Location) {
-                        listener?.onLocationChanged(location)
-                    }
-                }
-            }
-
-            GoogleMap(
-                modifier = modifier.fillMaxSize(),
-                uiSettings = MapUiSettings(myLocationButtonEnabled = true),
-                properties = MapProperties(isMyLocationEnabled = true),
-                cameraPositionState = cameraPositionState,
-                locationSource = locationSource
-            ) {
-                Polyline(
-                    points = uiState.coordinates,
-                    startCap = RoundCap(),
-                    endCap = RoundCap(),
-                    jointType = JointType.ROUND,
-                    width = POLYLINE_STROKE_WIDTH_PX.toFloat(),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            LaunchedEffect(key1 = uiState.currentCoordinate, block = {
-                locationSource.onLocationChanged(uiState.currentCoordinate.toLocation())
-
-                val cameraPosition = CameraPosition
-                    .fromLatLngZoom(uiState.currentCoordinate, previousZoom)
-
-                cameraPositionState.animate(
-                    CameraUpdateFactory.newCameraPosition(cameraPosition),
-                    1_000
-                )
-            })
-
-            LaunchedEffect(cameraPositionState) {
-                snapshotFlow { cameraPositionState.position.zoom }.collect {
-                    previousZoom = it
-                }
-            }
+            TrackingMap(
+                modifier = modifier,
+                coordinates = uiState.coordinates,
+                currentCoordinate = uiState.currentCoordinate,
+                distanceTravelledInKm = distanceTravelledInKm,
+                totalDurationInSecs = totalDurationInSecs
+            )
         }
 
         CardioTrackingUiState.Loading -> {
@@ -203,60 +164,113 @@ private fun CardioTrackingScreen(
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EmptyScreen(
-    modifier: Modifier
+private fun TrackingMap(
+    modifier: Modifier = Modifier,
+    coordinates: List<LatLng>,
+    currentCoordinate: LatLng,
+    distanceTravelledInKm: Float,
+    totalDurationInSecs: Long,
 ) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+    val scaffoldState = rememberBottomSheetScaffoldState()
+
+    BottomSheetScaffold(
+        scaffoldState = scaffoldState,
+        sheetContainerColor = Color.White,
+        sheetContent = {
+            ExtraInfoBottomSheet(
+                distanceTravelledInKm = distanceTravelledInKm,
+                totalDurationInSecs = totalDurationInSecs
+            )
+        }) { _ ->
+
+        var previousZoom by remember {
+            mutableFloatStateOf(20f)
+        }
+
+        val cameraPositionState = rememberCameraPositionState {
+            position = CameraPosition
+                .fromLatLngZoom(currentCoordinate, 20f)
+        }
+        val locationSource = remember {
+            object : LocationSource {
+                private var listener: LocationSource.OnLocationChangedListener? = null
+
+                override fun activate(listener: LocationSource.OnLocationChangedListener) {
+                    this.listener = listener
+                }
+
+                override fun deactivate() {
+                    listener = null
+                }
+
+                fun onLocationChanged(location: Location) {
+                    listener?.onLocationChanged(location)
+                }
+            }
+        }
+
+        GoogleMap(
+            modifier = modifier.fillMaxSize(),
+            uiSettings = MapUiSettings(myLocationButtonEnabled = true),
+            properties = MapProperties(isMyLocationEnabled = true),
+            cameraPositionState = cameraPositionState,
+            locationSource = locationSource
         ) {
-            Icon(
-                modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_whole_screen)),
-                painter = painterResource(id = R.drawable.ic_add),
-                contentDescription = "Icon edit"
+            Polyline(
+                points = coordinates,
+                startCap = RoundCap(),
+                endCap = RoundCap(),
+                jointType = JointType.ROUND,
+                width = POLYLINE_STROKE_WIDTH_PX.toFloat(),
+                color = MaterialTheme.colorScheme.primary
             )
-            Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.padding_small)))
-            Text(
-                text = "No exercise found",
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Center
+        }
+
+        LaunchedEffect(key1 = currentCoordinate, block = {
+            locationSource.onLocationChanged(currentCoordinate.toLocation())
+
+            val cameraPosition = CameraPosition
+                .fromLatLngZoom(currentCoordinate, previousZoom)
+
+            cameraPositionState.animate(
+                CameraUpdateFactory.newCameraPosition(cameraPosition),
+                1_000
             )
-            Text(
-                text = "Click to create custom exercise",
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center
-            )
+        })
+
+        LaunchedEffect(cameraPositionState) {
+            snapshotFlow { cameraPositionState.position.zoom }.collect {
+                previousZoom = it
+            }
         }
     }
 }
 
-@Preview
 @Composable
-private fun PreviewCardioTrackingScreen() {
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
+private fun ExtraInfoBottomSheet(
+    distanceTravelledInKm: Float,
+    totalDurationInSecs: Long
+) {
+    Column(
+        Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        CardioTrackingScreen(
-            modifier = Modifier.fillMaxSize(),
-            onPermissionNotGranted = {},
-            uiState = CardioTrackingUiState.CoordinateLoaded(
-                coordinates = listOf(
-                    LatLng(1.0, 1.0),
-                    LatLng(2.0, 1.0),
-                    LatLng(3.0, 1.0),
-                    LatLng(4.0, 1.0)
-                ),
-                currentCoordinate = LatLng(1.0, 1.0)
-            )
+        Text("DURATION", style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.height(12.dp))
+        Text(
+            NumberUtils.formatAsDuration(totalDurationInSecs),
+            style = MaterialTheme.typography.headlineLarge
+        )
+
+        Spacer(Modifier.height(32.dp))
+
+        Text("DISTANCE", style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.height(12.dp))
+        Text(
+            text = "${distanceTravelledInKm.roundToTwoDecimalPlace()} km",
+            style = MaterialTheme.typography.headlineLarge
         )
     }
 }

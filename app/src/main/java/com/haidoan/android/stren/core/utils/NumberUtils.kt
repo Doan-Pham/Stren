@@ -26,4 +26,13 @@ object NumberUtils {
         df.roundingMode = RoundingMode.DOWN
         return df.format(this)
     }
+
+    /**
+     * Format [seconds] as duration in cardio exercise
+     *
+     * Example: "5 seconds" becomes "00:00:05" and so on
+     */
+    fun formatAsDuration(seconds: Long): String {
+        return String.format("%02d:%02d:%02d", seconds / 3600, seconds % 3600 / 60, seconds % 60)
+    }
 }

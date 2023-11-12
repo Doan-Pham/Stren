@@ -11,10 +11,13 @@ import kotlinx.coroutines.flow.map
 import timber.log.Timber
 import javax.inject.Inject
 
-class CoordinatesRepositoryImpl @Inject constructor(private val dao: CoordinateDao) : CoordinatesRepository {
+class CoordinatesRepositoryImpl @Inject constructor(private val dao: CoordinateDao) :
+    CoordinatesRepository {
     override fun getCoordinates(): Flow<List<Coordinate>> =
         dao.getCoordinates()
-            .map { entities -> entities.map { it.asExternalModel() } }
+            .map { entities ->
+                entities.map { it.asExternalModel() }
+            }
             .catch {
                 Timber.e("CoordinatesRepositoryImpl - getCoordinates() - Exception: $it ${it.printStackTrace()}")
             }
@@ -32,7 +35,8 @@ class CoordinatesRepositoryImpl @Inject constructor(private val dao: CoordinateD
                 if (latestCoordinate == null) {
                     coordinate.toEntity()
                 } else {
-                    val distanceTravelled = latestCoordinate.asExternalModel().distanceTo(coordinate)
+                    val distanceTravelled =
+                        latestCoordinate.asExternalModel().distanceTo(coordinate)
                     coordinate.toEntity().copy(distanceTravelled = distanceTravelled)
                 }
 
@@ -48,7 +52,7 @@ class CoordinatesRepositoryImpl @Inject constructor(private val dao: CoordinateD
             dao.deleteAllCoordinates()
         } catch (ex: Exception) {
             ex.printStackTrace()
-            Timber.e("insertCoordinates() - Exception: $ex")
+            Timber.e("deleteAllCoordinates() - Exception: $ex")
         }
     }
 

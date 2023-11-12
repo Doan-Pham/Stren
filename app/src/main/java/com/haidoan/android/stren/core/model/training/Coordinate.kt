@@ -10,8 +10,8 @@ data class Coordinate(
 ) {
     fun distanceTo(other: Coordinate): Float {
         val thisLocation = Location("This Location").apply {
-            latitude = this.latitude
-            longitude = this.longitude
+            latitude = this@Coordinate.latitude
+            longitude = this@Coordinate.longitude
         }
         val otherLocation = Location("Other Location").apply {
             latitude = other.latitude
