@@ -1,8 +1,10 @@
 package com.haidoan.android.stren.app
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.*
 import androidx.activity.ComponentActivity
@@ -28,6 +30,7 @@ import com.google.firebase.ktx.Firebase
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.ui.StrenApp
 import com.haidoan.android.stren.core.designsystem.theme.StrenTheme
+import com.haidoan.android.stren.core.platform.android.location.LocationService
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -98,6 +101,20 @@ class MainActivity : ComponentActivity() {
                 // Your server's client ID, not your Android client ID.
                 .setServerClientId(getString(R.string.GOOGLE_WEB_CLIENT_ID)).build()
         ).build()
+
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+            ),
+            0
+        )
+
+        Intent(applicationContext, LocationService::class.java).apply {
+            action = LocationService.ACTION_START
+            startService(this)
+        }
 
         setContent {
             StrenTheme {
