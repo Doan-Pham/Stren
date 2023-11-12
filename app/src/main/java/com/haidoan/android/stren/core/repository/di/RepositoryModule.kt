@@ -6,9 +6,9 @@ import com.haidoan.android.stren.core.repository.impl.*
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ViewModelComponent
+import dagger.hilt.components.SingletonComponent
 
-@InstallIn(ViewModelComponent::class)
+@InstallIn(SingletonComponent::class)
 @Module
 abstract class RepositoryModule {
 
@@ -32,5 +32,8 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindDefaultValuesRepository(impl: DefaultValuesRepositoryImpl): DefaultValuesRepository
+
+    @Binds
+    abstract fun bindCoordinatesRepository(impl: CoordinatesRepositoryImpl): CoordinatesRepository
 }
 

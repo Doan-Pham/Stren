@@ -64,6 +64,49 @@ fun SimpleConfirmationDialog(
 
 @Composable
 fun SimpleConfirmationDialog(
+    onDismissRequest: () -> Unit,
+    title: String,
+    body: String,
+    onDismissClick: () -> Unit,
+    onConfirmClick: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirmClick()
+                    onDismissRequest()
+                }
+            ) {
+                Text(text = "Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onDismissClick()
+                    onDismissRequest()
+                }
+            ) {
+                Text(text = "Dismiss")
+            }
+        },
+        title = {
+            Text(text = title)
+        },
+        text = {
+            Text(text = body)
+        },
+        modifier = Modifier
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        containerColor = Color.White
+    )
+}
+
+@Composable
+fun SimpleConfirmationDialog(
     state: ConfirmationDialogState
 ) {
     AlertDialog(

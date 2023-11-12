@@ -1,5 +1,8 @@
 package com.haidoan.android.stren.core.utils
 
+import java.math.RoundingMode
+import java.text.DecimalFormat
+
 object NumberUtils {
 
     // Without this annotation, to call this method in Java you have to write NumberUtils.INSTANCE.method()
@@ -18,4 +21,9 @@ object NumberUtils {
             else -> throw IllegalArgumentException("Unknown input type: ${this.javaClass}")
         }
 
+    fun Float.roundToTwoDecimalPlace(): String {
+        val df = DecimalFormat("#.##")
+        df.roundingMode = RoundingMode.DOWN
+        return df.format(this)
+    }
 }
