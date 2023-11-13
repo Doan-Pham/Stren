@@ -62,6 +62,7 @@ internal fun CardioTrackingRoute(
     viewModel: CardioTrackingViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
+    onSaveResult: (trainedExerciseId: String, trainingSetId: String, durationInSecs: Long, distanceInKm: Float) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val totalDurationInSecs by viewModel.totalDurationInSecs.collectAsStateWithLifecycle()
@@ -85,6 +86,12 @@ internal fun CardioTrackingRoute(
                         drawableResourceId = R.drawable.ic_save,
                         description = "Menu Item Save",
                         clickHandler = {
+                            onSaveResult(
+                                viewModel.navArgs.trainedExerciseId,
+                                viewModel.navArgs.trainingSetId,
+                                totalDurationInSecs,
+                                distanceTravelledInKm
+                            )
                         })
                 )
             )
@@ -191,7 +198,7 @@ private fun TrackingMap(
 
         val cameraPositionState = rememberCameraPositionState {
             position = CameraPosition
-                .fromLatLngZoom(currentCoordinate, 20f)
+                .fromLatLngZoom(currentCoordinate, 30f)
         }
         val locationSource = remember {
             object : LocationSource {

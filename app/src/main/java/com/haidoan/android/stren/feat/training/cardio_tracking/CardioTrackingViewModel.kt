@@ -1,5 +1,6 @@
 package com.haidoan.android.stren.feat.training.cardio_tracking
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.platform.android.ClockTicker.secondsElapsed
@@ -17,9 +18,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 internal class CardioTrackingViewModel @Inject constructor(
-    private val coordinatesRepository: CoordinatesRepository
+    savedStateHandle: SavedStateHandle,
+    coordinatesRepository: CoordinatesRepository
 ) : ViewModel() {
-
+    val navArgs = CardioTrackingArgs(savedStateHandle)
     val totalDurationInSecs =
         secondsElapsed
             .stateIn(

@@ -16,11 +16,12 @@ import com.haidoan.android.stren.core.repository.base.CoordinatesRepository
 import com.haidoan.android.stren.core.utils.NumberUtils.roundToTwoDecimalPlace
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -66,7 +67,10 @@ class LocationService : Service() {
             return
         }
 
-        ClockTicker.startTicking()
+        serviceScope.launch {
+            ClockTicker.startTicking()
+        }
+
         observeAndUpdateUserCoordinate()
         observeAndUpdateNotification()
 
@@ -82,9 +86,10 @@ class LocationService : Service() {
         ClockTicker.resetTick()
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onDestroy() {
         super.onDestroy()
-        runBlocking { coordinatesRepository.deleteAllCoordinates() }
+        GlobalScope.launch { coordinatesRepository.deleteAllCoordinates() }
         ClockTicker.resetTick()
         serviceScope.cancel()
     }

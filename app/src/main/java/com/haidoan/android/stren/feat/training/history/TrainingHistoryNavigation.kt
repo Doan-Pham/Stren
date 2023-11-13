@@ -9,6 +9,8 @@ import androidx.navigation.*
 import com.google.accompanist.navigation.animation.composable
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.core.utils.DateUtils
+import com.haidoan.android.stren.feat.training.cardio_tracking.CARDIO_TRACKING_RESULT_SAVED_STATE_KEY
+import com.haidoan.android.stren.feat.training.cardio_tracking.CardioTrackingResult
 import com.haidoan.android.stren.feat.training.cardio_tracking.cardioTrackingScreen
 import com.haidoan.android.stren.feat.training.cardio_tracking.navigateToCardioTracking
 import com.haidoan.android.stren.feat.training.exercises.navigateToCreateExercise
@@ -244,7 +246,10 @@ internal fun NavGraphBuilder.trainingHistoryGraph(
                 listOf<String>()
             )
             .collectAsStateWithLifecycle()
-        Timber.d("exercisesIdsToAdd: $exercisesIdsToAdd")
+
+        val cardioTrackingResult: CardioTrackingResult? by navBackStackEntry.savedStateHandle.getStateFlow(
+            CARDIO_TRACKING_RESULT_SAVED_STATE_KEY, null
+        ).collectAsStateWithLifecycle()
 
         LogWorkoutRoute(
             exercisesIdsToAdd = exercisesIdsToAdd,
@@ -292,6 +297,11 @@ internal fun NavGraphBuilder.trainingHistoryGraph(
             .collectAsStateWithLifecycle()
         Timber.d("exercisesIdsToAdd: $exercisesIdsToAdd")
 
+        val cardioTrackingResult: CardioTrackingResult? by
+        navBackStackEntry.savedStateHandle
+            .getStateFlow(CARDIO_TRACKING_RESULT_SAVED_STATE_KEY, null)
+            .collectAsStateWithLifecycle()
+
         StartWorkoutRoute(
             exercisesIdsToAdd = exercisesIdsToAdd,
             onAddExercisesCompleted = {
@@ -303,6 +313,11 @@ internal fun NavGraphBuilder.trainingHistoryGraph(
             onNavigateToAddExercise = {
                 navController.navigate(ADD_EXERCISE_TO_WORKOUT_SCREEN_ROUTE)
             },
+            onSaveCardioTrackingResult = {
+                navBackStackEntry.savedStateHandle[CARDIO_TRACKING_RESULT_SAVED_STATE_KEY] =
+                    null
+            },
+            cardioTrackingResult = cardioTrackingResult,
             onNavigateToTrackCardio = navController::navigateToCardioTracking
         )
     }

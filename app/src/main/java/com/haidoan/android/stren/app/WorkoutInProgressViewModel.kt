@@ -12,6 +12,7 @@ import com.haidoan.android.stren.core.repository.base.RoutinesRepository
 import com.haidoan.android.stren.core.repository.base.WorkoutsRepository
 import com.haidoan.android.stren.core.utils.DateUtils
 import com.haidoan.android.stren.core.utils.ListUtils.replaceWith
+import com.haidoan.android.stren.feat.training.cardio_tracking.CardioTrackingResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -400,6 +401,32 @@ class WorkoutInProgressViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         restTimer?.cancel()
+    }
+
+    fun saveCardioTrackingResult(cardioTrackingResult: CardioTrackingResult) {
+        Timber.d("saveCardioTrackingResult - start, " +
+                "trainedExerciseId: ${cardioTrackingResult.trainedExerciseId}, " +
+                "trainingSet: ${cardioTrackingResult.trainingSetId} " +
+                "_trainedExercises: ${_trainedExercises.value.map { it.id }}")
+
+        _trainedExercises.value.firstOrNull { cardioTrackingResult.trainedExerciseId == it.id.toString() }
+            ?.also { exercise ->
+                Timber.d("saveCardioTrackingResult - exercise: $exercise")
+                exercise.trainingSets.firstOrNull { it.id.toString() == cardioTrackingResult.trainingSetId }
+                    ?.also { trainingSet ->
+                        Timber.d("saveCardioTrackingResult - trainingSet: $trainingSet")
+
+                        val updated = TrainingMeasurementMetrics.DistanceAndDuration(
+                            cardioTrackingResult.distanceInKm.toDouble(),
+                            cardioTrackingResult.durationInSecs / 3600.0,
+                            true
+                        )
+
+                        Timber.d("saveCardioTrackingResult - updated: $updated")
+
+                        updateExerciseTrainingSet(exercise, trainingSet, updated)
+                    }
+            }
     }
 }
 

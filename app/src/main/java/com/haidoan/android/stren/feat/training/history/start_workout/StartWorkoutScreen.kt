@@ -39,6 +39,7 @@ import com.haidoan.android.stren.core.designsystem.theme.*
 import com.haidoan.android.stren.core.model.Routine
 import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics
+import com.haidoan.android.stren.feat.training.cardio_tracking.CardioTrackingResult
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -48,6 +49,8 @@ internal const val START_WORKOUT_SCREEN_ROUTE = "START_WORKOUT_SCREEN_ROUTE"
 internal fun StartWorkoutRoute(
     modifier: Modifier = Modifier,
     exercisesIdsToAdd: List<String>,
+    cardioTrackingResult: CardioTrackingResult?,
+    onSaveCardioTrackingResult: () -> Unit,
     viewModel: StartWorkoutViewModel = hiltViewModel(),
     workoutInProgressViewModel: WorkoutInProgressViewModel = hiltViewModel(LocalActivity.current),
     onAddExercisesCompleted: () -> Unit,
@@ -64,6 +67,7 @@ internal fun StartWorkoutRoute(
     val coroutineScope = rememberCoroutineScope()
     val workoutInProgressUiState by workoutInProgressViewModel.uiState.collectAsStateWithLifecycle()
     var isWorkoutFinished by remember { mutableStateOf(false) }
+
 
     if (!workoutInProgressViewModel.isInitialized) {
         workoutInProgressViewModel.setInitArgs(
@@ -89,6 +93,11 @@ internal fun StartWorkoutRoute(
     }
     if (secondaryUiState.shouldShowConfirmDialog) {
         SimpleConfirmationDialog(state = secondaryUiState.confirmDialogState)
+    }
+
+    if (cardioTrackingResult != null) {
+        workoutInProgressViewModel.saveCardioTrackingResult(cardioTrackingResult)
+        onSaveCardioTrackingResult()
     }
 
     val startWorkoutAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
@@ -335,39 +344,6 @@ internal fun StartWorkoutScreen(
             textStyle = MaterialTheme.typography.bodyMedium
         )
     }
-
-//    if (locationPermissionsState.allPermissionsGranted) {
-//        cardioTrainingSetToTrack?.let { (trainedExerciseId, trainingSetId) ->
-//            startTrackingCardio(trainedExerciseId, trainingSetId)
-//        }
-//    } else {
-//        var shouldShowPermissionDialog by remember { mutableStateOf(true) }
-//
-//        if (shouldShowPermissionDialog) {
-//
-//            val textToShow = if (locationPermissionsState.shouldShowRationale) {
-//                """
-//                    Stren needs your location to track the cardio activity you are doing. So it'll be nice if you could grant us the permission to do so.
-//                """.trimIndent()
-//            } else {
-//                "This feature requires location permission to workout. Please grant Stren permission to access your location in device's settings"
-//            }
-//
-//            val context = LocalContext.current
-//
-//            SimpleConfirmationDialog(
-//                onDismissDialog = { shouldShowPermissionDialog = false },
-//                title = "Permission Required",
-//                body = textToShow
-//            ) {
-//                val intent = Intent(
-//                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-//                    Uri.fromParts("package", context.packageName, null)
-//                )
-//                context.startActivity(intent)
-//            }
-//        }
-//    }
 }
 
 @Composable
