@@ -418,13 +418,14 @@ class WorkoutInProgressViewModel @Inject constructor(
 
                         val updated = TrainingMeasurementMetrics.DistanceAndDuration(
                             cardioTrackingResult.distanceInKm.toDouble(),
-                            cardioTrackingResult.durationInSecs / 3600.0,
+                            (cardioTrackingResult.durationInSecs).toDouble() / 3600.0,
                             true
                         )
 
                         Timber.d("saveCardioTrackingResult - updated: $updated")
 
                         updateExerciseTrainingSet(exercise, trainingSet, updated)
+                        startRestTimer()
                     }
             }
     }

@@ -36,7 +36,7 @@ class DefaultLocationClient(
             }
 
             val request = com.google.android.gms.location.LocationRequest.Builder(
-                Priority.PRIORITY_BALANCED_POWER_ACCURACY, interval
+                Priority.PRIORITY_HIGH_ACCURACY, interval
             ).build()
 
 

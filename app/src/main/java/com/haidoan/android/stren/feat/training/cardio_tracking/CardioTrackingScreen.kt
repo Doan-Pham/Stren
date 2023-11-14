@@ -20,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -67,6 +68,7 @@ internal fun CardioTrackingRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val totalDurationInSecs by viewModel.totalDurationInSecs.collectAsStateWithLifecycle()
     val distanceTravelledInKm by viewModel.distanceTravelledInKm.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     CardioTrackingScreen(
         modifier = modifier,
@@ -86,6 +88,11 @@ internal fun CardioTrackingRoute(
                         drawableResourceId = R.drawable.ic_save,
                         description = "Menu Item Save",
                         clickHandler = {
+                            Intent(context.applicationContext, LocationService::class.java).apply {
+                                action = LocationService.ACTION_STOP
+                                context.applicationContext.startService(this)
+                            }
+
                             onSaveResult(
                                 viewModel.navArgs.trainedExerciseId,
                                 viewModel.navArgs.trainingSetId,
@@ -117,8 +124,6 @@ private fun CardioTrackingScreen(
     )
 
     val context = LocalContext.current
-
-    Timber.d("uiState: $uiState")
     when (uiState) {
         is CardioTrackingUiState.CoordinateLoaded -> {
             TrackingMap(
@@ -181,7 +186,6 @@ private fun TrackingMap(
     totalDurationInSecs: Long,
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
-
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         sheetContainerColor = Color.White,
@@ -193,12 +197,12 @@ private fun TrackingMap(
         }) { _ ->
 
         var previousZoom by remember {
-            mutableFloatStateOf(20f)
+            mutableFloatStateOf(15f)
         }
 
         val cameraPositionState = rememberCameraPositionState {
             position = CameraPosition
-                .fromLatLngZoom(currentCoordinate, 30f)
+                .fromLatLngZoom(currentCoordinate, 15f)
         }
         val locationSource = remember {
             object : LocationSource {
@@ -225,8 +229,9 @@ private fun TrackingMap(
             cameraPositionState = cameraPositionState,
             locationSource = locationSource
         ) {
+            val polygonPoints by rememberUpdatedState(newValue = coordinates)
             Polyline(
-                points = coordinates,
+                points = polygonPoints,
                 startCap = RoundCap(),
                 endCap = RoundCap(),
                 jointType = JointType.ROUND,
@@ -249,6 +254,7 @@ private fun TrackingMap(
 
         LaunchedEffect(cameraPositionState) {
             snapshotFlow { cameraPositionState.position.zoom }.collect {
+                Timber.d("zoom: $it")
                 previousZoom = it
             }
         }

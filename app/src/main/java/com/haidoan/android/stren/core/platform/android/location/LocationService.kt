@@ -19,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -34,7 +35,7 @@ class LocationService : Service() {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var locationClient: LocationClient
-
+    private var updateNotificationJob: Job? = null
     private val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID_LOCATION)
         .setContentTitle("Stren")
         .setSmallIcon(R.drawable.ic_app_logo_no_padding)
@@ -80,9 +81,17 @@ class LocationService : Service() {
         )
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun stop() {
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
         stopForeground(STOP_FOREGROUND_DETACH)
         stopSelf()
+        updateNotificationJob?.cancel()
+        updateNotificationJob = null
+        GlobalScope.launch { coordinatesRepository.deleteAllCoordinates() }
+        notificationManager.cancel(LOCATION_NOTIFICATION_ID)
         ClockTicker.resetTick()
     }
 
@@ -104,17 +113,19 @@ class LocationService : Service() {
             locationClient
                 .getLocationUpdates(2000L)
                 .collect { location ->
+                    Timber.d("observeAndUpdateUserCoordinate()-location: $location  ")
                     coordinatesRepository.insertCoordinate(Coordinate.from(location))
                 }
         }
     }
 
     private fun observeAndUpdateNotification() {
-        serviceScope.launch {
+        updateNotificationJob =  serviceScope.launch {
             val notificationManager =
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             coordinatesRepository.getTotalDistanceTravelled().collect {
+                Timber.d("observeAndUpdateNotification - distance: $it")
                 val updatedNotification = notification.setContentText(
                     "You have travelled ${((it?.div(1000)) ?: 0f).roundToTwoDecimalPlace()} km "
                 )
