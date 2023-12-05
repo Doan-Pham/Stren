@@ -10,8 +10,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
@@ -19,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -27,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -70,12 +75,31 @@ internal fun CardioTrackingRoute(
     val distanceTravelledInKm by viewModel.distanceTravelledInKm.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
+    var isPaused by remember {
+        mutableStateOf(false)
+    }
+
     CardioTrackingScreen(
         modifier = modifier,
         uiState = uiState,
         totalDurationInSecs = totalDurationInSecs,
         distanceTravelledInKm = distanceTravelledInKm,
-        onPermissionNotGranted = onNavigateBack
+        onPermissionNotGranted = onNavigateBack,
+        isPaused = isPaused,
+        togglePause = {
+            isPaused = it
+            if (it) {
+                Intent(context.applicationContext, LocationService::class.java).apply {
+                    action = LocationService.ACTION_PAUSE
+                    context.applicationContext.startService(this)
+                }
+            } else {
+                Intent(context.applicationContext, LocationService::class.java).apply {
+                    action = LocationService.ACTION_START
+                    context.applicationContext.startService(this)
+                }
+            }
+        }
     )
 
     LaunchedEffect(Unit) {
@@ -114,7 +138,9 @@ private fun CardioTrackingScreen(
     uiState: CardioTrackingUiState,
     totalDurationInSecs: Long,
     distanceTravelledInKm: Float,
-    onPermissionNotGranted: () -> Unit
+    onPermissionNotGranted: () -> Unit,
+    isPaused: Boolean,
+    togglePause: (Boolean) -> Unit,
 ) {
     val locationPermissionsState = rememberMultiplePermissionsState(
         permissions = listOf(
@@ -131,7 +157,9 @@ private fun CardioTrackingScreen(
                 coordinates = uiState.coordinates,
                 currentCoordinate = uiState.currentCoordinate,
                 distanceTravelledInKm = distanceTravelledInKm,
-                totalDurationInSecs = totalDurationInSecs
+                totalDurationInSecs = totalDurationInSecs,
+                isPaused = isPaused,
+                togglePause = togglePause
             )
         }
 
@@ -184,6 +212,8 @@ private fun TrackingMap(
     currentCoordinate: LatLng,
     distanceTravelledInKm: Float,
     totalDurationInSecs: Long,
+    isPaused: Boolean,
+    togglePause: (Boolean) -> Unit,
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
     BottomSheetScaffold(
@@ -192,7 +222,9 @@ private fun TrackingMap(
         sheetContent = {
             ExtraInfoBottomSheet(
                 distanceTravelledInKm = distanceTravelledInKm,
-                totalDurationInSecs = totalDurationInSecs
+                totalDurationInSecs = totalDurationInSecs,
+                isPaused = isPaused,
+                togglePause = togglePause
             )
         }) { _ ->
 
@@ -264,12 +296,31 @@ private fun TrackingMap(
 @Composable
 private fun ExtraInfoBottomSheet(
     distanceTravelledInKm: Float,
-    totalDurationInSecs: Long
+    totalDurationInSecs: Long,
+    isPaused: Boolean,
+    togglePause: (Boolean) -> Unit,
 ) {
     Column(
         Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Button(onClick = { togglePause(!isPaused) }) {
+            if (isPaused) {
+                Icon(
+                    modifier = Modifier.size(48.dp),
+                    painter = painterResource(id = R.drawable.ic_continue),
+                    contentDescription = ""
+                )
+            } else {
+                Icon(
+                    modifier = Modifier.size(48.dp),
+                    painter = painterResource(id = R.drawable.ic_pause),
+                    contentDescription = ""
+                )
+            }
+        }
+        Spacer(Modifier.height(12.dp))
+
         Text("DURATION", style = MaterialTheme.typography.bodyLarge)
         Spacer(Modifier.height(12.dp))
         Text(
@@ -277,7 +328,7 @@ private fun ExtraInfoBottomSheet(
             style = MaterialTheme.typography.headlineLarge
         )
 
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(16.dp))
 
         Text("DISTANCE", style = MaterialTheme.typography.bodyLarge)
         Spacer(Modifier.height(12.dp))

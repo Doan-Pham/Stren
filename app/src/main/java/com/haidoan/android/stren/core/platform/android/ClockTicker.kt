@@ -32,6 +32,10 @@ object ClockTicker {
         }
     }
 
+    fun pause(){
+        tickingJob?.cancel()
+    }
+
     fun resetTick() {
         coroutineScope.cancel()
         coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
