@@ -14,7 +14,8 @@ class TrainingProgramsRepositoryImpl @Inject constructor(
 ) {
     suspend fun addTrainingProgram(userId: String, trainingProgram: TrainingProgram): String {
         return try {
-            val newTrainingProgramId = trainingProgramRemoteDataSource.addTrainingProgram(userId, trainingProgram)
+            val newTrainingProgramId =
+                trainingProgramRemoteDataSource.addTrainingProgram(userId, trainingProgram)
 
             Timber.d("addTrainingProgram() - Success, new trainingProgram id: $newTrainingProgramId")
 
@@ -52,6 +53,33 @@ class TrainingProgramsRepositoryImpl @Inject constructor(
             .catch {
                 Timber.e("getTrainingProgramsStreamByUserId() - Exception: $it ${it.printStackTrace()}")
             }
+    }
+
+    suspend fun updateTrainingProgram(userId: String, trainingProgram: TrainingProgram) {
+        try {
+            Timber.d("updateTrainingProgram() - userId:$userId ; trainingProgramId: ${trainingProgram.id}")
+            trainingProgramRemoteDataSource.updateTrainingProgram(userId, trainingProgram)
+        } catch (exception: Exception) {
+            Timber.e("updateTrainingProgram() - Exception: ${exception.message}")
+        }
+    }
+
+    suspend fun getTrainingProgramById(userId: String, trainingProgramId: String): TrainingProgram {
+        Timber.d("getTrainingProgramById() is called: userId: $userId; trainingProgramId: $trainingProgramId")
+        return try {
+            trainingProgramRemoteDataSource.getTrainingProgramById(trainingProgramId)
+        } catch (ex: Exception) {
+            Timber.e("getTrainingProgramById() - exception: $ex")
+            TrainingProgram(
+                name = "Undefined",
+                id = "maximus",
+                totalNumOfDay = 8144,
+                numOfDaysPerWeek = 1304,
+                startDate = LocalDate.now(),
+                endDate = LocalDate.now(),
+                routinesByDayOffset = mapOf()
+            )
+        }
     }
 
     suspend fun deleteTrainingProgram(trainingProgramId: String) {

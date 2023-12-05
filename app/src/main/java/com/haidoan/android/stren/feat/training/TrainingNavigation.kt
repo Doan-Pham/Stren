@@ -15,6 +15,7 @@ import com.haidoan.android.stren.feat.training.exercises.view_exercises.SHOULD_R
 import com.haidoan.android.stren.feat.training.history.*
 import com.haidoan.android.stren.feat.training.history.log_workout.*
 import com.haidoan.android.stren.feat.training.programs.navigation.navigateToAddTrainingProgram
+import com.haidoan.android.stren.feat.training.programs.navigation.navigateToEditTrainingProgram
 import com.haidoan.android.stren.feat.training.programs.navigation.trainingProgramGraph
 import com.haidoan.android.stren.feat.training.programs.view_programs.TrainingProgramsRoute
 import com.haidoan.android.stren.feat.training.routines.NavigationPurpose
@@ -71,14 +72,16 @@ fun NavGraphBuilder.trainingGraph(
                         )
                     },
                     Pair("Programs") {
-                        TrainingProgramsRoute(appBarConfigurationChangeHandler = {
-                            appBarConfigurationChangeHandler(it)
-                        },
+                        TrainingProgramsRoute(
+                            appBarConfigurationChangeHandler = {
+                                appBarConfigurationChangeHandler(it)
+                            },
                             onNavigateToAddProgramScreen = {
                                 navController.navigateToAddTrainingProgram(
                                     userId = it,
                                 )
-                            }
+                            },
+                            onNavigateToEditTrainingProgramScreen = navController::navigateToEditTrainingProgram
                         )
                     },
                     Pair("Routines") {

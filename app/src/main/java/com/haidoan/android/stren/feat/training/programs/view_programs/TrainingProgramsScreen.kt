@@ -56,7 +56,7 @@ internal fun TrainingProgramsRoute(
     viewModel: TrainingProgramsViewModel = hiltViewModel(),
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onNavigateToAddProgramScreen: (userId: String) -> Unit,
-    //TODO onNavigateToEditTrainingProgramScreen: (userId: String, trainingProgramId: String) -> Unit,
+    onNavigateToEditTrainingProgramScreen: (userId: String, trainingProgramId: String) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val secondaryUiState by viewModel.secondaryUiState.collectAsStateWithLifecycle()
@@ -68,6 +68,7 @@ internal fun TrainingProgramsRoute(
     LaunchedEffect(key1 = Unit, block = {
         viewModel.triggerCollection()
     })
+
 
     val trainingHistoryAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         actionIcons = listOf(
@@ -104,7 +105,7 @@ internal fun TrainingProgramsRoute(
         modifier = modifier,
         uiState = uiState,
         onNavigateToAddTrainingProgramScreen = { onNavigateToAddProgramScreen(viewModel.cachedUserId) },
-        onNavigateToEditTrainingProgramScreen = { trainingProgramId -> //onNavigateToEditTrainingProgramScreen(viewModel.cachedUserId, trainingProgramId)
+        onNavigateToEditTrainingProgramScreen = { trainingProgramId -> onNavigateToEditTrainingProgramScreen(viewModel.cachedUserId, trainingProgramId)
         },
         onNavigateToAddWorkoutScreen = { trainingProgramId ->
             // onNavigateToAddWorkoutScreen(viewModel.cachedUserId, trainingProgramId)
@@ -144,7 +145,11 @@ internal fun TrainingProgramsScreen(
                         trainingProgram = trainingProgram,
                         onEditTrainingProgramClickHandler = onNavigateToEditTrainingProgramScreen,
                         onItemClickHandler = onNavigateToAddWorkoutScreen,
-                        onDeleteTrainingProgramClick = { onDeleteTrainingProgramClick(trainingProgram.id) }
+                        onDeleteTrainingProgramClick = {
+                            onDeleteTrainingProgramClick(
+                                trainingProgram.id
+                            )
+                        }
                     )
                 }
             }

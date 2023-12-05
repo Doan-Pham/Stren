@@ -4,6 +4,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.snapshots
 import com.haidoan.android.stren.core.datasource.remote.TRAINING_PROGRAMS_COLLECTION_PATH
 import com.haidoan.android.stren.core.datasource.remote.model.FirestoreTrainingProgram
+import com.haidoan.android.stren.core.datasource.remote.model.toTrainingProgram
 import com.haidoan.android.stren.core.datasource.remote.model.toTrainingProgramsList
 import com.haidoan.android.stren.core.model.TrainingProgram
 import com.haidoan.android.stren.core.utils.DateUtils.toTimeStampDayEnd
@@ -42,4 +43,18 @@ class TrainingProgramsFirestoreDataSource @Inject constructor() {
         firestore.collection(TRAINING_PROGRAMS_COLLECTION_PATH)
             .document(trainingProgramId).delete().await()
     }
+
+    suspend fun updateTrainingProgram(userId: String, trainingProgram: TrainingProgram) {
+        firestore
+            .collection(TRAINING_PROGRAMS_COLLECTION_PATH)
+            .document(trainingProgram.id)
+            .set(FirestoreTrainingProgram.from(userId, trainingProgram))
+            .await()
+    }
+
+    suspend fun getTrainingProgramById(trainingProgramId: String): TrainingProgram =
+        firestore
+            .collection(TRAINING_PROGRAMS_COLLECTION_PATH)
+            .document(trainingProgramId).get().await()
+            .toTrainingProgram()
 }

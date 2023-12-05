@@ -394,7 +394,7 @@ private fun TrainedExerciseRegion(
     when (trainedExercise.trainingSets.first()) {
         is TrainingMeasurementMetrics.DistanceAndDuration -> headerTitles.addAll(
             listOf(
-                "Kilometers", "Hours"
+                "Km", "Hrs"
             )
         )
 

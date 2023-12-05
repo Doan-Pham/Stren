@@ -27,6 +27,11 @@ object NumberUtils {
         return df.format(this)
     }
 
+    fun Double.roundToTwoDecimalPlace(): String {
+        val df = DecimalFormat("#.##")
+        df.roundingMode = RoundingMode.DOWN
+        return df.format(this)
+    }
     /**
      * Format [seconds] as duration in cardio exercise
      *

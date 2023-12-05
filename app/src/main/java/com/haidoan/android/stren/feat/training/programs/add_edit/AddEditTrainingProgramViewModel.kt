@@ -2,6 +2,7 @@ package com.haidoan.android.stren.feat.training.programs.add_edit
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.model.Routine
@@ -10,7 +11,10 @@ import com.haidoan.android.stren.core.repository.base.RoutinesRepository
 import com.haidoan.android.stren.core.repository.impl.TrainingProgramsRepositoryImpl
 import com.haidoan.android.stren.core.service.AuthenticationService
 import com.haidoan.android.stren.core.utils.DateUtils.getCurrentDate
+import com.haidoan.android.stren.feat.training.programs.navigation.AddEditTrainingProgramArgs
+import com.haidoan.android.stren.feat.training.programs.navigation.DEFAULT_PROGRAM_ID
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -32,11 +36,14 @@ internal const val MAX_NUM_OF_WEEKS = 12
 
 @HiltViewModel
 internal class AddEditTrainingProgramViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val authenticationService: AuthenticationService,
     private val routinesRepository: RoutinesRepository,
     private val trainingProgramsRepositoryImpl: TrainingProgramsRepositoryImpl,
-) :
-    ViewModel() {
+) : ViewModel() {
+    private val navArgs = AddEditTrainingProgramArgs(savedStateHandle)
+    val isEditing = navArgs.programId != DEFAULT_PROGRAM_ID
+    private lateinit var cachedProgram: TrainingProgram
 
     private val disposables = mutableListOf<() -> Unit>()
 
@@ -53,6 +60,8 @@ internal class AddEditTrainingProgramViewModel @Inject constructor(
     val selectedDayOffset: StateFlow<Int> = _selectedDayOffset.asStateFlow()
 
     private var _routinesIdsByDayOffset = MutableStateFlow<Map<Int, Set<String>>>(emptyMap())
+    val routinesIdsByDayOffset = MutableSharedFlow<Map<Int, Set<String>>>()
+
     private val _routines = MutableStateFlow<List<Routine>>(emptyList())
     val routines = _routines.asStateFlow()
 
@@ -89,6 +98,25 @@ internal class AddEditTrainingProgramViewModel @Inject constructor(
             routinesRepository.getRoutinesStreamByUserId(userId).collect { routines ->
                 Timber.d("routines: $routines")
                 _routines.update { routines }
+            }
+        }
+
+        Timber.d("AddEditTrainingProgram - programId: ${navArgs.programId}")
+        if (isEditing) {
+            viewModelScope.launch {
+                cachedProgram = trainingProgramsRepositoryImpl.getTrainingProgramById(
+                    userId = navArgs.userId,
+                    navArgs.programId
+                )
+
+                cachedProgram.apply {
+                    _programName.value = name
+                    _programStartDate.value = startDate
+                    _routinesIdsByDayOffset.value =
+                        routinesByDayOffset.mapValues { (_, value) -> value.map { it.extraId }.toSet() }
+                    routinesIdsByDayOffset.emit(_routinesIdsByDayOffset.value)
+                    _programTotalNumOfWeeks.value = totalNumOfDay / DEFAULT_NUM_OF_DAYS_PER_WEEK
+                }
             }
         }
     }
@@ -129,22 +157,36 @@ internal class AddEditTrainingProgramViewModel @Inject constructor(
                 _routinesIdsByDayOffset.value
                     .filter { it.value.isNotEmpty() }
                     .mapValues { routinesIdsByDayOffset ->
-                        routinesIdsByDayOffset.value.map { routineId ->
+                        routinesIdsByDayOffset.value.mapNotNull { routineId ->
                             _routines.value.firstOrNull { it.id == routineId }
-                        }.filterNotNull()
+                        }
                     }
 
-            trainingProgramsRepositoryImpl.addTrainingProgram(
-                userId = authenticationService.getCurrentUserId(),
-                trainingProgram = TrainingProgram(
-                    name = _programName.value,
-                    totalNumOfDay = totalNumOfDays,
-                    startDate = _programStartDate.value,
-                    endDate = _programStartDate.value.plusDays(totalNumOfDays.toLong()),
-                    numOfDaysPerWeek = DEFAULT_NUM_OF_DAYS_PER_WEEK,
-                    routinesByDayOffset = routinesByDayOffset
+            if (isEditing) {
+                trainingProgramsRepositoryImpl.updateTrainingProgram(
+                    userId = authenticationService.getCurrentUserId(),
+                    trainingProgram = cachedProgram.copy(
+                        name = _programName.value,
+                        totalNumOfDay = totalNumOfDays,
+                        startDate = _programStartDate.value,
+                        endDate = _programStartDate.value.plusDays(totalNumOfDays.toLong()),
+                        numOfDaysPerWeek = DEFAULT_NUM_OF_DAYS_PER_WEEK,
+                        routinesByDayOffset = routinesByDayOffset
+                    )
                 )
-            )
+            } else {
+                trainingProgramsRepositoryImpl.addTrainingProgram(
+                    userId = authenticationService.getCurrentUserId(),
+                    trainingProgram = TrainingProgram(
+                        name = _programName.value,
+                        totalNumOfDay = totalNumOfDays,
+                        startDate = _programStartDate.value,
+                        endDate = _programStartDate.value.plusDays(totalNumOfDays.toLong()),
+                        numOfDaysPerWeek = DEFAULT_NUM_OF_DAYS_PER_WEEK,
+                        routinesByDayOffset = routinesByDayOffset
+                    )
+                )
+            }
         }
     }
 

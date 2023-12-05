@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +26,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -89,13 +93,24 @@ internal fun AddEditTrainingProgramsRoute(
     val routinesOfSelectedDate by viewModel.routinesOfSelectedDate.collectAsStateWithLifecycle()
     val programTotalNumOfWeeks by viewModel.programTotalNumOfWeeks.collectAsStateWithLifecycle()
     val programStartDate by viewModel.programStartDate.collectAsStateWithLifecycle()
-    val dayOffsetsWithWorkouts by viewModel.dayOffsetsWithWorkouts.collectAsStateWithLifecycle(initialValue = emptySet())
+    val dayOffsetsWithWorkouts by viewModel.dayOffsetsWithWorkouts.collectAsStateWithLifecycle(
+        initialValue = emptySet()
+    )
 
     LaunchedEffect(key1 = routinesIdsByDayOffset, block = {
         viewModel.updateRoutinesIdsByDayOffset(routinesIdsByDayOffset)
     })
 
     LaunchedEffect(key1 = Unit, block = {
+        if (viewModel.isEditing) {
+            viewModel.routinesIdsByDayOffset.collect {
+                it.forEach { entry ->
+                    entry.value.forEach {
+                        trainingViewModel.addRoutineToProgram(entry.key, it)
+                    }
+                }
+            }
+        }
         viewModel.addDisposable {
             trainingViewModel.clearRoutinesOfTrainingProgram()
             trainingViewModel.clearRoutinesIdsByDayOffset()
@@ -111,6 +126,18 @@ internal fun AddEditTrainingProgramsRoute(
             body = "Are you sure want to delete this workout?"
         ) {
             trainingViewModel.removeRoutineFromDay(selectedDayGlobalOffset, routineIdToDelete)
+        }
+    }
+
+
+    var showBackConfirmDialog by remember { mutableStateOf(false) }
+    if (showBackConfirmDialog) {
+        SimpleConfirmationDialog(
+            onDismissDialog = { showBackConfirmDialog = false },
+            title = "Save your changes",
+            body = "Your changes will be lost. Are you sure you want do this?"
+        ) {
+            onNavigateBack()
         }
     }
 
@@ -162,7 +189,10 @@ internal fun AddEditTrainingProgramsRoute(
             ),
             onConfirmClick = { index ->
                 if (index == 0) {
-                    trainingViewModel.addRoutineToProgram(selectedDayGlobalOffset, selectedRoutineId.value)
+                    trainingViewModel.addRoutineToProgram(
+                        selectedDayGlobalOffset,
+                        selectedRoutineId.value
+                    )
                 } else {
                     onNavigateToAddRoutineScreen(selectedDayGlobalOffset)
                 }
@@ -196,7 +226,13 @@ internal fun AddEditTrainingProgramsRoute(
 
     val addEditProgramAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
         title = "New Program",
-        navigationIcon = IconButtonInfo.BACK_ICON,
+        navigationIcon = IconButtonInfo.BACK_ICON.copy {
+            if (viewModel.isEditing) {
+                showBackConfirmDialog = true
+            } else {
+                onNavigateBack()
+            }
+        },
         actionIcons = listOf(
             IconButtonInfo(
                 drawableResourceId = R.drawable.ic_save,
@@ -278,7 +314,16 @@ private fun AddEditTrainingProgramsScreen(
     addRoutine: (dayOffset: Int) -> Unit,
     editRoutine: (routineId: String) -> Unit,
     deleteRoutine: (routineId: String) -> Unit,
-) {
+
+    ) {
+    var shouldShowDuplicateDialog by remember {
+        mutableStateOf(false)
+    }
+
+    var dayOffsetToDuplicate: Int? by remember {
+        mutableStateOf(null)
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -402,7 +447,12 @@ private fun AddEditTrainingProgramsScreen(
                                 .map {
                                     (it.first - startWeekIndex) * numOfDaysPerWeek + it.second
                                 }.toSet(),
-                            selectedDayWeekGroupOffset = selectedDayWeekGroupOffset
+                            selectedDayWeekGroupOffset = selectedDayWeekGroupOffset,
+                            onDuplicateDay = {
+                                val selectedDayOffsetGlobal = startWeekIndex * numOfDaysPerWeek + it
+                                dayOffsetToDuplicate = selectedDayOffsetGlobal
+                                shouldShowDuplicateDialog = true
+                            }
                         )
                     }
                 }
@@ -454,8 +504,52 @@ private fun AddEditTrainingProgramsScreen(
                 }
             }
             //endregion
+
+            if (shouldShowDuplicateDialog && 1 == 2) {
+                var weekToDuplicate by remember {
+                    mutableIntStateOf(MIN_NUM_OF_WEEKS)
+                }
+                AlertDialog(onDismissRequest = { shouldShowDuplicateDialog = false },
+                    text = {
+                        Column {
+                            OutlinedNumberTextField(
+                                modifier = Modifier.fillMaxWidth(1f),
+                                number = weekToDuplicate,
+                                label = "Duplicate for",
+                                onValueChange = {
+                                    dayOffsetToDuplicate?.let {
+                                        weekToDuplicate =
+                                            it.coerceIn(
+                                                MIN_NUM_OF_WEEKS - 1,
+                                                Math.min(
+                                                    Math.max(
+                                                        MIN_NUM_OF_WEEKS,
+                                                        programTotalNumOfWeeks - it / numOfDaysPerWeek
+                                                    ),
+                                                    MAX_NUM_OF_WEEKS
+                                                )
+                                            )
+                                    }
+
+                                },
+                                suffixText = "Weeks",
+                                isError = programTotalNumOfWeeks < MIN_NUM_OF_WEEKS,
+                                errorText = "Duration can't be 0"
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        Button(
+                            enabled = weekToDuplicate >= MIN_NUM_OF_WEEKS,
+                            onClick = { /*TODO*/ }) {
+                            Text(text = "OK")
+                        }
+                    })
+            }
         }
     }
+
+
 }
 
 //region CALENDAR
@@ -467,6 +561,7 @@ private fun TrainingWeekGroup(
     selectedDayWeekGroupOffset: Int? = null,
     dayOffsetsWithWorkouts: Set<Int>,
     onSelectDay: (selectedDayOffsetLocalized: Int) -> Unit,
+    onDuplicateDay: (selectedDayOffsetLocalized: Int) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -495,7 +590,8 @@ private fun TrainingWeekGroup(
                     offset = it,
                     isSelected = selectedDayWeekGroupOffset == it,
                     haveWorkouts = dayOffsetsWithWorkouts.contains(it),
-                    onClickHandler = onSelectDay
+                    onClickHandler = onSelectDay,
+                    onDuplicate = onDuplicateDay
                 )
             }
         }
@@ -503,42 +599,53 @@ private fun TrainingWeekGroup(
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Day(
     offset: Int,
     isSelected: Boolean,
     haveWorkouts: Boolean,
     onClickHandler: (Int) -> Unit,
+    onDuplicate: (Int) -> Unit,
 ) {
     val backgroundColor = if (isSelected) Red60 else Color.White
     val textColor = if (isSelected) Color.White else Color.Black
-    Box(
-        modifier = Modifier
-            .height(46.dp)
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(8.dp))
-            .clickable { onClickHandler(offset) }
-            .background(backgroundColor)
-            .padding(dimensionResource(id = R.dimen.padding_small)),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            modifier = Modifier,
-            text = daysInWeek[offset % daysInWeek.size],
-            style = MaterialTheme.typography.bodySmall,
-            color = textColor,
-            textAlign = TextAlign.Center
-        )
-        if (haveWorkouts) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .size(4.dp)
-                    .clip(CircleShape)
-                    .background(Green70)
+    DropDownMenuScaffold(
+        menuItemsTextAndClickHandler = mapOf(
+            "Duplicate" to { onDuplicate(offset) })
+    )
+    { onExpandMenu ->
+        Box(
+            modifier = Modifier
+                .height(46.dp)
+                .aspectRatio(1f)
+                .clip(RoundedCornerShape(8.dp))
+                .combinedClickable(onClick = { onClickHandler(offset) }, onLongClick = {
+                    onExpandMenu()
+                })
+                .background(backgroundColor)
+                .padding(dimensionResource(id = R.dimen.padding_small)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                modifier = Modifier,
+                text = daysInWeek[offset % daysInWeek.size],
+                style = MaterialTheme.typography.bodySmall,
+                color = textColor,
+                textAlign = TextAlign.Center
             )
+            if (haveWorkouts) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .size(4.dp)
+                        .clip(CircleShape)
+                        .background(Green70)
+                )
+            }
         }
     }
+
 }
 
 //endregion
@@ -548,6 +655,7 @@ private fun Day(
 @Composable
 private fun RoutineItem(
     routine: Routine,
+
     // TODO: Routine click
     // onItemClickHandler: (routineId: String) -> Unit,
     onEditRoutineClickHandler: () -> Unit,
@@ -576,7 +684,8 @@ private fun RoutineItem(
             DropDownMenuScaffold(
                 menuItemsTextAndClickHandler = mapOf(
                     "Edit" to { onEditRoutineClickHandler() },
-                    "Delete" to { onDeleteRoutineClick() })
+                    "Delete" to { onDeleteRoutineClick() },
+                    "Duplicate" to { onDeleteRoutineClick() })
             )
             { onExpandMenu ->
                 Icon(
