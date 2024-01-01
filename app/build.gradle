@@ -6,11 +6,13 @@ plugins {
     id 'dagger.hilt.android.plugin'
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.8.21'
     id 'com.mikepenz.aboutlibraries.plugin'
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
+    id 'kotlin-parcelize'
 }
 
 android {
     namespace 'com.haidoan.android.stren'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.haidoan.android.stren"
@@ -43,10 +45,11 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled true
-            shrinkResources true
-            debuggable false
+            minifyEnabled false
+            shrinkResources false
+            debuggable true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
         }
 
         debug {
@@ -54,11 +57,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
     }
     buildFeatures {
         compose true
@@ -101,12 +104,13 @@ dependencies {
     implementation 'com.google.firebase:firebase-storage-ktx'
     implementation 'com.google.firebase:firebase-firestore-ktx'
     implementation 'com.facebook.android:facebook-login:16.0.1'
-    implementation 'com.google.android.gms:play-services-auth:20.6.0'
+    implementation 'com.google.android.gms:play-services-auth:20.7.0'
     implementation 'com.github.stevdza-san:OneTapCompose:1.0.0'
 
     // HILT
     implementation "com.google.dagger:hilt-android:$hilt_version"
-    implementation 'androidx.hilt:hilt-navigation-compose:1.0.0'
+    implementation 'androidx.hilt:hilt-navigation-compose:1.1.0'
+
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
 
     // ACCOMPANIST
@@ -151,6 +155,25 @@ dependencies {
     implementation "com.algolia:algoliasearch-client-kotlin:$algolia_kotlin_client_version"
     implementation "io.ktor:ktor-client-okhttp:2.2.4"
 
+    // GOOGLE-MAP
+    implementation 'com.google.maps.android:maps-compose:4.1.1'
+    // Optionally, you can include the Compose utils library for Clustering,
+    // Street View metadata checks, etc.
+    implementation 'com.google.maps.android:maps-compose-utils:4.1.1'
+    // Optionally, you can include the widgets library for ScaleBar, etc.
+    implementation 'com.google.maps.android:maps-compose-widgets:4.1.1'
+
+    // LOCATION
+    implementation 'com.google.android.gms:play-services-location:21.0.1'
+    implementation "com.google.accompanist:accompanist-permissions:0.25.0"
+
+    // ROOM
+    implementation 'androidx.room:room-common:2.6.0'
+    implementation 'androidx.room:room-ktx:2.6.0'
+    kapt "androidx.room:room-compiler:2.6.0"
+
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+
     // TEST
     testImplementation 'junit:junit:4.13.2'
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
@@ -166,4 +189,9 @@ dependencies {
 
 kapt {
     correctErrorTypes = true
+}
+secrets {
+    // Optionally specify a different file name containing your secrets.
+    // The plugin defaults to "local.properties"
+    propertiesFileName = "api_key.properties"
 }

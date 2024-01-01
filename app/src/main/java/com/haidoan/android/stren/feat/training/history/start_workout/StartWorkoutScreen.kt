@@ -1,5 +1,6 @@
 package com.haidoan.android.stren.feat.training.history.start_workout
 
+import android.Manifest
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,6 +24,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.haidoan.android.stren.R
 import com.haidoan.android.stren.app.LocalActivity
 import com.haidoan.android.stren.app.WorkoutInProgressInitArgs
@@ -36,6 +39,7 @@ import com.haidoan.android.stren.core.designsystem.theme.*
 import com.haidoan.android.stren.core.model.Routine
 import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics
+import com.haidoan.android.stren.feat.training.cardio_tracking.CardioTrackingResult
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -45,12 +49,15 @@ internal const val START_WORKOUT_SCREEN_ROUTE = "START_WORKOUT_SCREEN_ROUTE"
 internal fun StartWorkoutRoute(
     modifier: Modifier = Modifier,
     exercisesIdsToAdd: List<String>,
+    cardioTrackingResult: CardioTrackingResult?,
+    onSaveCardioTrackingResult: () -> Unit,
     viewModel: StartWorkoutViewModel = hiltViewModel(),
     workoutInProgressViewModel: WorkoutInProgressViewModel = hiltViewModel(LocalActivity.current),
     onAddExercisesCompleted: () -> Unit,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onBackToPreviousScreen: () -> Unit,
-    onNavigateToAddExercise: () -> Unit
+    onNavigateToAddExercise: () -> Unit,
+    onNavigateToTrackCardio: (trainedExerciseId: String, trainingSetId: String) -> Unit
 ) {
     val trainedExercises by workoutInProgressViewModel.trainedExercises.collectAsStateWithLifecycle()
     val secondaryUiState by viewModel.secondaryUiState.collectAsStateWithLifecycle()
@@ -60,6 +67,7 @@ internal fun StartWorkoutRoute(
     val coroutineScope = rememberCoroutineScope()
     val workoutInProgressUiState by workoutInProgressViewModel.uiState.collectAsStateWithLifecycle()
     var isWorkoutFinished by remember { mutableStateOf(false) }
+
 
     if (!workoutInProgressViewModel.isInitialized) {
         workoutInProgressViewModel.setInitArgs(
@@ -85,6 +93,11 @@ internal fun StartWorkoutRoute(
     }
     if (secondaryUiState.shouldShowConfirmDialog) {
         SimpleConfirmationDialog(state = secondaryUiState.confirmDialogState)
+    }
+
+    if (cardioTrackingResult != null) {
+        workoutInProgressViewModel.saveCardioTrackingResult(cardioTrackingResult)
+        onSaveCardioTrackingResult()
     }
 
     val startWorkoutAppBarConfiguration = AppBarConfiguration.NavigationAppBar(
@@ -188,11 +201,13 @@ internal fun StartWorkoutRoute(
                 workoutInProgressViewModel.cancelWorkout()
                 onBackToPreviousScreen()
             })
-        }
+        },
+        startTrackingCardio = onNavigateToTrackCardio
     )
 }
 
 // TODO: Encapsulate the below fields and methods in some state holder
+@OptIn(ExperimentalPermissionsApi::class)
 @SuppressLint("NewApi")
 @Composable
 internal fun StartWorkoutScreen(
@@ -209,7 +224,7 @@ internal fun StartWorkoutScreen(
     onUpdateExercise: (
         exerciseToUpdate: TrainedExercise,
         oldMetric: TrainingMeasurementMetrics,
-        newMetric: TrainingMeasurementMetrics
+        newMetric: TrainingMeasurementMetrics,
     ) -> Unit,
     onAddSetToExercise: (TrainedExercise) -> Unit,
     onDeleteExercise: (TrainedExercise) -> Unit,
@@ -218,7 +233,20 @@ internal fun StartWorkoutScreen(
     onIncrementRestTimerClick: () -> Unit,
     onDecrementRestTimerClick: () -> Unit,
     onSkipRestTimerClick: () -> Unit,
+    startTrackingCardio: (trainedExerciseId: String, trainingSetId: String) -> Unit,
 ) {
+
+    val locationPermissionsState = rememberMultiplePermissionsState(
+        permissions = listOf(
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+    )
+
+    var cardioTrainingSetToTrack: Pair<String, String>? by remember {
+        mutableStateOf(null)
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -263,12 +291,14 @@ internal fun StartWorkoutScreen(
                         }
                     }
                 }
+
                 is StartWorkoutUiState.EmptyWorkout -> {
                     Timber.d("Empty")
                     item {
                         EmptyScreen()
                     }
                 }
+
                 is StartWorkoutUiState.IsLogging -> {
 //                    Timber.d("IsAdding")
 //                    Timber.d("trainedExercises: ${uiState.trainedExercises}")
@@ -280,6 +310,7 @@ internal fun StartWorkoutScreen(
                             onAddSetButtonClick = onAddSetToExercise,
                             onDeleteExerciseClick = onDeleteExercise,
                             onDeleteTrainingSetClick = onDeleteTrainingSet,
+                            onStartTrackingCardio = startTrackingCardio,
                             onChangeCompleteStatusTrainingSetClick = onChangeCompleteStatusTrainingSetClick
                         )
                     }
@@ -343,6 +374,7 @@ private fun LazyItemScope.EmptyScreen() {
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun TrainedExerciseRegion(
     modifier: Modifier = Modifier,
@@ -350,20 +382,22 @@ private fun TrainedExerciseRegion(
     onUpdateExercise: (
         exerciseToUpdate: TrainedExercise,
         oldMetric: TrainingMeasurementMetrics,
-        newMetric: TrainingMeasurementMetrics
+        newMetric: TrainingMeasurementMetrics,
     ) -> Unit,
     onAddSetButtonClick: (TrainedExercise) -> Unit,
     onDeleteExerciseClick: (TrainedExercise) -> Unit,
     onDeleteTrainingSetClick: (TrainedExercise, TrainingMeasurementMetrics) -> Unit,
-    onChangeCompleteStatusTrainingSetClick: (TrainedExercise, TrainingMeasurementMetrics, Boolean) -> Unit
+    onChangeCompleteStatusTrainingSetClick: (TrainedExercise, TrainingMeasurementMetrics, Boolean) -> Unit,
+    onStartTrackingCardio: (trainedExerciseId: String, trainingSetId: String) -> Unit,
 ) {
     val headerTitles = mutableListOf<String>()
     when (trainedExercise.trainingSets.first()) {
         is TrainingMeasurementMetrics.DistanceAndDuration -> headerTitles.addAll(
             listOf(
-                "Kilometers", "Hours"
+                "Km", "Hrs"
             )
         )
+
         is TrainingMeasurementMetrics.DurationOnly -> headerTitles.addAll(listOf("Seconds"))
 
         is TrainingMeasurementMetrics.WeightAndRep -> headerTitles.addAll(listOf("Kg", "Reps"))
@@ -372,6 +406,7 @@ private fun TrainedExerciseRegion(
     val measurementMetricsTextFields = createTrainingSetTextFields(
         trainedExercise.trainingSets.first(), trainedExercise, onUpdateExercise
     )
+
     Column(modifier = modifier) {
         Row(
             modifier = Modifier
@@ -385,9 +420,24 @@ private fun TrainedExerciseRegion(
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(Modifier.weight(1f))
-            DropDownMenuScaffold(menuItemsTextAndClickHandler = mapOf("Delete" to {
-                onDeleteExerciseClick(trainedExercise)
-            })) { onExpandMenu ->
+
+            val menuItems = mutableMapOf<String, () -> Unit>()
+            menuItems["Delete"] = { onDeleteExerciseClick(trainedExercise) }
+
+            // TODO: Remove hardcoded string
+            if (trainedExercise.exercise.belongedCategory == "Cardio" &&
+                trainedExercise.trainingSets.any { !it.isComplete }
+            ) {
+                menuItems["Start tracking"] = {
+                    onStartTrackingCardio(
+                        trainedExercise.id.toString(),
+                        trainedExercise.trainingSets.first { !it.isComplete }.id.toString()
+                    )
+                }
+            }
+            DropDownMenuScaffold(
+                menuItemsTextAndClickHandler = menuItems
+            ) { onExpandMenu ->
                 Icon(modifier = Modifier
                     .clickable {
                         onExpandMenu()
@@ -397,7 +447,6 @@ private fun TrainedExerciseRegion(
                     contentDescription = "Icon more",
                     tint = MaterialTheme.colorScheme.primary)
             }
-
         }
 
         Column(
@@ -481,8 +530,8 @@ private fun createTrainingSetTextFields(
     onUpdateExercise: (
         exerciseToUpdate: TrainedExercise,
         oldMetric: TrainingMeasurementMetrics,
-        newMetric: TrainingMeasurementMetrics
-    ) -> Unit
+        newMetric: TrainingMeasurementMetrics,
+    ) -> Unit,
 ): List<@Composable (Modifier, TrainingMeasurementMetrics) -> Unit> {
     when (trainingSet) {
         is TrainingMeasurementMetrics.DistanceAndDuration -> {
@@ -510,6 +559,7 @@ private fun createTrainingSetTextFields(
                     })
             })
         }
+
         is TrainingMeasurementMetrics.DurationOnly -> {
             return listOf { modifierParam, oldMetrics ->
                 SimpleNumberTextField(
@@ -524,6 +574,7 @@ private fun createTrainingSetTextFields(
                     })
             }
         }
+
         is TrainingMeasurementMetrics.WeightAndRep -> {
             return listOf({ modifierParam, oldMetrics ->
                 SimpleNumberTextField(
@@ -593,7 +644,7 @@ private fun TrainingSetRow(
     trainingSet: TrainingMeasurementMetrics = TrainingMeasurementMetrics.DurationOnly(-1),
     remainingCells: List<@Composable (Modifier, TrainingMeasurementMetrics) -> Unit>,
     onDeleteTrainingSetClick: () -> Unit,
-    onChangeCompleteStatusTrainingSetClick: (Boolean) -> Unit
+    onChangeCompleteStatusTrainingSetClick: (Boolean) -> Unit,
 ) {
 
     val widthInDp = with(LocalDensity.current) {

@@ -22,14 +22,12 @@ import com.haidoan.android.stren.core.designsystem.theme.Gray60
 fun StrenHorizontalPager(
     modifier: Modifier,
     userScrollEnabled: Boolean = true,
-    pagerState: PagerState = rememberPagerState(),
-    contents: List<@Composable () -> Unit>
+    contents: List<@Composable () -> Unit>,
+    pagerState: PagerState = rememberPagerState(pageCount = { contents.size }),
 ) {
-    val pageCount = contents.size
     Column(modifier = modifier) {
         HorizontalPager(
             modifier = Modifier.wrapContentSize(),
-            pageCount = pageCount,
             userScrollEnabled = userScrollEnabled,
             state = pagerState,
             verticalAlignment = Alignment.Top,
@@ -42,7 +40,7 @@ fun StrenHorizontalPager(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            repeat(pageCount) { iteration ->
+            repeat(contents.size) { iteration ->
                 val color =
                     if (pagerState.currentPage == iteration) MaterialTheme.colorScheme.primary
                     else Gray60

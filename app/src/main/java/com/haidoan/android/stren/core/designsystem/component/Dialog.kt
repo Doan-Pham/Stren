@@ -64,6 +64,49 @@ fun SimpleConfirmationDialog(
 
 @Composable
 fun SimpleConfirmationDialog(
+    onDismissRequest: () -> Unit,
+    title: String,
+    body: String,
+    onDismissClick: () -> Unit,
+    onConfirmClick: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirmClick()
+                    onDismissRequest()
+                }
+            ) {
+                Text(text = "Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onDismissClick()
+                    onDismissRequest()
+                }
+            ) {
+                Text(text = "Dismiss")
+            }
+        },
+        title = {
+            Text(text = title)
+        },
+        text = {
+            Text(text = body)
+        },
+        modifier = Modifier
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        containerColor = Color.White
+    )
+}
+
+@Composable
+fun SimpleConfirmationDialog(
     state: ConfirmationDialogState
 ) {
     AlertDialog(
@@ -293,11 +336,72 @@ fun SingleSelectionDialog(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SingleSelectionDialog(
+    title: String,
+    options: List<@Composable (Modifier) -> Unit>,
+    onIndexChange: (index: Int) -> Unit = {},
+    onConfirmClick: (selectedOptionIndex: Int) -> Unit,
+    onDismissDialog: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismissDialog,
+    ) {
+        Column(
+            modifier = Modifier
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color.White)
+                .padding(dimensionResource(id = R.dimen.padding_large))
+        ) {
+            Text(text = title, style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.size(dimensionResource(R.dimen.padding_medium)))
+
+            var selectedIndex by remember {
+                mutableStateOf(0)
+            }
+            RadioGroup(
+                modifier = Modifier.fillMaxWidth(),
+                radioOptions = options,
+                selectedOptionIndex = selectedIndex,
+                onOptionSelected = {
+                    selectedIndex = it
+                })
+
+            Spacer(Modifier.size(dimensionResource(R.dimen.padding_medium)))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                StrenTextButton(
+                    modifier = Modifier.weight(1f),
+                    onClickHandler = onDismissDialog,
+                    text = "Cancel",
+                    textStyle = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(Modifier.size(dimensionResource(id = R.dimen.padding_small)))
+                StrenFilledButton(
+                    modifier = Modifier.weight(1f),
+                    onClickHandler = {
+                        onConfirmClick(selectedIndex)
+                        onDismissDialog()
+                    },
+                    text = "Confirm",
+                    textStyle = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+    }
+}
+
 data class SingleSelectionDialogState constructor(
     val title: String,
     val options: List<String>,
     val onConfirmClick: (selectedOptionIndex: Int) -> Unit,
-    val onDismissDialog: () -> Unit
+    val onDismissDialog: () -> Unit,
 ) {
     companion object {
         val undefined = SingleSelectionDialogState(

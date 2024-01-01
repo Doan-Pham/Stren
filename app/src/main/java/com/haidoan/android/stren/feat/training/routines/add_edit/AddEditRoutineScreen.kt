@@ -27,23 +27,25 @@ import com.haidoan.android.stren.core.designsystem.component.*
 import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics
 import com.haidoan.android.stren.core.utils.ValidationUtils
+import com.haidoan.android.stren.feat.training.TrainingViewModel
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
 internal const val ADD_EDIT_ROUTINE_SCREEN_ROUTE = "add_edit_routine_screen_route"
 internal const val ROUTINE_ID_NAV_ARG = "routine_id_arg"
-internal const val IS_ADDING_ROUTINE_NAV_ARG = "is_adding_arg"
+internal const val NAVIGATION_PURPOSE_NAV_ARG = "purpose_arg"
 internal const val USER_ID_ROUTINE_NAV_ARG = "user_id_routine_arg"
 
 @Composable
 internal fun AddEditRoutineRoute(
     modifier: Modifier = Modifier,
     exercisesIdsToAdd: List<String>,
+    trainingViewModel: TrainingViewModel,
     viewModel: AddEditRoutineViewModel = hiltViewModel(),
     onAddExercisesCompleted: () -> Unit,
     appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
     onBackToPreviousScreen: () -> Unit,
-    onNavigateToAddExercise: () -> Unit
+    onNavigateToAddExercise: () -> Unit,
 ) {
     if (exercisesIdsToAdd.isNotEmpty()) {
         viewModel.setExercisesIdsToAdd(exercisesIdsToAdd)
@@ -63,7 +65,61 @@ internal fun AddEditRoutineRoute(
         }
     }
 
+    val addRoutineToProgramEvent by viewModel.addRoutineToProgramEvent.collectAsStateWithLifecycle()
+    addRoutineToProgramEvent?.let {
+        val currentAddRoutineToProgram by rememberUpdatedState {
+            trainingViewModel.addRoutineToProgram(it.first, it.second.id)
+            viewModel.onAddRoutineToProgram()
+        }
+        LaunchedEffect(addRoutineToProgramEvent) {
+            currentAddRoutineToProgram()
+            onBackToPreviousScreen()
+        }
+    }
+
+    val editRoutineOfProgramEvent by viewModel.editRoutineOfProgramEvent.collectAsStateWithLifecycle()
+    editRoutineOfProgramEvent?.let {
+        val currentEditRoutineOfProgramEvent by rememberUpdatedState {
+            trainingViewModel.editRoutineOfProgram(it)
+            viewModel.onEditRoutineOfProgram()
+        }
+        LaunchedEffect(editRoutineOfProgramEvent) {
+            currentEditRoutineOfProgramEvent()
+            onBackToPreviousScreen()
+        }
+    }
+
+    val needToGetProgramRoutine by viewModel.needToGetProgramRoutine.collectAsStateWithLifecycle()
+    needToGetProgramRoutine?.let { routineId ->
+        val currentGetRoutineOfProgram by rememberUpdatedState {
+            trainingViewModel.getRoutineById(routineId)?.let {
+                viewModel.setProgramRoutineToEdit(it)
+            }
+        }
+        LaunchedEffect(needToGetProgramRoutine) {
+            currentGetRoutineOfProgram()
+        }
+    }
+
+    val navigateBackEvent by viewModel.navigateBackEvent.collectAsStateWithLifecycle()
+    navigateBackEvent?.let {
+        onBackToPreviousScreen()
+    }
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    AddEditRoutineScreen(
+        modifier = modifier,
+        uiState = uiState,
+        routineName = viewModel.routineNameTextFieldValue,
+        onRoutineNameChange = { viewModel.routineNameTextFieldValue = it },
+        onNavigateToAddExercise = onNavigateToAddExercise,
+        onUpdateExercise = viewModel::updateExerciseTrainingSet,
+        onAddSetToExercise = viewModel::addEmptyTrainingSet,
+        onDeleteExercise = viewModel::deleteExercise,
+        onDeleteTrainingSet = viewModel::deleteTrainingSet
+    )
+
     val onBackClickHandler = {
         if (uiState is AddEditRoutineUiState.IsEditing && (uiState as AddEditRoutineUiState.IsEditing).trainedExercises.isNotEmpty()) {
             shouldShowBackConfirmDialog = true
@@ -107,7 +163,6 @@ internal fun AddEditRoutineRoute(
                             }
                         } else {
                             viewModel.addEditRoutine()
-                            onBackToPreviousScreen()
                         }
                     }
                 }
@@ -120,17 +175,6 @@ internal fun AddEditRoutineRoute(
         isAppBarConfigured = true
     }
 
-    AddEditRoutineScreen(
-        modifier = modifier,
-        uiState = uiState,
-        routineName = viewModel.routineNameTextFieldValue,
-        onRoutineNameChange = { viewModel.routineNameTextFieldValue = it },
-        onNavigateToAddExercise = onNavigateToAddExercise,
-        onUpdateExercise = viewModel::updateExerciseTrainingSet,
-        onAddSetToExercise = viewModel::addEmptyTrainingSet,
-        onDeleteExercise = viewModel::deleteExercise,
-        onDeleteTrainingSet = viewModel::deleteTrainingSet
-    )
 }
 
 @SuppressLint("NewApi")
@@ -144,11 +188,11 @@ internal fun AddEditRoutineScreen(
     onUpdateExercise: (
         exerciseToUpdate: TrainedExercise,
         oldMetric: TrainingMeasurementMetrics,
-        newMetric: TrainingMeasurementMetrics
+        newMetric: TrainingMeasurementMetrics,
     ) -> Unit,
     onAddSetToExercise: (TrainedExercise) -> Unit,
     onDeleteExercise: (TrainedExercise) -> Unit,
-    onDeleteTrainingSet: (TrainedExercise, TrainingMeasurementMetrics) -> Unit
+    onDeleteTrainingSet: (TrainedExercise, TrainingMeasurementMetrics) -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -173,10 +217,12 @@ internal fun AddEditRoutineScreen(
                         LoadingAnimation()
                     }
                 }
+
                 is AddEditRoutineUiState.EmptyRoutine -> {
                     Timber.d("Empty")
                     EmptyScreen()
                 }
+
                 is AddEditRoutineUiState.IsEditing -> {
                     Timber.d("IsAdding")
                     Timber.d("trainedExercises: ${uiState.trainedExercises}")
@@ -236,11 +282,11 @@ private fun TrainedExerciseRegion(
     onUpdateExercise: (
         exerciseToUpdate: TrainedExercise,
         oldMetric: TrainingMeasurementMetrics,
-        newMetric: TrainingMeasurementMetrics
+        newMetric: TrainingMeasurementMetrics,
     ) -> Unit,
     onAddSetButtonClick: (TrainedExercise) -> Unit,
     onDeleteExerciseClick: (TrainedExercise) -> Unit,
-    onDeleteTrainingSetClick: (TrainedExercise, TrainingMeasurementMetrics) -> Unit
+    onDeleteTrainingSetClick: (TrainedExercise, TrainingMeasurementMetrics) -> Unit,
 ) {
     val headerTitles = mutableListOf<String>()
     when (trainedExercise.trainingSets.first()) {
@@ -249,6 +295,7 @@ private fun TrainedExerciseRegion(
                 "Kilometers", "Hours"
             )
         )
+
         is TrainingMeasurementMetrics.DurationOnly -> headerTitles.addAll(listOf("Seconds"))
 
         is TrainingMeasurementMetrics.WeightAndRep -> headerTitles.addAll(listOf("Kg", "Reps"))
@@ -358,8 +405,8 @@ private fun createTrainingSetTextFields(
     onUpdateExercise: (
         exerciseToUpdate: TrainedExercise,
         oldMetric: TrainingMeasurementMetrics,
-        newMetric: TrainingMeasurementMetrics
-    ) -> Unit
+        newMetric: TrainingMeasurementMetrics,
+    ) -> Unit,
 ): List<@Composable (Modifier, TrainingMeasurementMetrics) -> Unit> {
     when (trainingSet) {
         is TrainingMeasurementMetrics.DistanceAndDuration -> {
@@ -387,6 +434,7 @@ private fun createTrainingSetTextFields(
                     })
             })
         }
+
         is TrainingMeasurementMetrics.DurationOnly -> {
             return listOf { modifierParam, oldMetrics ->
                 TextFieldByNumberType(modifier = modifierParam,
@@ -401,6 +449,7 @@ private fun createTrainingSetTextFields(
                     })
             }
         }
+
         is TrainingMeasurementMetrics.WeightAndRep -> {
             return listOf({ modifierParam, oldMetrics ->
                 TextFieldByNumberType(modifier = modifierParam,
@@ -435,7 +484,7 @@ private fun createTrainingSetTextFields(
  */
 @Composable
 private fun TextFieldByNumberType(
-    modifier: Modifier, numberType: NumberType, number: Number, onValueChange: (Number) -> Unit
+    modifier: Modifier, numberType: NumberType, number: Number, onValueChange: (Number) -> Unit,
 ) {
     when (numberType) {
         NumberType.LONG -> {
@@ -450,6 +499,7 @@ private fun TextFieldByNumberType(
                 onValueChange(newNumberValue)
             })
         }
+
         NumberType.DOUBLE -> {
             /**
              * TextField should only show decimal point in 2 cases:
@@ -550,7 +600,7 @@ private fun TrainingSetRow(
     onFirstColumnWidthChange: (Int) -> Unit,
     trainingSet: TrainingMeasurementMetrics = TrainingMeasurementMetrics.DurationOnly(-1),
     remainingCells: List<@Composable (Modifier, TrainingMeasurementMetrics) -> Unit>,
-    onDeleteTrainingSetClick: () -> Unit
+    onDeleteTrainingSetClick: () -> Unit,
 ) {
 
     val widthInDp = with(LocalDensity.current) {

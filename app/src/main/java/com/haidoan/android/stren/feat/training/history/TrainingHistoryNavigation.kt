@@ -9,6 +9,10 @@ import androidx.navigation.*
 import com.google.accompanist.navigation.animation.composable
 import com.haidoan.android.stren.app.navigation.AppBarConfiguration
 import com.haidoan.android.stren.core.utils.DateUtils
+import com.haidoan.android.stren.feat.training.cardio_tracking.CARDIO_TRACKING_RESULT_SAVED_STATE_KEY
+import com.haidoan.android.stren.feat.training.cardio_tracking.CardioTrackingResult
+import com.haidoan.android.stren.feat.training.cardio_tracking.cardioTrackingScreen
+import com.haidoan.android.stren.feat.training.cardio_tracking.navigateToCardioTracking
 import com.haidoan.android.stren.feat.training.exercises.navigateToCreateExercise
 import com.haidoan.android.stren.feat.training.history.log_workout.LOG_WORKOUT_SCREEN_ROUTE
 import com.haidoan.android.stren.feat.training.history.log_workout.LogWorkoutRoute
@@ -26,7 +30,7 @@ private const val SELECTED_EXERCISES_IDS_SAVED_STATE_KEY = "SELECTED_EXERCISES_I
 
 internal fun NavController.navigateToStartWorkoutScreen(
     userId: String,
-    selectedDate: LocalDate
+    selectedDate: LocalDate,
 ) {
     Timber.d(
         START_WORKOUT_SCREEN_ROUTE +
@@ -42,7 +46,7 @@ internal fun NavController.navigateToStartWorkoutScreen(
 
 internal fun NavController.navigateToAddWorkoutScreen(
     userId: String,
-    selectedDate: LocalDate
+    selectedDate: LocalDate,
 ) {
     Timber.d(
         LOG_WORKOUT_SCREEN_ROUTE +
@@ -60,7 +64,7 @@ internal fun NavController.navigateToAddWorkoutScreen(
 
 internal fun NavController.navigateToAddWorkoutWithRoutine(
     userId: String,
-    routineId: String
+    routineId: String,
 ) {
     Timber.d(
         LOG_WORKOUT_SCREEN_ROUTE +
@@ -120,7 +124,7 @@ internal class LogWorkoutArgs(
     val isAddingWorkout: Boolean,
     val workoutId: String,
     val selectedDate: LocalDate,
-    val selectedRoutineId: String
+    val selectedRoutineId: String,
 ) {
     constructor(savedStateHandle: SavedStateHandle) :
             this(
@@ -156,7 +160,7 @@ internal class StartWorkoutArgs(
     val userId: String,
     val workoutId: String,
     val selectedDate: LocalDate,
-    val selectedRoutineId: String
+    val selectedRoutineId: String,
 ) {
     constructor(savedStateHandle: SavedStateHandle) :
             this(
@@ -180,7 +184,7 @@ Reference: https://stackoverflow.com/questions/70404038/jetpack-compose-navigati
 @OptIn(ExperimentalAnimationApi::class)
 internal fun NavGraphBuilder.trainingHistoryGraph(
     navController: NavController,
-    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit
+    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit,
 ) {
     composable(
         route = WORKOUT_DETAIL_SCREEN_ROUTE +
@@ -242,7 +246,10 @@ internal fun NavGraphBuilder.trainingHistoryGraph(
                 listOf<String>()
             )
             .collectAsStateWithLifecycle()
-        Timber.d("exercisesIdsToAdd: $exercisesIdsToAdd")
+
+        val cardioTrackingResult: CardioTrackingResult? by navBackStackEntry.savedStateHandle.getStateFlow(
+            CARDIO_TRACKING_RESULT_SAVED_STATE_KEY, null
+        ).collectAsStateWithLifecycle()
 
         LogWorkoutRoute(
             exercisesIdsToAdd = exercisesIdsToAdd,
@@ -290,6 +297,11 @@ internal fun NavGraphBuilder.trainingHistoryGraph(
             .collectAsStateWithLifecycle()
         Timber.d("exercisesIdsToAdd: $exercisesIdsToAdd")
 
+        val cardioTrackingResult: CardioTrackingResult? by
+        navBackStackEntry.savedStateHandle
+            .getStateFlow(CARDIO_TRACKING_RESULT_SAVED_STATE_KEY, null)
+            .collectAsStateWithLifecycle()
+
         StartWorkoutRoute(
             exercisesIdsToAdd = exercisesIdsToAdd,
             onAddExercisesCompleted = {
@@ -300,7 +312,13 @@ internal fun NavGraphBuilder.trainingHistoryGraph(
             onBackToPreviousScreen = { navController.popBackStack() },
             onNavigateToAddExercise = {
                 navController.navigate(ADD_EXERCISE_TO_WORKOUT_SCREEN_ROUTE)
-            }
+            },
+            onSaveCardioTrackingResult = {
+                navBackStackEntry.savedStateHandle[CARDIO_TRACKING_RESULT_SAVED_STATE_KEY] =
+                    null
+            },
+            cardioTrackingResult = cardioTrackingResult,
+            onNavigateToTrackCardio = navController::navigateToCardioTracking
         )
     }
 
@@ -323,4 +341,9 @@ internal fun NavGraphBuilder.trainingHistoryGraph(
                 navController.navigateToCreateExercise(it)
             })
     }
+
+    cardioTrackingScreen(
+        navController = navController,
+        appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
+    )
 }

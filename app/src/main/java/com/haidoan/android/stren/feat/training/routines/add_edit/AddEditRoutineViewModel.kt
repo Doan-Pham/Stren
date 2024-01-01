@@ -9,7 +9,9 @@ import androidx.lifecycle.viewModelScope
 import com.haidoan.android.stren.core.model.*
 import com.haidoan.android.stren.core.repository.base.ExercisesRepository
 import com.haidoan.android.stren.core.repository.base.RoutinesRepository
+import com.haidoan.android.stren.core.service.AuthenticationService
 import com.haidoan.android.stren.feat.training.routines.AddEditRoutineArgs
+import com.haidoan.android.stren.feat.training.routines.NavigationPurpose
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -19,28 +21,56 @@ import javax.inject.Inject
 
 const val SELECTED_EXERCISES_IDS_SAVED_STATE_KEY = "selected_exercises_ids"
 
+
 @HiltViewModel
 internal class AddEditRoutineViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    private val authenticationService: AuthenticationService,
     private val routinesRepository: RoutinesRepository,
-    private val exercisesRepository: ExercisesRepository
+    private val exercisesRepository: ExercisesRepository,
 ) : ViewModel() {
     var routineNameTextFieldValue by mutableStateOf("New routine")
     private val navArgs: AddEditRoutineArgs = AddEditRoutineArgs(savedStateHandle)
     private val _trainedExercises: MutableStateFlow<List<TrainedExercise>> =
         MutableStateFlow(listOf())
 
+    private val _addRoutineToProgramEvent = MutableStateFlow<Pair<Int, Routine>?>(null)
+    val addRoutineToProgramEvent = _addRoutineToProgramEvent.asStateFlow()
+
+    private val _needToGetProgramRoutine = MutableStateFlow<String?>(null)
+    val needToGetProgramRoutine = _needToGetProgramRoutine.asStateFlow()
+
+    private val _editRoutineOfProgramEvent = MutableStateFlow<Routine?>(null)
+    val editRoutineOfProgramEvent = _editRoutineOfProgramEvent.asStateFlow()
+
+    private val _navigateBackEvent = MutableStateFlow<Unit?>(null)
+    val navigateBackEvent = _navigateBackEvent.asStateFlow()
+
+
     init {
-        if (!navArgs.isAddingRoutine) {
+        if (navArgs.navigationPurpose == NavigationPurpose.EDIT_ROUTINE) {
             viewModelScope.launch {
-                val routine = routinesRepository.getRoutineById(navArgs.userId, navArgs.routineId)
+                val userId = authenticationService.getCurrentUserId()
+                val routine = routinesRepository.getRoutineById(userId, navArgs.routineId)
                 routineNameTextFieldValue = routine.name
                 _trainedExercises.value = routine.trainedExercises
 
                 Timber.d("routine: $routine")
                 Timber.d(" _trainedExercises.value: ${_trainedExercises.value}")
             }
+        } else if (navArgs.navigationPurpose == NavigationPurpose.EDIT_ROUTINE_OF_PROGRAM) {
+            viewModelScope.launch {
+                _needToGetProgramRoutine.emit(navArgs.routineId)
+            }
         }
+    }
+
+    fun setProgramRoutineToEdit(routine: Routine) {
+        routineNameTextFieldValue = routine.name
+        _trainedExercises.value = routine.trainedExercises
+
+        Timber.d("routine: ${routine.name}")
+        Timber.d(" _trainedExercises.value.size: ${_trainedExercises.value.size}")
     }
 
     fun setExercisesIdsToAdd(ids: List<String>) {
@@ -63,11 +93,10 @@ internal class AddEditRoutineViewModel @Inject constructor(
         }
     }
 
-
     fun updateExerciseTrainingSet(
         exerciseToUpdate: TrainedExercise,
         trainingSetToUpdate: TrainingMeasurementMetrics,
-        updatedTrainingSetData: TrainingMeasurementMetrics
+        updatedTrainingSetData: TrainingMeasurementMetrics,
     ) {
         Timber.d("exerciseToUpdate - unique identifier: ${exerciseToUpdate.id}; content: $exerciseToUpdate")
         Timber.d(
@@ -175,29 +204,89 @@ internal class AddEditRoutineViewModel @Inject constructor(
     }
 
     fun addEditRoutine() {
-        Timber.d("addEditRoutine() - userId: ${navArgs.userId}; routineId: ${navArgs.routineId}")
-        if (navArgs.isAddingRoutine) {
-            viewModelScope.launch {
-                routinesRepository.addRoutine(
-                    userId = navArgs.userId,
-                    routine = Routine(
-                        name = routineNameTextFieldValue,
-                        trainedExercises = _trainedExercises.value
+        viewModelScope.launch {
+            val userId = authenticationService.getCurrentUserId()
+
+            Timber.d("addEditRoutine() userId:$userId routineId: ${navArgs.routineId}")
+
+            when (navArgs.navigationPurpose) {
+                NavigationPurpose.ADD_ROUTINE -> {
+                    routinesRepository.addRoutine(
+                        userId = userId,
+                        routine = Routine(
+                            name = routineNameTextFieldValue,
+                            trainedExercises = _trainedExercises.value
+                        )
                     )
-                )
-            }
-        } else {
-            viewModelScope.launch {
-                routinesRepository.updateRoutine(
-                    userId = navArgs.userId,
-                    routine = Routine(
-                        id = navArgs.routineId,
-                        name = routineNameTextFieldValue,
-                        trainedExercises = _trainedExercises.value
+                    _navigateBackEvent.update { Unit }
+                }
+
+                NavigationPurpose.EDIT_ROUTINE -> {
+                    routinesRepository.updateRoutine(
+                        userId = userId,
+                        routine = Routine(
+                            id = navArgs.routineId,
+                            extraId = navArgs.routineId,
+                            name = routineNameTextFieldValue,
+                            trainedExercises = _trainedExercises.value
+                        )
                     )
-                )
+                    _navigateBackEvent.update { Unit }
+                }
+
+                NavigationPurpose.ADD_ROUTINE_TO_PROGRAM -> {
+                    Timber.d("Add routine to program")
+                    val routineId = routinesRepository.addRoutine(
+                        userId = userId,
+                        routine = Routine(
+                            name = routineNameTextFieldValue,
+                            trainedExercises = _trainedExercises.value
+                        )
+                    )
+                    //   _navigateBackEvent.update { Unit }
+
+
+                    _addRoutineToProgramEvent.update {
+                        Pair(
+                            navArgs.dayOffset, Routine(
+                                id = routineId,
+                                name = routineNameTextFieldValue,
+                                trainedExercises = _trainedExercises.value
+                            )
+                        )
+                    }
+                }
+
+                NavigationPurpose.EDIT_ROUTINE_OF_PROGRAM -> {
+                    routinesRepository.updateRoutine(
+                        userId = userId,
+                        routine = Routine(
+                            id = navArgs.routineId,
+                            extraId = navArgs.routineId,
+                            name = routineNameTextFieldValue,
+                            trainedExercises = _trainedExercises.value
+                        )
+                    )
+                    _navigateBackEvent.update { Unit }
+
+//                    _editRoutineOfProgramEvent.update {
+//                        Routine(
+//                            id = navArgs.routineId,
+//                            name = routineNameTextFieldValue,
+//                            trainedExercises = _trainedExercises.value
+//                        )
+//                    }
+                }
             }
         }
+    }
+
+    fun onAddRoutineToProgram() {
+        _addRoutineToProgramEvent.update { null }
+    }
+
+    fun onEditRoutineOfProgram() {
+        _editRoutineOfProgramEvent.update { null }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

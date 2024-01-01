@@ -102,11 +102,11 @@ internal fun NutritionDiaryScreen(
     onMoveToNextWeek: () -> Unit,
     onFoodEntryClick: (
         userId: String, selectedDate: LocalDate, mealId: String,
-        mealName: String, foodId: String, foodAmount: Float
+        mealName: String, foodId: String, foodAmount: Float,
     ) -> Unit,
     onButtonAddFoodClick: (
-        userId: String, selectedDate: LocalDate, mealId: String, mealName: String
-    ) -> Unit
+        userId: String, selectedDate: LocalDate, mealId: String, mealName: String,
+    ) -> Unit,
 ) {
     when (uiState) {
         is NutritionDiaryUiState.Loading -> {
@@ -115,6 +115,7 @@ internal fun NutritionDiaryScreen(
                 LoadingAnimation()
             }
         }
+
         is NutritionDiaryUiState.LoadComplete -> {
             Timber.d("selectedDate: ${uiState.selectedDate}")
             Timber.d("eatingDay: ${uiState.eatingDay}")
@@ -168,7 +169,7 @@ internal fun NutritionDiaryScreen(
                             )
                         })
 
-                    val pagerState = rememberPagerState(initialPage = 0)
+                    val pagerState = rememberPagerState(initialPage = 0, pageCount = { summaryNutrientInfoPages.size })
                     Text(
                         text = summaryNutrientInfoPages[pagerState.currentPage].first,
                         style = MaterialTheme.typography.titleMedium
@@ -254,7 +255,7 @@ private fun MealItem(
     meal: Meal,
     onButtonAddFoodClickHandler: () -> Unit,
     onFoodEntryClick: (food: FoodToConsume) -> Unit,
-    onEditMealClickHandler: (mealId: String) -> Unit = {}
+    onEditMealClickHandler: (mealId: String) -> Unit = {},
 ) {
     Column(
         modifier = Modifier

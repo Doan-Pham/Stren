@@ -22,6 +22,7 @@ import com.haidoan.android.stren.core.designsystem.component.*
 import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.model.TrainingMeasurementMetrics
 import com.haidoan.android.stren.core.utils.DateUtils.defaultFormat
+import com.haidoan.android.stren.core.utils.NumberUtils.roundToTwoDecimalPlace
 import timber.log.Timber
 
 internal const val WORKOUT_DETAIL_SCREEN_ROUTE = "WORKOUT_DETAIL_SCREEN_ROUTE"
@@ -199,13 +200,13 @@ private fun createTrainingSetTextFields(
             return listOf({ modifierParam, oldMetrics ->
                 Text(
                     modifier = modifierParam,
-                    text = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).kilometers.toString(),
+                    text = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).kilometers.roundToTwoDecimalPlace(),
                     textAlign = TextAlign.Center
                 )
             }, { modifierParam, oldMetrics ->
                 Text(
                     modifier = modifierParam,
-                    text = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).hours.toString(),
+                    text = (oldMetrics as TrainingMeasurementMetrics.DistanceAndDuration).hours.roundToTwoDecimalPlace(),
                     textAlign = TextAlign.Center
                 )
             })
@@ -223,7 +224,7 @@ private fun createTrainingSetTextFields(
             return listOf({ modifierParam, oldMetrics ->
                 Text(
                     modifier = modifierParam,
-                    text = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).weight.toString(),
+                    text = (oldMetrics as TrainingMeasurementMetrics.WeightAndRep).weight.roundToTwoDecimalPlace(),
                     textAlign = TextAlign.Center
                 )
             }, { modifierParam, oldMetrics ->

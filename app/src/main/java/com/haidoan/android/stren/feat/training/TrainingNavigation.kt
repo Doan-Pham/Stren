@@ -14,6 +14,11 @@ import com.haidoan.android.stren.feat.training.exercises.view_exercises.Exercise
 import com.haidoan.android.stren.feat.training.exercises.view_exercises.SHOULD_REFRESH_SAVED_STATE_KEY
 import com.haidoan.android.stren.feat.training.history.*
 import com.haidoan.android.stren.feat.training.history.log_workout.*
+import com.haidoan.android.stren.feat.training.programs.navigation.navigateToAddTrainingProgram
+import com.haidoan.android.stren.feat.training.programs.navigation.navigateToEditTrainingProgram
+import com.haidoan.android.stren.feat.training.programs.navigation.trainingProgramGraph
+import com.haidoan.android.stren.feat.training.programs.view_programs.TrainingProgramsRoute
+import com.haidoan.android.stren.feat.training.routines.NavigationPurpose
 import com.haidoan.android.stren.feat.training.routines.RoutinesRoute
 import com.haidoan.android.stren.feat.training.routines.navigateToRoutineGraph
 import com.haidoan.android.stren.feat.training.routines.routineGraph
@@ -25,7 +30,7 @@ const val TRAINING_GRAPH_STARTING_ROUTE = "training_graph_starting_route"
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.trainingGraph(
     navController: NavController,
-    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {}
+    appBarConfigurationChangeHandler: (AppBarConfiguration) -> Unit = {},
 ) {
     navigation(startDestination = TRAINING_GRAPH_STARTING_ROUTE, route = TRAINING_GRAPH_ROUTE) {
         composable(route = TRAINING_GRAPH_STARTING_ROUTE) { navBackStackEntry ->
@@ -66,6 +71,19 @@ fun NavGraphBuilder.trainingGraph(
                             }
                         )
                     },
+                    Pair("Programs") {
+                        TrainingProgramsRoute(
+                            appBarConfigurationChangeHandler = {
+                                appBarConfigurationChangeHandler(it)
+                            },
+                            onNavigateToAddProgramScreen = {
+                                navController.navigateToAddTrainingProgram(
+                                    userId = it,
+                                )
+                            },
+                            onNavigateToEditTrainingProgramScreen = navController::navigateToEditTrainingProgram
+                        )
+                    },
                     Pair("Routines") {
                         RoutinesRoute(
                             appBarConfigurationChangeHandler = {
@@ -74,12 +92,12 @@ fun NavGraphBuilder.trainingGraph(
                             onNavigateToAddRoutineScreen = { userId ->
                                 navController.navigateToRoutineGraph(
                                     userId = userId,
-                                    isAddingRoutine = true
+                                    navigationPurpose = NavigationPurpose.ADD_ROUTINE
                                 )
                             },
                             onNavigateToEditRoutineScreen = { userId, routineId ->
                                 navController.navigateToRoutineGraph(
-                                    isAddingRoutine = false,
+                                    navigationPurpose = NavigationPurpose.EDIT_ROUTINE,
                                     userId = userId,
                                     routineId = routineId
                                 )
@@ -124,9 +142,17 @@ fun NavGraphBuilder.trainingGraph(
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
         )
 
+        trainingProgramGraph(
+            navController = navController,
+            appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
+        )
+
         trainingHistoryGraph(
             navController = navController,
             appBarConfigurationChangeHandler = appBarConfigurationChangeHandler
         )
     }
 }
+
+val NavController.trainingGraphBackStackEntry
+    get() = this.getBackStackEntry(TRAINING_GRAPH_ROUTE)

@@ -12,8 +12,10 @@ import com.haidoan.android.stren.core.model.TrainedExercise
 import com.haidoan.android.stren.core.repository.base.EatingDayRepository
 import com.haidoan.android.stren.core.repository.base.UserRepository
 import com.haidoan.android.stren.core.repository.base.WorkoutsRepository
+import com.haidoan.android.stren.core.repository.impl.TrainingProgramsRepositoryImpl
 import com.haidoan.android.stren.core.service.AuthenticationService
 import com.haidoan.android.stren.core.utils.DateUtils
+import com.haidoan.android.stren.feat.dashboard.model.TodayTrainingProgram
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,6 +23,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 private const val UNDEFINED_USER_ID = "Undefined User ID"
@@ -31,8 +34,9 @@ internal class DashboardViewModel @Inject constructor(
     authenticationService: AuthenticationService,
     private val eatingDayRepository: EatingDayRepository,
     private val workoutsRepository: WorkoutsRepository,
+    private val trainingProgramsRepositoryImpl: TrainingProgramsRepositoryImpl,
     private val userRepository: UserRepository,
-    private val getUserFullDataUseCase: GetUserFullDataUseCase
+    private val getUserFullDataUseCase: GetUserFullDataUseCase,
 ) : ViewModel() {
     private var currentUserId = MutableStateFlow(UNDEFINED_USER_ID)
     private var cachedTrackedCategories = listOf<TrackedCategory>()
@@ -78,6 +82,7 @@ internal class DashboardViewModel @Inject constructor(
                             caloriesOfDates.associate { it.date to it.calories.toFloat() }
                         }
                     }
+
                     is TrackedCategory.ExerciseOneRepMax -> {
                         workoutsRepository.getExerciseOneRepMaxesStream(
                             userId = userId,
@@ -86,6 +91,7 @@ internal class DashboardViewModel @Inject constructor(
                             exerciseId = category.exerciseId
                         )
                     }
+
                     is TrackedCategory.Biometrics -> {
                         userRepository.getBiometricsRecordsStreamById(
                             userId = userId,
@@ -113,6 +119,36 @@ internal class DashboardViewModel @Inject constructor(
             }
             resolveToState(dataOutputsStateFlows)
             dataOutputsStateFlows
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
+
+    val todayTrainingPrograms = currentUserId.flatMapLatest { userId ->
+        if (userId == UNDEFINED_USER_ID) {
+            return@flatMapLatest flowOf(listOf())
+        }
+
+        val currentDate = DateUtils.getCurrentDate()
+
+        trainingProgramsRepositoryImpl.getTrainingProgramsStreamByUserIdAndDate(
+            userId = userId,
+            date = currentDate
+        ).map { trainingPrograms ->
+
+            Timber.d("trainingPrograms: $trainingPrograms")
+            trainingPrograms.map {
+                val dayOffset = ChronoUnit.DAYS.between(it.startDate, currentDate).toInt()
+
+                Timber.d("startDate: ${it.startDate}, today: $currentDate, offset: $dayOffset")
+
+                TodayTrainingProgram(
+                    programId = it.id,
+                    programName = it.name,
+                    weekIndex = dayOffset / it.numOfDaysPerWeek,
+                    weeklyDayOffset = dayOffset % it.numOfDaysPerWeek,
+                    routines = it.routinesByDayOffset[dayOffset] ?: emptyList()
+                )
+            }
+
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
 
@@ -226,7 +262,7 @@ internal class DashboardViewModel @Inject constructor(
 
     private fun convertTrackedDataToOutputFlow(
         category: TrackedCategory,
-        rawData: Map<LocalDate, Float>
+        rawData: Map<LocalDate, Float>,
     ): Flow<DataOutput> {
         val chartData = rawData.toList()
         Timber.d("chartData: $chartData")
@@ -250,6 +286,7 @@ internal class DashboardViewModel @Inject constructor(
                         isDefaultCategory = category.isDefaultCategory
                     )
                 }
+
                 is TrackedCategory.ExerciseOneRepMax -> {
                     DataOutput.Exercise(
                         startDate = category.startDate,
@@ -259,6 +296,7 @@ internal class DashboardViewModel @Inject constructor(
                         isDefaultCategory = category.isDefaultCategory,
                     )
                 }
+
                 is TrackedCategory.Biometrics -> {
                     DataOutput.Biometrics(
                         startDate = category.startDate,
@@ -274,7 +312,7 @@ internal class DashboardViewModel @Inject constructor(
     }
 
     private fun ChartEntryModelProducer.updateChartEntries(
-        entriesData: List<Pair<LocalDate, Float>>
+        entriesData: List<Pair<LocalDate, Float>>,
     ) {
         this.setEntries(entriesData.toCharEntries())
     }
@@ -338,25 +376,25 @@ internal class DashboardViewModel @Inject constructor(
             override val endDate: LocalDate = DateUtils.getCurrentDate(),
             override val dataSourceId: String,
             override val title: String = "",
-            override val isDefaultCategory: Boolean = true
+            override val isDefaultCategory: Boolean = true,
         ) : DataOutput
 
         data class Calories(
             override val startDate: LocalDate, override val endDate: LocalDate,
             override val dataSourceId: String, override val title: String = "Calories",
-            override val isDefaultCategory: Boolean
+            override val isDefaultCategory: Boolean,
         ) : DataOutput
 
         data class Exercise(
             override val startDate: LocalDate, override val endDate: LocalDate,
             override val dataSourceId: String, override val title: String,
-            override val isDefaultCategory: Boolean
+            override val isDefaultCategory: Boolean,
         ) : DataOutput
 
         data class Biometrics(
             override val startDate: LocalDate, override val endDate: LocalDate,
             override val dataSourceId: String, override val title: String,
-            override val isDefaultCategory: Boolean
+            override val isDefaultCategory: Boolean,
         ) : DataOutput
     }
 }

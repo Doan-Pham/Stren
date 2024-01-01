@@ -47,7 +47,6 @@ private fun OnboardingScreen(
     onCompleteOnboarding: () -> Unit
 ) {
     Column(modifier = modifier.fillMaxSize()) {
-        val pagerState = rememberPagerState()
         var isError by remember {
             mutableStateOf(false)
         }
@@ -64,6 +63,7 @@ private fun OnboardingScreen(
             GoalOnboardingScreen(weightGoals = uiState.weightGoals,
                 onSelectWeightGoal = { onUiStateChange(uiState.copy(selectedWeightGoal = it)) })
         })
+        val pagerState = rememberPagerState(pageCount = { onboardingScreensComposables.size })
 
         StrenHorizontalPager(
             modifier = Modifier.weight(1f),

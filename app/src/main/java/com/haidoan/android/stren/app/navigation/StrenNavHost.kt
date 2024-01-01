@@ -1,8 +1,6 @@
 package com.haidoan.android.stren.app.navigation
 
-import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -33,30 +31,30 @@ fun StrenNavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier.fillMaxSize(),
-        enterTransition = {
-            slideIntoContainer(
-                AnimatedContentScope.SlideDirection.Left,
-                animationSpec = tween(700)
-            )
-        },
-        popEnterTransition = {
-            slideIntoContainer(
-                AnimatedContentScope.SlideDirection.Left,
-                animationSpec = tween(700)
-            )
-        },
-        popExitTransition = {
-            slideOutOfContainer(
-                AnimatedContentScope.SlideDirection.Left,
-                animationSpec = tween(700)
-            )
-        },
-        exitTransition = {
-            slideOutOfContainer(
-                AnimatedContentScope.SlideDirection.Left,
-                animationSpec = tween(700)
-            )
-        }
+//        enterTransition = {
+//            slideIntoContainer(
+//                AnimatedContentScope.SlideDirection.Left,
+//                animationSpec = tween(700)
+//            )
+//        },
+//        popEnterTransition = {
+//            slideIntoContainer(
+//                AnimatedContentScope.SlideDirection.Left,
+//                animationSpec = tween(700)
+//            )
+//        },
+//        popExitTransition = {
+//            slideOutOfContainer(
+//                AnimatedContentScope.SlideDirection.Left,
+//                animationSpec = tween(700)
+//            )
+//        },
+//        exitTransition = {
+//            slideOutOfContainer(
+//                AnimatedContentScope.SlideDirection.Left,
+//                animationSpec = tween(700)
+//            )
+//        }
     ) {
         authenticationGraph(navController)
         onboardingGraph(onCompleteOnboarding = {

@@ -18,7 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 internal class ExercisesViewModel @Inject constructor(
     authenticationService: AuthenticationService,
-    exercisesRepository: ExercisesRepository
+    exercisesRepository: ExercisesRepository,
 ) :
     ViewModel() {
     private var userId: String? = null
@@ -31,19 +31,17 @@ internal class ExercisesViewModel @Inject constructor(
     private val _selectedCategoriesIds: MutableStateFlow<List<String>> =
         MutableStateFlow(listOf())
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val exerciseCategories = _selectedCategoriesIds.flatMapLatest { ids ->
-        Timber.d("chosenCategoriesIds-map()- ids: $ids")
-        exercisesRepository.getAllExerciseCategories()
-            .map { categories ->
+    val exerciseCategories =
+        _selectedCategoriesIds
+            .combine(exercisesRepository.getAllExerciseCategories()) { ids, categories ->
+                Timber.d("chosenCategoriesIds-map()- ids: $ids")
                 categories.map {
                     ExerciseCategorySelectionState(
                         it,
                         ids.contains(it.id)
                     )
                 }
-            }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
+            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
 
     fun toggleCategorySelection(categoryId: String) {
         Timber.d("toggleCategorySelection() - categoryId(): $categoryId")
@@ -63,23 +61,19 @@ internal class ExercisesViewModel @Inject constructor(
         _selectedCategoriesIds.value = newValue.toList()
     }
 
-
     private val _selectedMuscleGroupsIds: MutableStateFlow<List<String>> =
         MutableStateFlow(listOf())
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val muscleGroups = _selectedMuscleGroupsIds.flatMapLatest { ids ->
-        Timber.d("chosenCategoriesIds-map()- ids: $ids")
-        exercisesRepository.getAllMuscleGroups()
-            .map { categories ->
-                categories.map {
-                    MuscleGroupSelectionState(
-                        it,
-                        ids.contains(it.id)
-                    )
-                }
+    val muscleGroups = _selectedMuscleGroupsIds
+        .combine(exercisesRepository.getAllMuscleGroups()) { ids, muscleGroups ->
+            muscleGroups.map {
+                MuscleGroupSelectionState(
+                    it,
+                    ids.contains(it.id)
+                )
             }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf())
 
     fun toggleMuscleGroupSelection(muscleGroupId: String) {
         Timber.d("toggleMuscleGroupSelection() - muscleGroupId(): $muscleGroupId")
